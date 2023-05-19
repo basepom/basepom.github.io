@@ -83,39 +83,40 @@ inlined.</p></section><section>
 <p>Inline a single dependency:</p>
 
 <div class="verbatim">
-<pre><code class="language-xml">
-&lt;dependencies&gt;
+<pre><code class="language-xml">&lt;project&gt;
+  &lt;dependencies&gt;
     &lt;dependency&gt;
-        &lt;groupId&gt;org.antlr&lt;/groupId&gt;
-        &lt;artifactId&gt;antlr4-runtime&lt;/artifactId&gt;
-        &lt;version&gt;4.9.2&lt;/version&gt;
+      &lt;groupId&gt;org.antlr&lt;/groupId&gt;
+      &lt;artifactId&gt;antlr4-runtime&lt;/artifactId&gt;
+      &lt;version&gt;4.9.2&lt;/version&gt;
     &lt;/dependency&gt;
-&lt;/dependencies&gt;
-&lt;build&gt;
-&lt;plugins&gt;
-    &lt;plugin&gt;
+  &lt;/dependencies&gt;
+  &lt;build&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
         &lt;groupId&gt;org.basepom.maven&lt;/groupId&gt;
         &lt;artifactId&gt;inline-maven-plugin&lt;/artifactId&gt;
         &lt;version&gt;1.0&lt;/version&gt;
         &lt;configuration&gt;
-            &lt;prefix&gt;relocated&lt;/prefix&gt;
-            &lt;inlineDependencies&gt;
-                &lt;inlineDependency&gt;
-                    &lt;artifact&gt;org.antlr:antlr4-runtime&lt;/artifact&gt;
-                &lt;/inlineDependency&gt;
-            &lt;/inlineDependencies&gt;
+          &lt;prefix&gt;relocated&lt;/prefix&gt;
+          &lt;inlineDependencies&gt;
+            &lt;inlineDependency&gt;
+              &lt;artifact&gt;org.antlr:antlr4-runtime&lt;/artifact&gt;
+            &lt;/inlineDependency&gt;
+          &lt;/inlineDependencies&gt;
         &lt;/configuration&gt;
         &lt;executions&gt;
-            &lt;execution&gt;
-                &lt;phase&gt;package&lt;/phase&gt;
-                &lt;goals&gt;
-                    &lt;goal&gt;inline&lt;/goal&gt;
-                &lt;/goals&gt;
-            &lt;/execution&gt;
+          &lt;execution&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+              &lt;goal&gt;inline&lt;/goal&gt;
+            &lt;/goals&gt;
+          &lt;/execution&gt;
         &lt;/executions&gt;
-    &lt;/plugin&gt;
-&lt;/plugins&gt;
-&lt;/build&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;
+&lt;/project&gt;
 </code></pre></div>
 <p>The plugin will put all content of the inlined dependency under the <code>relocated</code> prefix and rewrite the code to use these relocated classes and resources.</p>
 <p>The <code>inline:inline</code> goal is the main goal and should be called in the <code>package</code> phase of the lifecycle.</p><section>
@@ -123,49 +124,49 @@ inlined.</p></section><section>
 
 <div class="verbatim">
 <pre><code class="language-xml">&lt;configuration&gt;
-    &lt;inlineDependencies&gt;
-        &lt;inlineDependency&gt;
-            &lt;artifact&gt; ...groupId:artifactId... &lt;/artifact&gt;
-            &lt;inlineTransitive&gt;true|false&lt;/inlineTransitive&gt;
-            &lt;inlineOptionals&gt;true|false|&lt;/inlineOptionals&gt;
-        &lt;/inlineDependency&gt;
+  &lt;inlineDependencies&gt;
+    &lt;inlineDependency&gt;
+      &lt;artifact&gt; ...groupId:artifactId... &lt;/artifact&gt;
+      &lt;inlineTransitive&gt;true|false&lt;/inlineTransitive&gt;
+      &lt;inlineOptionals&gt;true|false|&lt;/inlineOptionals&gt;
+    &lt;/inlineDependency&gt;
         ....
-    &lt;/inlineDependencies&gt;
+  &lt;/inlineDependencies&gt;
 
-    &lt;prefix&gt; ...relocation prefix... &lt;/prefix&gt;
+  &lt;prefix&gt; ...relocation prefix... &lt;/prefix&gt;
 
-    &lt;includes&gt;
-        &lt;include&gt; ...groupId:artifactId... &lt;/include&gt;
-        ....
-    &lt;/includes&gt;
+  &lt;includes&gt;
+    &lt;include&gt; ...groupId:artifactId... &lt;/include&gt;
+      ....
+  &lt;/includes&gt;
 
-    &lt;excludes&gt;
-        &lt;exclude&gt; ...groupId:artifactId... &lt;/exclude&gt;
-        ....
-    &lt;/excludes&gt;
+  &lt;excludes&gt;
+    &lt;exclude&gt; ...groupId:artifactId... &lt;/exclude&gt;
+      ....
+  &lt;/excludes&gt;
 
-    &lt;failOnDuplicate&gt;true (false)&lt;/failOnDuplicate&gt;
-    &lt;failOnNoMatch&gt;true (false)&lt;/failOnNoMatch&gt;
-    &lt;hideClasses&gt;true (false)&lt;/hideClasses&gt;
-    &lt;inlinedArtifactAttached&gt;false (true)&lt;/inlinedArtifactAttached&gt;
-    &lt;quiet&gt;false (true)&lt;/quiet&gt;
-    &lt;replacePomFile&gt;true (false)&lt;/replacePomFile&gt;
-    &lt;skip&gt;false (true)&lt;/skip&gt;
+  &lt;failOnDuplicate&gt;true (false)&lt;/failOnDuplicate&gt;
+  &lt;failOnNoMatch&gt;true (false)&lt;/failOnNoMatch&gt;
+  &lt;hideClasses&gt;true (false)&lt;/hideClasses&gt;
+  &lt;inlinedArtifactAttached&gt;false (true)&lt;/inlinedArtifactAttached&gt;
+  &lt;quiet&gt;false (true)&lt;/quiet&gt;
+  &lt;replacePomFile&gt;true (false)&lt;/replacePomFile&gt;
+  &lt;skip&gt;false (true)&lt;/skip&gt;
 
-    &lt;inlinedClassifierName&gt;inlined&lt;/inlinedClassifierName&gt;
-    &lt;outputJarFile&gt; ...file name... &lt;/outputJarFile&gt;
-    &lt;outputPomFile&gt; ...file name... &lt;/outputPomFile&gt;
+  &lt;inlinedClassifierName&gt;inlined&lt;/inlinedClassifierName&gt;
+  &lt;outputJarFile&gt; ...file name... &lt;/outputJarFile&gt;
+  &lt;outputPomFile&gt; ...file name... &lt;/outputPomFile&gt;
 
-    &lt;additionalProcessors&gt;
-        &lt;additionalProcessor&gt; ... class name of processor... &lt;/additionalProcessor&gt;
-        ....
-    &lt;additionalProcessors&gt;
+  &lt;additionalProcessors&gt;
+    &lt;additionalProcessor&gt; ... class name of processor... &lt;/additionalProcessor&gt;
+      ....
+  &lt;/additionalProcessors&gt;
 
-    &lt;outputDirectory&gt;${project.build.directory}&lt;/outputDirectory&gt;
-    &lt;pomFile&gt;${project.file}&lt;/pomFile&gt;
+  &lt;outputDirectory&gt;${project.build.directory}&lt;/outputDirectory&gt;
+  &lt;pomFile&gt;${project.file}&lt;/pomFile&gt;
 &lt;/configuration&gt;
 </code></pre></div><section>
-<h4>Required configuration paramters</h4>
+<h4>Required configuration parameters</h4>
 <table class="table table-striped">
 <thead>
 <tr class="a">
@@ -290,7 +291,8 @@ inlined.</p></section><section>
 <td>If true, also inline all transitive dependencies. If false, transitive dependencies are added to the rewritten POM file as direct dependencies.</td></tr>
 <tr class="b">
 <td><code>inlineOptionals</code></td>
-<td>boolean <code>false</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
 <td>If true, add all optional, transitive dependencies as well. If false, ignore optional dependencies.</td></tr></tbody>
 </table>
 </section><section>
