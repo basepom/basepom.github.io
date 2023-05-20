@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1684547640282">
-    <module artifactId="dependency-versions-check-maven-plugin" groupId="org.basepom.maven" version="4.0.0-SNAPSHOT"/>
+<licensePluginReport goal="CHECK" timestamp="1684548546278">
+    <module artifactId="dependency-versions-check-maven-plugin" groupId="org.basepom.maven" version="4.0.1-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="src/main/java/org/basepom/mojo/dvc/AbstractDependencyVersionsMojo.java" result="PRESENT"/>

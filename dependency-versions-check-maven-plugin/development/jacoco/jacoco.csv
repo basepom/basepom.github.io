@@ -16,8 +16,8 @@ dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,CheckExclusionsFilte
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,ScopeLimitingFilter,141,0,18,0,33,0,21,0,7,0
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,ScopeLimitingFilter.Scope,33,0,0,0,2,0,1,0,1,0
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,PluginLog,215,0,2,0,56,0,11,0,10,0
-dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,QualifiedName,118,260,16,24,31,35,21,22,7,16
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,StrategyCache,117,0,8,0,24,0,9,0,5,0
+dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,QualifiedName,118,260,16,24,31,35,21,22,7,16
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc,QualifiedNameMatcher,2,128,4,12,0,24,4,9,0,5
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc.strategy,DefaultStrategyProvider,34,0,0,0,7,0,4,0,4,0
 dependency-versions-check-maven-plugin,org.basepom.mojo.dvc.strategy,TwoDigitsBackwardCompatibleVersionStrategy,23,0,4,0,7,0,7,0,5,0
