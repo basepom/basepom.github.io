@@ -17,7 +17,7 @@ import java.util.Objects;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -45,12 +45,12 @@ public class MavenCoordinates {
 <span class="fc" id="L45">        this.groupId = checkNotNull(dependency.getGroupId(), &quot;groupId for dependency '%s' is null&quot;, dependency);</span>
 
 <span class="fc" id="L47">        final String version = dependency.getVersion();</span>
-<span class="fc bfc" id="L48" title="All 2 branches covered.">        this.version = version == null ? Optional.&lt;ArtifactVersion&gt;absent() : Optional.of(new DefaultArtifactVersion(version));</span>
+<span class="fc" id="L48">        this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
 
 <span class="fc bfc" id="L50" title="All 2 branches covered.">        if (this.version.isPresent()) {</span>
 <span class="fc" id="L51">            this.versionRange = Optional.of(VersionRange.createFromVersionSpec(version));</span>
         } else {
-<span class="fc" id="L53">            this.versionRange = Optional.absent();</span>
+<span class="fc" id="L53">            this.versionRange = Optional.empty();</span>
         }
 
 <span class="fc" id="L56">        final String type = dependency.getType();</span>
@@ -60,7 +60,7 @@ public class MavenCoordinates {
 <span class="nc" id="L60">            this.type = &quot;jar&quot;;</span>
         } else {
 <span class="fc" id="L62">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
-<span class="fc" id="L63">            this.classifier = Optional.fromNullable(classifier);</span>
+<span class="fc" id="L63">            this.classifier = Optional.ofNullable(classifier);</span>
         }
 <span class="fc" id="L65">    }</span>
 
@@ -69,13 +69,13 @@ public class MavenCoordinates {
 
 <span class="fc" id="L70">        this.artifactId = checkNotNull(artifact.getArtifactId(), &quot;artifactId for artifact '%s' is null&quot;, artifact);</span>
 <span class="fc" id="L71">        this.groupId = checkNotNull(artifact.getGroupId(), &quot;groupId for artifact '%s' is null&quot;, artifact);</span>
-<span class="fc" id="L72">        this.versionRange = Optional.fromNullable(artifact.getVersionRange());</span>
+<span class="fc" id="L72">        this.versionRange = Optional.ofNullable(artifact.getVersionRange());</span>
 
 <span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (this.versionRange.isPresent()) {</span>
-<span class="fc" id="L75">            this.version = Optional.fromNullable(artifact.getSelectedVersion());</span>
+<span class="fc" id="L75">            this.version = Optional.ofNullable(artifact.getSelectedVersion());</span>
         } else {
 <span class="nc" id="L77">            final String version = artifact.getBaseVersion();</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">            this.version = version == null ? Optional.&lt;ArtifactVersion&gt;absent() : Optional.of(new DefaultArtifactVersion(version));</span>
+<span class="nc" id="L78">            this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
         }
 
 <span class="fc" id="L81">        final String type = artifact.getType();</span>
@@ -85,7 +85,7 @@ public class MavenCoordinates {
 <span class="nc" id="L85">            this.type = &quot;jar&quot;;</span>
         } else {
 <span class="fc" id="L87">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
-<span class="fc" id="L88">            this.classifier = Optional.fromNullable(classifier);</span>
+<span class="fc" id="L88">            this.classifier = Optional.ofNullable(classifier);</span>
         }
 <span class="fc" id="L90">    }</span>
 
@@ -127,7 +127,7 @@ public class MavenCoordinates {
         // If a classifier is present, try to match the other classifier,
         // otherwise, if no classifier is present, it matches all classifiers from the other MavenCoordinates.
 <span class="fc bfc" id="L129" title="All 2 branches covered.">        if (getClassifier().isPresent()) {</span>
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">            if (!Objects.equals(getClassifier().get(), other.getClassifier().orNull())) {</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">            if (!Objects.equals(getClassifier().get(), other.getClassifier().orElse(null))) {</span>
 <span class="nc" id="L131">                return false;</span>
             }
         }
@@ -150,7 +150,7 @@ public class MavenCoordinates {
 <span class="fc" id="L150">            final ArtifactVersion recommendedVersion = getVersionRange().get().getRecommendedVersion();</span>
 <span class="fc bfc" id="L151" title="All 2 branches covered.">            if (recommendedVersion != null) {</span>
                 // Yes, then it must be matched.
-<span class="fc" id="L153">                return Objects.equals(recommendedVersion, other.getVersion().orNull());</span>
+<span class="fc" id="L153">                return Objects.equals(recommendedVersion, other.getVersion().orElse(null));</span>
             }
 
             // No, see if the other version is in the range
@@ -160,7 +160,7 @@ public class MavenCoordinates {
         }
 
         // exact version match.
-<span class="fc" id="L163">        return Objects.equals(getVersion().orNull(), other.getVersion().orNull());</span>
+<span class="fc" id="L163">        return Objects.equals(getVersion().orElse(null), other.getVersion().orElse(null));</span>
     }
 
     @Override
@@ -199,7 +199,7 @@ public class MavenCoordinates {
         }
 
 <span class="fc" id="L201">        builder.add(getType());</span>
-<span class="fc" id="L202">        builder.add(getClassifier().or(&quot;&lt;any&gt;&quot;));</span>
+<span class="fc" id="L202">        builder.add(getClassifier().orElse(&quot;&lt;any&gt;&quot;));</span>
 <span class="fc" id="L203">        return Joiner.on(':').join(builder.build());</span>
     }
 }

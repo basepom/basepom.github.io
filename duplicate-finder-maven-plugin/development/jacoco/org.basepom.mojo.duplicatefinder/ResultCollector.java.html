@@ -18,9 +18,9 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -95,7 +95,9 @@ public class ResultCollector {
     }
 
     private static String buildConflictName(final SortedSet&lt;ClasspathElement&gt; conflictArtifactNames) {
-<span class="nc" id="L98">        return Joiner.on(&quot;, &quot;).join(Collections2.transform(conflictArtifactNames, ClasspathElement.getNameFunction()));</span>
+<span class="nc" id="L98">        return Joiner.on(&quot;, &quot;).join(conflictArtifactNames.stream()</span>
+<span class="nc" id="L99">                .map(ClasspathElement.getNameFunction())</span>
+<span class="nc" id="L100">                .collect(Collectors.toList()));</span>
     }
 
     public class ConflictResult {
@@ -111,45 +113,45 @@ public class ResultCollector {
                 final String name,
                 final SortedSet&lt;ClasspathElement&gt; classpathElements,
                 final boolean excepted,
-<span class="nc" id="L114">                final ConflictState conflictState) {</span>
-<span class="nc" id="L115">            this.type = type;</span>
-<span class="nc" id="L116">            this.name = name;</span>
-<span class="nc" id="L117">            this.classpathElements = classpathElements;</span>
-<span class="nc" id="L118">            this.excepted = excepted;</span>
-<span class="nc" id="L119">            this.conflictState = conflictState;</span>
-<span class="nc" id="L120">            this.conflictName = ResultCollector.buildConflictName(classpathElements);</span>
-<span class="nc" id="L121">        }</span>
+<span class="nc" id="L116">                final ConflictState conflictState) {</span>
+<span class="nc" id="L117">            this.type = type;</span>
+<span class="nc" id="L118">            this.name = name;</span>
+<span class="nc" id="L119">            this.classpathElements = classpathElements;</span>
+<span class="nc" id="L120">            this.excepted = excepted;</span>
+<span class="nc" id="L121">            this.conflictState = conflictState;</span>
+<span class="nc" id="L122">            this.conflictName = ResultCollector.buildConflictName(classpathElements);</span>
+<span class="nc" id="L123">        }</span>
 
         public String getName() {
-<span class="nc" id="L124">            return name;</span>
+<span class="nc" id="L126">            return name;</span>
         }
 
         public ConflictType getType() {
-<span class="nc" id="L128">            return type;</span>
+<span class="nc" id="L130">            return type;</span>
         }
 
         public SortedSet&lt;ClasspathElement&gt; getClasspathElements() {
-<span class="nc" id="L132">            return classpathElements;</span>
+<span class="nc" id="L134">            return classpathElements;</span>
         }
 
         public boolean isExcepted() {
-<span class="nc" id="L136">            return excepted;</span>
+<span class="nc" id="L138">            return excepted;</span>
         }
 
         public boolean isPrinted() {
-<span class="nc bnc" id="L140" title="All 4 branches missed.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
         }
 
         public boolean isFailed() {
-<span class="nc bnc" id="L144" title="All 4 branches missed.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
         }
 
         public ConflictState getConflictState() {
-<span class="nc" id="L148">            return conflictState;</span>
+<span class="nc" id="L150">            return conflictState;</span>
         }
 
         private String getConflictName() {
-<span class="nc" id="L152">            return conflictName;</span>
+<span class="nc" id="L154">            return conflictName;</span>
         }
     }
 }

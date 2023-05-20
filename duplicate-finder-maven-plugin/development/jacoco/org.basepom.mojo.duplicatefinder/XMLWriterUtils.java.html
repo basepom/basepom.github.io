@@ -67,137 +67,135 @@ public final class XMLWriterUtils {
 <span class="nc" id="L67">        addAttribute(conflictingDependencyElement, &quot;currentProject&quot;, conflictingDependency.hasCurrentProject());</span>
 <span class="nc" id="L68">        addAttribute(conflictingDependencyElement, &quot;currentProjectIncluded&quot;, conflictingDependency.isCurrentProjectIncluded());</span>
 <span class="nc" id="L69">        addAttribute(conflictingDependencyElement, &quot;wildcard&quot;, conflictingDependency.isWildcard());</span>
-<span class="nc" id="L70">        addAttribute(conflictingDependencyElement, &quot;bootClasspath&quot;, conflictingDependency.hasBootClasspath());</span>
 
-<span class="nc" id="L72">        SMOutputElement dependenciesElement = conflictingDependencyElement.addElement(&quot;dependencies&quot;);</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (MavenCoordinates dependency : conflictingDependency.getDependencies()) {</span>
-<span class="nc" id="L74">            addMavenCoordinate(dependenciesElement, &quot;dependency&quot;, dependency);</span>
-<span class="nc" id="L75">        }</span>
+<span class="nc" id="L71">        SMOutputElement dependenciesElement = conflictingDependencyElement.addElement(&quot;dependencies&quot;);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (MavenCoordinates dependency : conflictingDependency.getDependencies()) {</span>
+<span class="nc" id="L73">            addMavenCoordinate(dependenciesElement, &quot;dependency&quot;, dependency);</span>
+<span class="nc" id="L74">        }</span>
 
-<span class="nc" id="L77">        SMOutputElement packagesElement = conflictingDependencyElement.addElement(&quot;packages&quot;);</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">        for (String packageName : conflictingDependency.getPackages()) {</span>
-<span class="nc" id="L79">            addElement(packagesElement, &quot;package&quot;, packageName);</span>
+<span class="nc" id="L76">        SMOutputElement packagesElement = conflictingDependencyElement.addElement(&quot;packages&quot;);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        for (String packageName : conflictingDependency.getPackages()) {</span>
+<span class="nc" id="L78">            addElement(packagesElement, &quot;package&quot;, packageName);</span>
         }
 
-<span class="nc" id="L82">        SMOutputElement classesElement = conflictingDependencyElement.addElement(&quot;classes&quot;);</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">        for (String className : conflictingDependency.getClasses()) {</span>
-<span class="nc" id="L84">            addElement(classesElement, &quot;class&quot;, className);</span>
+<span class="nc" id="L81">        SMOutputElement classesElement = conflictingDependencyElement.addElement(&quot;classes&quot;);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        for (String className : conflictingDependency.getClasses()) {</span>
+<span class="nc" id="L83">            addElement(classesElement, &quot;class&quot;, className);</span>
         }
 
-<span class="nc" id="L87">        SMOutputElement resourcesElement = conflictingDependencyElement.addElement(&quot;resources&quot;);</span>
-<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (String resourceName : conflictingDependency.getResources()) {</span>
-<span class="nc" id="L89">            addElement(resourcesElement, &quot;resource&quot;, resourceName);</span>
+<span class="nc" id="L86">        SMOutputElement resourcesElement = conflictingDependencyElement.addElement(&quot;resources&quot;);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        for (String resourceName : conflictingDependency.getResources()) {</span>
+<span class="nc" id="L88">            addElement(resourcesElement, &quot;resource&quot;, resourceName);</span>
         }
 
-<span class="nc" id="L92">        SMOutputElement resourcePatternsElement = conflictingDependencyElement.addElement(&quot;resourcePatterns&quot;);</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">        for (Pattern resourcePattern : conflictingDependency.getResourcePatterns()) {</span>
-<span class="nc" id="L94">            addElement(resourcePatternsElement, &quot;resourcePattern&quot;, resourcePattern.toString());</span>
+<span class="nc" id="L91">        SMOutputElement resourcePatternsElement = conflictingDependencyElement.addElement(&quot;resourcePatterns&quot;);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (Pattern resourcePattern : conflictingDependency.getResourcePatterns()) {</span>
+<span class="nc" id="L93">            addElement(resourcePatternsElement, &quot;resourcePattern&quot;, resourcePattern.toString());</span>
         }
-<span class="nc" id="L96">    }</span>
+<span class="nc" id="L95">    }</span>
 
     public static void addMavenCoordinate(SMOutputElement dependenciesElement, String name, MavenCoordinates dependency)
             throws XMLStreamException {
-<span class="nc" id="L100">        SMOutputElement dependencyElement = dependenciesElement.addElement(name);</span>
-<span class="nc" id="L101">        addAttribute(dependencyElement, &quot;artifactId&quot;, dependency.getArtifactId());</span>
-<span class="nc" id="L102">        addAttribute(dependencyElement, &quot;groupId&quot;, dependency.getGroupId());</span>
+<span class="nc" id="L99">        SMOutputElement dependencyElement = dependenciesElement.addElement(name);</span>
+<span class="nc" id="L100">        addAttribute(dependencyElement, &quot;artifactId&quot;, dependency.getArtifactId());</span>
+<span class="nc" id="L101">        addAttribute(dependencyElement, &quot;groupId&quot;, dependency.getGroupId());</span>
 
-<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (dependency.getVersion().isPresent()) {</span>
-<span class="nc" id="L105">            addAttribute(dependencyElement, &quot;version&quot;, dependency.getVersion().get());</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (dependency.getVersion().isPresent()) {</span>
+<span class="nc" id="L104">            addAttribute(dependencyElement, &quot;version&quot;, dependency.getVersion().get());</span>
         }
 
-<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (dependency.getVersionRange().isPresent()) {</span>
-<span class="nc" id="L109">            addAttribute(dependencyElement, &quot;versionRange&quot;, dependency.getVersionRange().get());</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (dependency.getVersionRange().isPresent()) {</span>
+<span class="nc" id="L108">            addAttribute(dependencyElement, &quot;versionRange&quot;, dependency.getVersionRange().get());</span>
         }
 
-<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (dependency.getClassifier().isPresent()) {</span>
-<span class="nc" id="L113">            addAttribute(dependencyElement, &quot;classifier&quot;, dependency.getClassifier().get());</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (dependency.getClassifier().isPresent()) {</span>
+<span class="nc" id="L112">            addAttribute(dependencyElement, &quot;classifier&quot;, dependency.getClassifier().get());</span>
         }
 
-<span class="nc" id="L116">        addAttribute(dependencyElement, &quot;type&quot;, dependency.getType());</span>
-<span class="nc" id="L117">    }</span>
+<span class="nc" id="L115">        addAttribute(dependencyElement, &quot;type&quot;, dependency.getType());</span>
+<span class="nc" id="L116">    }</span>
 
     public static void addArtifact(SMOutputElement artifactElement, String name, Artifact artifact)
             throws XMLStreamException, OverConstrainedVersionException {
         // lazy. Replace with a real dependency writer if that somehow loses or mangles information.
-<span class="nc" id="L122">        MavenCoordinates coordinates = new MavenCoordinates(artifact);</span>
-<span class="nc" id="L123">        addMavenCoordinate(artifactElement, name, coordinates);</span>
-<span class="nc" id="L124">    }</span>
+<span class="nc" id="L121">        MavenCoordinates coordinates = new MavenCoordinates(artifact);</span>
+<span class="nc" id="L122">        addMavenCoordinate(artifactElement, name, coordinates);</span>
+<span class="nc" id="L123">    }</span>
 
     public static void addResultCollector(SMOutputElement resultElement, ResultCollector resultCollector)
             throws XMLStreamException, OverConstrainedVersionException {
-<span class="nc" id="L128">        addAttribute(resultElement, &quot;conflictState&quot;, resultCollector.getConflictState());</span>
-<span class="nc" id="L129">        addAttribute(resultElement, &quot;failed&quot;, resultCollector.isFailed());</span>
-<span class="nc" id="L130">        SMOutputElement conflictsElement = resultElement.addElement(&quot;conflicts&quot;);</span>
+<span class="nc" id="L127">        addAttribute(resultElement, &quot;conflictState&quot;, resultCollector.getConflictState());</span>
+<span class="nc" id="L128">        addAttribute(resultElement, &quot;failed&quot;, resultCollector.isFailed());</span>
+<span class="nc" id="L129">        SMOutputElement conflictsElement = resultElement.addElement(&quot;conflicts&quot;);</span>
 
-<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (Map.Entry&lt;String, Collection&lt;ConflictResult&gt;&gt; entry : resultCollector.getAllResults().entrySet()) {</span>
-<span class="nc" id="L133">            SMOutputElement conflictElement = conflictsElement.addElement(&quot;conflict&quot;);</span>
-<span class="nc" id="L134">            addAttribute(conflictElement, &quot;name&quot;, entry.getKey());</span>
-<span class="nc" id="L135">            SMOutputElement conflictResultsElement = conflictElement.addElement(&quot;conflictResults&quot;);</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">            for (ConflictResult conflictResult : entry.getValue()) {</span>
-<span class="nc" id="L137">                addConflictResult(conflictResultsElement, conflictResult);</span>
-<span class="nc" id="L138">            }</span>
-<span class="nc" id="L139">        }</span>
-<span class="nc" id="L140">    }</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        for (Map.Entry&lt;String, Collection&lt;ConflictResult&gt;&gt; entry : resultCollector.getAllResults().entrySet()) {</span>
+<span class="nc" id="L132">            SMOutputElement conflictElement = conflictsElement.addElement(&quot;conflict&quot;);</span>
+<span class="nc" id="L133">            addAttribute(conflictElement, &quot;name&quot;, entry.getKey());</span>
+<span class="nc" id="L134">            SMOutputElement conflictResultsElement = conflictElement.addElement(&quot;conflictResults&quot;);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            for (ConflictResult conflictResult : entry.getValue()) {</span>
+<span class="nc" id="L136">                addConflictResult(conflictResultsElement, conflictResult);</span>
+<span class="nc" id="L137">            }</span>
+<span class="nc" id="L138">        }</span>
+<span class="nc" id="L139">    }</span>
 
     private static void addConflictResult(SMOutputElement conflictResultsElement, ConflictResult conflictResult)
             throws XMLStreamException, OverConstrainedVersionException {
-<span class="nc" id="L144">        SMOutputElement conflictResultElement = conflictResultsElement.addElement(&quot;conflictResult&quot;);</span>
-<span class="nc" id="L145">        addAttribute(conflictResultElement, &quot;name&quot;, conflictResult.getName());</span>
-<span class="nc" id="L146">        addAttribute(conflictResultElement, &quot;type&quot;, conflictResult.getType());</span>
-<span class="nc" id="L147">        addAttribute(conflictResultElement, &quot;excepted&quot;, conflictResult.isExcepted());</span>
-<span class="nc" id="L148">        addAttribute(conflictResultElement, &quot;failed&quot;, conflictResult.isFailed());</span>
-<span class="nc" id="L149">        addAttribute(conflictResultElement, &quot;printed&quot;, conflictResult.isPrinted());</span>
-<span class="nc" id="L150">        addAttribute(conflictResultElement, &quot;conflictState&quot;, conflictResult.getConflictState());</span>
-<span class="nc" id="L151">        SMOutputElement conflictNames = conflictResultElement.addElement(&quot;conflictNames&quot;);</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">        for (ClasspathElement entry : conflictResult.getClasspathElements()) {</span>
-<span class="nc" id="L153">            SMOutputElement conflictName = conflictNames.addElement(&quot;conflictName&quot;);</span>
-<span class="nc" id="L154">            addAttribute(conflictName, &quot;name&quot;, entry.getName());</span>
-<span class="nc" id="L155">            addAttribute(conflictName, &quot;artifact&quot;, entry.hasArtifact());</span>
-<span class="nc" id="L156">            addAttribute(conflictName, &quot;localFolder&quot;, entry.isLocalFolder());</span>
-<span class="nc" id="L157">            addAttribute(conflictName, &quot;bootClasspathElement&quot;, entry.isBootClasspathElement());</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (entry.hasArtifact()) {</span>
-<span class="nc" id="L159">                addArtifact(conflictName, &quot;artifact&quot;, entry.getArtifact());</span>
+<span class="nc" id="L143">        SMOutputElement conflictResultElement = conflictResultsElement.addElement(&quot;conflictResult&quot;);</span>
+<span class="nc" id="L144">        addAttribute(conflictResultElement, &quot;name&quot;, conflictResult.getName());</span>
+<span class="nc" id="L145">        addAttribute(conflictResultElement, &quot;type&quot;, conflictResult.getType());</span>
+<span class="nc" id="L146">        addAttribute(conflictResultElement, &quot;excepted&quot;, conflictResult.isExcepted());</span>
+<span class="nc" id="L147">        addAttribute(conflictResultElement, &quot;failed&quot;, conflictResult.isFailed());</span>
+<span class="nc" id="L148">        addAttribute(conflictResultElement, &quot;printed&quot;, conflictResult.isPrinted());</span>
+<span class="nc" id="L149">        addAttribute(conflictResultElement, &quot;conflictState&quot;, conflictResult.getConflictState());</span>
+<span class="nc" id="L150">        SMOutputElement conflictNames = conflictResultElement.addElement(&quot;conflictNames&quot;);</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        for (ClasspathElement entry : conflictResult.getClasspathElements()) {</span>
+<span class="nc" id="L152">            SMOutputElement conflictName = conflictNames.addElement(&quot;conflictName&quot;);</span>
+<span class="nc" id="L153">            addAttribute(conflictName, &quot;name&quot;, entry.getName());</span>
+<span class="nc" id="L154">            addAttribute(conflictName, &quot;artifact&quot;, entry.hasArtifact());</span>
+<span class="nc" id="L155">            addAttribute(conflictName, &quot;localFolder&quot;, entry.isLocalFolder());</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (entry.hasArtifact()) {</span>
+<span class="nc" id="L157">                addArtifact(conflictName, &quot;artifact&quot;, entry.getArtifact());</span>
             } else {
-<span class="nc" id="L161">                final File file = entry.getFile();</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">                if (file.isDirectory()) {</span>
-<span class="nc" id="L163">                    addElement(conflictName, &quot;directory&quot;, file);</span>
+<span class="nc" id="L159">                final File file = entry.getFile();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (file.isDirectory()) {</span>
+<span class="nc" id="L161">                    addElement(conflictName, &quot;directory&quot;, file);</span>
                 } else {
-<span class="nc" id="L165">                    addElement(conflictName, &quot;file&quot;, file);</span>
+<span class="nc" id="L163">                    addElement(conflictName, &quot;file&quot;, file);</span>
                 }
             }
-<span class="nc" id="L168">        }</span>
-<span class="nc" id="L169">    }</span>
+<span class="nc" id="L166">        }</span>
+<span class="nc" id="L167">    }</span>
 
     public static void addClasspathDescriptor(SMOutputElement resultElement, int resultFileMinClasspathCount, ClasspathDescriptor classpathDescriptor)
             throws XMLStreamException {
-<span class="nc" id="L173">        SMOutputElement resourceExclusionPatternsElement = resultElement.addElement(&quot;ignoredResourcePatterns&quot;);</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">        for (Pattern resourceExclusionPattern : classpathDescriptor.getIgnoredResourcePatterns()) {</span>
-<span class="nc" id="L175">            addElement(resourceExclusionPatternsElement, &quot;ignoredResourcePattern&quot;, resourceExclusionPattern.toString());</span>
-<span class="nc" id="L176">        }</span>
+<span class="nc" id="L171">        SMOutputElement resourceExclusionPatternsElement = resultElement.addElement(&quot;ignoredResourcePatterns&quot;);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        for (Pattern resourceExclusionPattern : classpathDescriptor.getIgnoredResourcePatterns()) {</span>
+<span class="nc" id="L173">            addElement(resourceExclusionPatternsElement, &quot;ignoredResourcePattern&quot;, resourceExclusionPattern.toString());</span>
+<span class="nc" id="L174">        }</span>
 
-<span class="nc" id="L178">        SMOutputElement ignoredDirectoriesPatternsElement = resultElement.addElement(&quot;ignoredDirectoryPatterns&quot;);</span>
-<span class="nc bnc" id="L179" title="All 2 branches missed.">        for (Pattern ignoredDirectoriesPattern : classpathDescriptor.getIgnoredDirectoryPatterns()) {</span>
-<span class="nc" id="L180">            addElement(ignoredDirectoriesPatternsElement, &quot;ignoredDirectoryPattern&quot;, ignoredDirectoriesPattern.toString());</span>
-<span class="nc" id="L181">        }</span>
+<span class="nc" id="L176">        SMOutputElement ignoredDirectoriesPatternsElement = resultElement.addElement(&quot;ignoredDirectoryPatterns&quot;);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        for (Pattern ignoredDirectoriesPattern : classpathDescriptor.getIgnoredDirectoryPatterns()) {</span>
+<span class="nc" id="L178">            addElement(ignoredDirectoriesPatternsElement, &quot;ignoredDirectoryPattern&quot;, ignoredDirectoriesPattern.toString());</span>
+<span class="nc" id="L179">        }</span>
 
-<span class="nc" id="L183">        SMOutputElement classExclusionPatternsElement = resultElement.addElement(&quot;ignoredClassPatterns&quot;);</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (Pattern classExclusionPattern : classpathDescriptor.getIgnoredClassPatterns()) {</span>
-<span class="nc" id="L185">            addElement(classExclusionPatternsElement, &quot;ignoredClassPattern&quot;, classExclusionPattern.toString());</span>
-<span class="nc" id="L186">        }</span>
+<span class="nc" id="L181">        SMOutputElement classExclusionPatternsElement = resultElement.addElement(&quot;ignoredClassPatterns&quot;);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        for (Pattern classExclusionPattern : classpathDescriptor.getIgnoredClassPatterns()) {</span>
+<span class="nc" id="L183">            addElement(classExclusionPatternsElement, &quot;ignoredClassPattern&quot;, classExclusionPattern.toString());</span>
+<span class="nc" id="L184">        }</span>
 
-<span class="nc bnc" id="L188" title="All 2 branches missed.">        for (ConflictType type : ConflictType.values()) {</span>
-<span class="nc" id="L189">            SMOutputElement classpathElementsElement = resultElement.addElement(&quot;classpathElements&quot;);</span>
-<span class="nc" id="L190">            addAttribute(classpathElementsElement, &quot;type&quot;, type);</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">            for (Map.Entry&lt;String, Collection&lt;File&gt;&gt; entry : classpathDescriptor.getClasspathElementLocations(type).entrySet()) {</span>
-<span class="nc bnc" id="L192" title="All 2 branches missed.">                if (entry.getValue().size() &gt;= resultFileMinClasspathCount) {</span>
-<span class="nc" id="L193">                    SMOutputElement classpathElementElement = classpathElementsElement.addElement(&quot;classpathElement&quot;);</span>
-<span class="nc" id="L194">                    addAttribute(classpathElementElement, &quot;name&quot;, entry.getKey());</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">                    for (File file : entry.getValue()) {</span>
-<span class="nc" id="L196">                        addElement(classpathElementElement, &quot;file&quot;, file.getPath());</span>
-<span class="nc" id="L197">                    }</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (ConflictType type : ConflictType.values()) {</span>
+<span class="nc" id="L187">            SMOutputElement classpathElementsElement = resultElement.addElement(&quot;classpathElements&quot;);</span>
+<span class="nc" id="L188">            addAttribute(classpathElementsElement, &quot;type&quot;, type);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            for (Map.Entry&lt;String, Collection&lt;File&gt;&gt; entry : classpathDescriptor.getClasspathElementLocations(type).entrySet()) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                if (entry.getValue().size() &gt;= resultFileMinClasspathCount) {</span>
+<span class="nc" id="L191">                    SMOutputElement classpathElementElement = classpathElementsElement.addElement(&quot;classpathElement&quot;);</span>
+<span class="nc" id="L192">                    addAttribute(classpathElementElement, &quot;name&quot;, entry.getKey());</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                    for (File file : entry.getValue()) {</span>
+<span class="nc" id="L194">                        addElement(classpathElementElement, &quot;file&quot;, file.getPath());</span>
+<span class="nc" id="L195">                    }</span>
                 }
-<span class="nc" id="L199">            }</span>
+<span class="nc" id="L197">            }</span>
         }
-<span class="nc" id="L201">    }</span>
+<span class="nc" id="L199">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

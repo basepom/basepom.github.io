@@ -14,10 +14,9 @@
 package org.basepom.mojo.duplicatefinder.classpath;
 
 import java.io.File;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -27,48 +26,48 @@ class ClasspathCacheElement {
     private final ImmutableSet&lt;String&gt; classes;
     private final ImmutableSet&lt;String&gt; resources;
 
-    public static ClasspathCacheElement.Builder builder(final File element) {
-<span class="fc" id="L31">        return new Builder(element);</span>
+    public static Builder builder(final File element) {
+<span class="fc" id="L30">        return new Builder(element);</span>
     }
 
-<span class="fc" id="L34">    private ClasspathCacheElement(final File element, final ImmutableSet&lt;String&gt; classes, final ImmutableSet&lt;String&gt; resources) {</span>
-<span class="fc" id="L35">        this.element = element;</span>
-<span class="fc" id="L36">        this.classes = classes;</span>
-<span class="fc" id="L37">        this.resources = resources;</span>
-<span class="fc" id="L38">    }</span>
+<span class="fc" id="L33">    private ClasspathCacheElement(final File element, final ImmutableSet&lt;String&gt; classes, final ImmutableSet&lt;String&gt; resources) {</span>
+<span class="fc" id="L34">        this.element = element;</span>
+<span class="fc" id="L35">        this.classes = classes;</span>
+<span class="fc" id="L36">        this.resources = resources;</span>
+<span class="fc" id="L37">    }</span>
 
     void putClasses(final Multimap&lt;String, File&gt; classMap, final Predicate&lt;String&gt; excludePredicate) {
-<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (final String className : Collections2.filter(classes, Predicates.not(excludePredicate))) {</span>
-<span class="fc" id="L42">            classMap.put(className, element);</span>
-<span class="fc" id="L43">        }</span>
-<span class="fc" id="L44">    }</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        for (final String className : classes.stream().filter(excludePredicate.negate()).collect(Collectors.toList())) {</span>
+<span class="fc" id="L41">            classMap.put(className, element);</span>
+<span class="fc" id="L42">        }</span>
+<span class="fc" id="L43">    }</span>
 
     void putResources(final Multimap&lt;String, File&gt; resourceMap, final Predicate&lt;String&gt; excludePredicate) {
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (final String resource : Collections2.filter(resources, Predicates.not(excludePredicate))) {</span>
-<span class="fc" id="L48">            resourceMap.put(resource, element);</span>
-<span class="fc" id="L49">        }</span>
-<span class="fc" id="L50">    }</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (final String resource : resources.stream().filter(excludePredicate.negate()).collect(Collectors.toList())) {</span>
+<span class="fc" id="L47">            resourceMap.put(resource, element);</span>
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">    }</span>
 
     static class Builder {
 
         private final File element;
-<span class="fc" id="L55">        private final ImmutableSet.Builder&lt;String&gt; classBuilder = ImmutableSet.builder();</span>
-<span class="fc" id="L56">        private final ImmutableSet.Builder&lt;String&gt; resourcesBuilder = ImmutableSet.builder();</span>
+<span class="fc" id="L54">        private final ImmutableSet.Builder&lt;String&gt; classBuilder = ImmutableSet.builder();</span>
+<span class="fc" id="L55">        private final ImmutableSet.Builder&lt;String&gt; resourcesBuilder = ImmutableSet.builder();</span>
 
-<span class="fc" id="L58">        private Builder(final File element) {</span>
-<span class="fc" id="L59">            this.element = element;</span>
-<span class="fc" id="L60">        }</span>
+<span class="fc" id="L57">        private Builder(final File element) {</span>
+<span class="fc" id="L58">            this.element = element;</span>
+<span class="fc" id="L59">        }</span>
 
         void addClass(final String className) {
-<span class="fc" id="L63">            classBuilder.add(className);</span>
-<span class="fc" id="L64">        }</span>
+<span class="fc" id="L62">            classBuilder.add(className);</span>
+<span class="fc" id="L63">        }</span>
 
         void addResource(final String resource) {
-<span class="fc" id="L67">            resourcesBuilder.add(resource);</span>
-<span class="fc" id="L68">        }</span>
+<span class="fc" id="L66">            resourcesBuilder.add(resource);</span>
+<span class="fc" id="L67">        }</span>
 
         ClasspathCacheElement build() {
-<span class="fc" id="L71">            return new ClasspathCacheElement(element, classBuilder.build(), resourcesBuilder.build());</span>
+<span class="fc" id="L70">            return new ClasspathCacheElement(element, classBuilder.build(), resourcesBuilder.build());</span>
         }
     }
 }

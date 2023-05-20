@@ -15,8 +15,8 @@ package org.basepom.mojo.duplicatefinder;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.function.Function;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Ordering;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -44,90 +44,86 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArt
 <span class="nc" id="L44">        throw new UnsupportedOperationException();</span>
     }
 
-    public boolean isBootClasspathElement() {
+    public boolean isLocalFolder() {
 <span class="nc" id="L48">        return false;</span>
     }
 
-    public boolean isLocalFolder() {
-<span class="nc" id="L52">        return false;</span>
-    }
-
     public boolean hasArtifact() {
-<span class="nc" id="L56">        return false;</span>
+<span class="nc" id="L52">        return false;</span>
     }
 
     @Override
     public int compareTo(ClasspathElement element) {
-<span class="nc" id="L61">        return Ordering.natural().compare(this.getName(), element.getName());</span>
+<span class="nc" id="L57">        return Ordering.natural().compare(this.getName(), element.getName());</span>
     }
 
     public static final class ClasspathArtifact extends ClasspathElement {
 
         private final Artifact artifact;
 
-<span class="nc" id="L68">        public ClasspathArtifact(final Artifact artifact) {</span>
-<span class="nc" id="L69">            this.artifact = checkNotNull(artifact, &quot;artifact is null&quot;);</span>
-<span class="nc" id="L70">        }</span>
+<span class="nc" id="L64">        public ClasspathArtifact(final Artifact artifact) {</span>
+<span class="nc" id="L65">            this.artifact = checkNotNull(artifact, &quot;artifact is null&quot;);</span>
+<span class="nc" id="L66">        }</span>
 
         @Override
         public String getName() {
-<span class="nc" id="L74">            return Joiner.on(':').skipNulls().join(artifact.getGroupId(),</span>
-<span class="nc" id="L75">                    artifact.getArtifactId(),</span>
-<span class="nc" id="L76">                    artifact.getVersion(),</span>
-<span class="nc" id="L77">                    getType(artifact),</span>
-<span class="nc" id="L78">                    getClassifier(artifact));</span>
+<span class="nc" id="L70">            return Joiner.on(':').skipNulls().join(artifact.getGroupId(),</span>
+<span class="nc" id="L71">                    artifact.getArtifactId(),</span>
+<span class="nc" id="L72">                    artifact.getVersion(),</span>
+<span class="nc" id="L73">                    getType(artifact),</span>
+<span class="nc" id="L74">                    getClassifier(artifact));</span>
         }
 
         private String getType(final Artifact artifact) {
-<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (isJarArtifact(artifact)) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (isJarArtifact(artifact)) {</span>
                 // when the classifier is null but the type is jar, return null
                 // so that in the Joiner expression both the type and classifier
                 // are null and none is printed.
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                return nullToEmpty(artifact.getClassifier()).isEmpty() ? null : &quot;jar&quot;;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                return nullToEmpty(artifact.getClassifier()).isEmpty() ? null : &quot;jar&quot;;</span>
             }
 
-<span class="nc" id="L89">            return artifact.getType();</span>
+<span class="nc" id="L85">            return artifact.getType();</span>
         }
 
         private String getClassifier(final Artifact artifact) {
-<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (nullToEmpty(artifact.getClassifier()).isEmpty()) {</span>
-<span class="nc" id="L94">                return null;</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">            } else if (isTestArtifact(artifact)) {</span>
-<span class="nc" id="L96">                return &quot;tests&quot;;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (nullToEmpty(artifact.getClassifier()).isEmpty()) {</span>
+<span class="nc" id="L90">                return null;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            } else if (isTestArtifact(artifact)) {</span>
+<span class="nc" id="L92">                return &quot;tests&quot;;</span>
             }
 
-<span class="nc" id="L99">            return artifact.getClassifier();</span>
+<span class="nc" id="L95">            return artifact.getClassifier();</span>
         }
 
         @Override
         public boolean hasArtifact() {
-<span class="nc" id="L104">            return true;</span>
+<span class="nc" id="L100">            return true;</span>
         }
 
         @Override
         @SuppressFBWarnings(&quot;EI_EXPOSE_REP&quot;)
         public Artifact getArtifact() {
-<span class="nc" id="L110">            return artifact;</span>
+<span class="nc" id="L106">            return artifact;</span>
         }
 
         @Override
         public int hashCode() {
-<span class="nc" id="L115">            return Objects.hash(artifact);</span>
+<span class="nc" id="L111">            return Objects.hash(artifact);</span>
         }
 
         @Override
         public boolean equals(Object o) {
-<span class="nc bnc" id="L120" title="All 4 branches missed.">            if (o == null || o.getClass() != this.getClass()) {</span>
-<span class="nc" id="L121">                return false;</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">            if (o == null || o.getClass() != this.getClass()) {</span>
+<span class="nc" id="L117">                return false;</span>
             }
 
-<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (o == this) {</span>
-<span class="nc" id="L125">                return true;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L121">                return true;</span>
             }
 
-<span class="nc" id="L128">            ClasspathArtifact that = (ClasspathArtifact) o;</span>
+<span class="nc" id="L124">            ClasspathArtifact that = (ClasspathArtifact) o;</span>
 
-<span class="nc" id="L130">            return Objects.equals(this.artifact, that.artifact);</span>
+<span class="nc" id="L126">            return Objects.equals(this.artifact, that.artifact);</span>
         }
     }
 
@@ -135,93 +131,49 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArt
 
         private final File localFolder;
 
-<span class="nc" id="L138">        public ClasspathLocalFolder(final File localFolder) {</span>
-<span class="nc" id="L139">            this.localFolder = checkNotNull(localFolder, &quot;localFolder is null&quot;);</span>
-<span class="nc" id="L140">            checkState(localFolder.isDirectory(), &quot;localFolder must be a directory&quot;);</span>
-<span class="nc" id="L141">        }</span>
+<span class="nc" id="L134">        public ClasspathLocalFolder(final File localFolder) {</span>
+<span class="nc" id="L135">            this.localFolder = checkNotNull(localFolder, &quot;localFolder is null&quot;);</span>
+<span class="nc" id="L136">            checkState(localFolder.isDirectory(), &quot;localFolder must be a directory&quot;);</span>
+<span class="nc" id="L137">        }</span>
 
         @Override
         public String getName() {
-<span class="nc" id="L145">            return localFolder.getAbsolutePath();</span>
+<span class="nc" id="L141">            return localFolder.getAbsolutePath();</span>
         }
 
         @Override
         public boolean isLocalFolder() {
-<span class="nc" id="L150">            return true;</span>
+<span class="nc" id="L146">            return true;</span>
         }
 
         @Override
         public File getFile() {
-<span class="nc" id="L155">            return localFolder;</span>
+<span class="nc" id="L151">            return localFolder;</span>
         }
 
         @Override
         public int hashCode() {
-<span class="nc" id="L160">            return Objects.hashCode(localFolder);</span>
+<span class="nc" id="L156">            return Objects.hashCode(localFolder);</span>
         }
 
         @Override
         public boolean equals(Object o) {
-<span class="nc bnc" id="L165" title="All 4 branches missed.">            if (o == null || o.getClass() != this.getClass()) {</span>
-<span class="nc" id="L166">                return false;</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">            if (o == null || o.getClass() != this.getClass()) {</span>
+<span class="nc" id="L162">                return false;</span>
             }
 
-<span class="nc bnc" id="L169" title="All 2 branches missed.">            if (o == this) {</span>
-<span class="nc" id="L170">                return true;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L166">                return true;</span>
             }
 
-<span class="nc" id="L173">            ClasspathLocalFolder that = (ClasspathLocalFolder) o;</span>
+<span class="nc" id="L169">            ClasspathLocalFolder that = (ClasspathLocalFolder) o;</span>
 
-<span class="nc" id="L175">            return Objects.equals(this.localFolder, that.localFolder);</span>
-        }
-    }
-
-    public static class ClasspathBootClasspathElement extends ClasspathElement {
-
-        private final File bootClasspathElement;
-
-<span class="nc" id="L183">        public ClasspathBootClasspathElement(final File bootClasspathElement) {</span>
-<span class="nc" id="L184">            this.bootClasspathElement = checkNotNull(bootClasspathElement, &quot;bootClasspathElement is null&quot;);</span>
-<span class="nc" id="L185">        }</span>
-
-        @Override
-        public boolean isBootClasspathElement() {
-<span class="nc" id="L189">            return true;</span>
-        }
-
-        @Override
-        public String getName() {
-<span class="nc" id="L194">            return bootClasspathElement.getAbsolutePath();</span>
-        }
-
-        @Override
-        public File getFile() {
-<span class="nc" id="L199">            return bootClasspathElement;</span>
-        }
-
-        @Override
-        public int hashCode() {
-<span class="nc" id="L204">            return Objects.hashCode(bootClasspathElement);</span>
-        }
-
-        @Override
-        public boolean equals(Object o) {
-<span class="nc bnc" id="L209" title="All 4 branches missed.">            if (o == null || o.getClass() != this.getClass()) {</span>
-<span class="nc" id="L210">                return false;</span>
-            }
-
-<span class="nc bnc" id="L213" title="All 2 branches missed.">            if (o == this) {</span>
-<span class="nc" id="L214">                return true;</span>
-            }
-
-<span class="nc" id="L217">            ClasspathBootClasspathElement that = (ClasspathBootClasspathElement) o;</span>
-
-<span class="nc" id="L219">            return Objects.equals(this.bootClasspathElement, that.bootClasspathElement);</span>
+<span class="nc" id="L171">            return Objects.equals(this.localFolder, that.localFolder);</span>
         }
     }
 
     public static Function&lt;ClasspathElement, String&gt; getNameFunction() {
-<span class="nc" id="L224">        return ClasspathElement::getName;</span>
+<span class="nc" id="L176">        return ClasspathElement::getName;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
