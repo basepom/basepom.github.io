@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.basepom.mojo.duplicatefinder.artifact"},{"l":"org.basepom.mojo.duplicatefinder.classpath"}];updateSearchResults();

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClasspathCacheElement.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">duplicate-finder-maven-plugin Maven Mojo</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.duplicatefinder.classpath</a> &gt; <span class="el_source">ClasspathCacheElement.java</span></div><h1>ClasspathCacheElement.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.basepom.mojo.duplicatefinder.classpath;
+
+import java.io.File;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+
+class ClasspathCacheElement {
+
+    private final File element;
+    private final ImmutableSet&lt;String&gt; classes;
+    private final ImmutableSet&lt;String&gt; resources;
+
+    public static ClasspathCacheElement.Builder builder(final File element) {
+<span class="nc" id="L31">        return new Builder(element);</span>
+    }
+
+<span class="nc" id="L34">    private ClasspathCacheElement(final File element, final ImmutableSet&lt;String&gt; classes, final ImmutableSet&lt;String&gt; resources) {</span>
+<span class="nc" id="L35">        this.element = element;</span>
+<span class="nc" id="L36">        this.classes = classes;</span>
+<span class="nc" id="L37">        this.resources = resources;</span>
+<span class="nc" id="L38">    }</span>
+
+    void putClasses(final Multimap&lt;String, File&gt; classMap, final Predicate&lt;String&gt; excludePredicate) {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        for (final String className : Collections2.filter(classes, Predicates.not(excludePredicate))) {</span>
+<span class="nc" id="L42">            classMap.put(className, element);</span>
+<span class="nc" id="L43">        }</span>
+<span class="nc" id="L44">    }</span>
+
+    void putResources(final Multimap&lt;String, File&gt; resourceMap, final Predicate&lt;String&gt; excludePredicate) {
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (final String resource : Collections2.filter(resources, Predicates.not(excludePredicate))) {</span>
+<span class="nc" id="L48">            resourceMap.put(resource, element);</span>
+<span class="nc" id="L49">        }</span>
+<span class="nc" id="L50">    }</span>
+
+    static class Builder {
+
+        private final File element;
+<span class="nc" id="L55">        private final ImmutableSet.Builder&lt;String&gt; classBuilder = ImmutableSet.builder();</span>
+<span class="nc" id="L56">        private final ImmutableSet.Builder&lt;String&gt; resourcesBuilder = ImmutableSet.builder();</span>
+
+<span class="nc" id="L58">        private Builder(final File element) {</span>
+<span class="nc" id="L59">            this.element = element;</span>
+<span class="nc" id="L60">        }</span>
+
+        void addClass(final String className) {
+<span class="nc" id="L63">            classBuilder.add(className);</span>
+<span class="nc" id="L64">        }</span>
+
+        void addResource(final String resource) {
+<span class="nc" id="L67">            resourcesBuilder.add(resource);</span>
+<span class="nc" id="L68">        }</span>
+
+        ClasspathCacheElement build() {
+<span class="nc" id="L71">            return new ClasspathCacheElement(element, classBuilder.build(), resourcesBuilder.build());</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
