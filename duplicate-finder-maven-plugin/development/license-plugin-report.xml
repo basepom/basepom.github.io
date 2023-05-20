@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1684618354237">
+<licensePluginReport goal="CHECK" timestamp="1684620691658">
     <module artifactId="duplicate-finder-maven-plugin" groupId="org.basepom.maven" version="2.0.0-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
@@ -231,6 +231,7 @@
         <file path="src/main/java/org/basepom/mojo/duplicatefinder/classpath/MatchArtifactPredicate.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/mojo/duplicatefinder/classpath/MatchPatternPredicate.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/mojo/duplicatefinder/classpath/PackageNameHolder.java" result="PRESENT"/>
+        <file path="src/site/site.xml" result="PRESENT"/>
         <file path="src/test/groovy/org/basepom/mojo/duplicatefinder/ITools.groovy" result="PRESENT"/>
         <file path="src/test/java/org/basepom/mojo/duplicatefinder/artifact/TestArtifactFileResolver.java" result="PRESENT"/>
         <file path="src/test/java/org/basepom/mojo/duplicatefinder/artifact/TestMavenCoordinates.java" result="PRESENT"/>
