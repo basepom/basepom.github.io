@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DuplicateFinderMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">duplicate-finder-maven-plugin Maven Mojo</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.duplicatefinder</a> &gt; <span class="el_source">DuplicateFinderMojo.java</span></div><h1>DuplicateFinderMojo.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.basepom.mojo.duplicatefinder;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import javax.xml.stream.XMLStreamException;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closer;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.basepom.mojo.duplicatefinder.ResultCollector.ConflictResult;
+import org.basepom.mojo.duplicatefinder.artifact.ArtifactFileResolver;
+import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
+import org.basepom.mojo.duplicatefinder.classpath.ClasspathDescriptor;
+import org.codehaus.stax2.XMLOutputFactory2;
+import org.codehaus.staxmate.SMOutputFactory;
+import org.codehaus.staxmate.out.SMOutputDocument;
+import org.codehaus.staxmate.out.SMOutputElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.lang.String.format;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
+import static org.apache.maven.artifact.Artifact.SCOPE_PROVIDED;
+import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
+import static org.apache.maven.artifact.Artifact.SCOPE_SYSTEM;
+import static org.basepom.mojo.duplicatefinder.ConflictState.CONFLICT_CONTENT_DIFFERENT;
+import static org.basepom.mojo.duplicatefinder.ConflictState.CONFLICT_CONTENT_EQUAL;
+import static org.basepom.mojo.duplicatefinder.ConflictType.CLASS;
+import static org.basepom.mojo.duplicatefinder.ConflictType.RESOURCE;
+import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getOutputDirectory;
+import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOutputDirectory;
+
+/**
+ * Finds duplicate classes/resources on the classpath.
+ */
+@Mojo(name = &quot;check&quot;, requiresProject = true, threadSafe = true, defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.TEST)
+<span class="nc" id="L87">public final class DuplicateFinderMojo extends AbstractMojo {</span>
+
+<span class="nc" id="L89">    private static final Logger LOG = LoggerFactory.getLogger(DuplicateFinderMojo.class);</span>
+
+    private static final int SAVE_FILE_VERSION = 1;
+
+<span class="nc" id="L93">    private static final HashFunction SHA_256 = Hashing.sha256();</span>
+
+<span class="nc" id="L95">    private static final Set&lt;String&gt; COMPILE_SCOPE = ImmutableSet.of(SCOPE_COMPILE, SCOPE_PROVIDED, SCOPE_SYSTEM);</span>
+<span class="nc" id="L96">    private static final Set&lt;String&gt; RUNTIME_SCOPE = ImmutableSet.of(SCOPE_COMPILE, SCOPE_RUNTIME);</span>
+<span class="nc" id="L97">    private static final Set&lt;String&gt; TEST_SCOPE = ImmutableSet.of(); // Empty == all scopes</span>
+
+    /**
+     * The maven project (effective pom).
+     */
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true)
+    public MavenProject project;
+
+    /**
+     * Report files that have the same sha256 has value.
+     *
+     * @since 1.0.6
+     */
+<span class="nc" id="L110">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.printEqualFiles&quot;)</span>
+    public boolean printEqualFiles = false;
+
+    /**
+     * Fail the build if files with the same name but different content are detected.
+     *
+     * @since 1.0.3
+     */
+<span class="nc" id="L118">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.failBuildInCaseOfDifferentContentConflict&quot;)</span>
+    public boolean failBuildInCaseOfDifferentContentConflict = false;
+
+    /**
+     * Fail the build if files with the same name and the same content are detected.
+     *
+     * @since 1.0.3
+     */
+<span class="nc" id="L126">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.failBuildInCaseOfEqualContentConflict&quot;)</span>
+    public boolean failBuildInCaseOfEqualContentConflict = false;
+
+    /**
+     * Fail the build if any files with the same name are found.
+     */
+<span class="nc" id="L132">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.failBuildInCaseOfConflict&quot;)</span>
+    public boolean failBuildInCaseOfConflict = false;
+
+    /**
+     * Use the default resource ignore list.
+     */
+<span class="nc" id="L138">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.useDefaultResourceIgnoreList&quot;)</span>
+    public boolean useDefaultResourceIgnoreList = true;
+
+    /**
+     * Use the default class ignore list.
+     *
+     * @since 1.2.1
+     */
+<span class="nc" id="L146">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.useDefaultClassIgnoreList&quot;)</span>
+    public boolean useDefaultClassIgnoreList = true;
+
+    /**
+     * Ignored resources, which are not checked for multiple occurences.
+     */
+<span class="nc" id="L152">    @Parameter</span>
+    public String[] ignoredResourcePatterns = new String[0];
+
+    /**
+     * Ignored classes, which are not checked for multiple occurences.
+     *
+     * @since 1.2.1
+     */
+<span class="nc" id="L160">    @Parameter</span>
+    public String[] ignoredClassPatterns = new String[0];
+
+    /**
+     * Artifacts with expected and resolved versions that are checked.
+     */
+<span class="nc" id="L166">    @Parameter(alias = &quot;exceptions&quot;)</span>
+    public ConflictingDependency[] conflictingDependencies = new ConflictingDependency[0];
+
+    /**
+     * Dependencies that should not be checked at all.
+     */
+<span class="nc" id="L172">    @Parameter(alias = &quot;ignoredDependencies&quot;)</span>
+    public MavenCoordinates[] ignoredDependencies = new MavenCoordinates[0];
+
+    /**
+     * Check resources and classes on the compile class path.
+     */
+<span class="nc" id="L178">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.checkCompileClasspath&quot;)</span>
+    public boolean checkCompileClasspath = true;
+
+    /**
+     * Check resources and classes on the runtime class path.
+     */
+<span class="nc" id="L184">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.checkRuntimeClasspath&quot;)</span>
+    public boolean checkRuntimeClasspath = true;
+
+    /**
+     * Check resources and classes on the test class path.
+     */
+<span class="nc" id="L190">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.checkTestClasspath&quot;)</span>
+    public boolean checkTestClasspath = true;
+
+    /**
+     * Skips the plugin execution.
+     */
+<span class="nc" id="L196">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.skip&quot;)</span>
+    public boolean skip = false;
+
+    /**
+     * Quiets the plugin (report only errors).
+     *
+     * @since 1.1.0
+     * @deprecated
+     */
+<span class="nc" id="L205">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.quiet&quot;)</span>
+    @Deprecated
+    public boolean quiet = false;
+
+    /**
+     * Whether existing local directories with classes or existing artifacts are preferred.
+     *
+     * @since 1.1.0
+     */
+<span class="nc" id="L214">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.preferLocal&quot;)</span>
+    public boolean preferLocal = true;
+
+    /**
+     * Output file for the result of the plugin.
+     *
+     * @since 1.1.0
+     */
+    @Parameter(defaultValue = &quot;${project.build.directory}/duplicate-finder-result.xml&quot;, property = &quot;duplicate-finder.resultFile&quot;)
+    public File resultFile;
+
+    /**
+     * Write result to output file.
+     *
+     * @since 1.1.0
+     */
+<span class="nc" id="L230">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;duplicate-finder.useResultFile&quot;)</span>
+    public boolean useResultFile = true;
+
+    /**
+     * Minimum occurences on the class path to be listed in the result file.
+     *
+     * @since 1.1.0
+     */
+<span class="nc" id="L238">    @Parameter(defaultValue = &quot;2&quot;, property = &quot;duplicate-finder.resultFileMinClasspathCount&quot;)</span>
+    public int resultFileMinClasspathCount = 2;
+
+    /**
+     * Include the boot class path in duplicate detection. This will find duplicates with the JDK
+     * internal classes (e.g. the classes in rt.jar).
+     *
+     * @since 1.1.1
+     * @deprecated
+     */
+<span class="nc" id="L248">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.includeBootClasspath&quot;)</span>
+    @Deprecated
+    public boolean includeBootClasspath = false;
+
+    /**
+     * System property that contains the boot class path.
+     *
+     * @since 1.1.1
+     * @deprecated
+     */
+<span class="nc" id="L258">    @Parameter(property = &quot;duplicate-finder.bootClasspathProperty&quot;)</span>
+    @Deprecated
+    public String bootClasspathProperty = null;
+
+    /**
+     * Include POM projects in validation.
+     *
+     * @since 1.2.0
+     */
+<span class="nc" id="L267">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.includePomProjects&quot;)</span>
+    public boolean includePomProjects = false;
+
+<span class="nc" id="L270">    private final EnumSet&lt;ConflictState&gt; printState = EnumSet.of(CONFLICT_CONTENT_DIFFERENT);</span>
+<span class="nc" id="L271">    private final EnumSet&lt;ConflictState&gt; failState = EnumSet.noneOf(ConflictState.class);</span>
+
+    // called by maven
+    public void setIgnoredDependencies(final Dependency[] dependencies) throws InvalidVersionSpecificationException {
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        checkArgument(dependencies != null);</span>
+
+<span class="nc" id="L277">        this.ignoredDependencies = new MavenCoordinates[dependencies.length];</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (int idx = 0; idx &lt; dependencies.length; idx++) {</span>
+<span class="nc" id="L279">            this.ignoredDependencies[idx] = new MavenCoordinates(dependencies[idx]);</span>
+        }
+<span class="nc" id="L281">    }</span>
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (skip) {</span>
+<span class="nc" id="L286">            LOG.info(&quot;Skipping duplicate-finder execution!&quot;);</span>
+<span class="nc bnc" id="L287" title="All 4 branches missed.">        } else if (!includePomProjects &amp;&amp; &quot;pom&quot;.equals(project.getArtifact().getType())) {</span>
+<span class="nc" id="L288">            LOG.info(&quot;Ignoring POM project!&quot;);</span>
+        } else {
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            if (printEqualFiles) {</span>
+<span class="nc" id="L291">                printState.add(CONFLICT_CONTENT_EQUAL);</span>
+            }
+
+<span class="nc bnc" id="L294" title="All 4 branches missed.">            if (failBuildInCaseOfConflict || failBuildInCaseOfEqualContentConflict) {</span>
+<span class="nc" id="L295">                printState.add(CONFLICT_CONTENT_EQUAL);</span>
+
+<span class="nc" id="L297">                failState.add(CONFLICT_CONTENT_EQUAL);</span>
+<span class="nc" id="L298">                failState.add(CONFLICT_CONTENT_DIFFERENT);</span>
+            }
+
+<span class="nc bnc" id="L301" title="All 2 branches missed.">            if (failBuildInCaseOfDifferentContentConflict) {</span>
+<span class="nc" id="L302">                failState.add(CONFLICT_CONTENT_DIFFERENT);</span>
+            }
+
+<span class="nc bnc" id="L305" title="All 2 branches missed.">            if (includeBootClasspath) {</span>
+<span class="nc" id="L306">                LOG.warn(&quot;&lt;includeBootClasspath&gt; is no longer supported and will be ignored!&quot;);</span>
+            }
+<span class="nc bnc" id="L308" title="All 2 branches missed.">            if (bootClasspathProperty != null) {</span>
+<span class="nc" id="L309">                LOG.warn(&quot;&lt;bootClasspathProperty&gt; is no longer supported and will be ignored!&quot;);</span>
+            }
+
+<span class="nc bnc" id="L312" title="All 2 branches missed.">            if (quiet) {</span>
+<span class="nc" id="L313">                LOG.warn(&quot;&lt;quiet&gt; is no longer supported and will be ignored!&quot;);</span>
+            }
+
+            try {
+                // Prep conflicting dependencies
+<span class="nc" id="L318">                MavenCoordinates projectCoordinates = new MavenCoordinates(project.getArtifact());</span>
+
+<span class="nc bnc" id="L320" title="All 2 branches missed.">                for (ConflictingDependency conflictingDependency : conflictingDependencies) {</span>
+<span class="nc" id="L321">                    conflictingDependency.addProjectMavenCoordinates(projectCoordinates);</span>
+                }
+
+<span class="nc" id="L324">                final ArtifactFileResolver artifactFileResolver = new ArtifactFileResolver(project, preferLocal);</span>
+<span class="nc" id="L325">                final ImmutableMap.Builder&lt;String, Entry&lt;ResultCollector, ClasspathDescriptor&gt;&gt; classpathResultBuilder = ImmutableMap.builder();</span>
+
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                if (checkCompileClasspath) {</span>
+<span class="nc" id="L328">                    LOG.info(&quot;Checking compile classpath&quot;);</span>
+<span class="nc" id="L329">                    final ResultCollector resultCollector = new ResultCollector(printState, failState);</span>
+<span class="nc" id="L330">                    final ClasspathDescriptor classpathDescriptor = checkClasspath(resultCollector, artifactFileResolver, COMPILE_SCOPE,</span>
+<span class="nc" id="L331">                            getOutputDirectory(project));</span>
+<span class="nc" id="L332">                    classpathResultBuilder.put(&quot;compile&quot;, new SimpleImmutableEntry&lt;&gt;(resultCollector, classpathDescriptor));</span>
+                }
+
+<span class="nc bnc" id="L335" title="All 2 branches missed.">                if (checkRuntimeClasspath) {</span>
+<span class="nc" id="L336">                    LOG.info(&quot;Checking runtime classpath&quot;);</span>
+<span class="nc" id="L337">                    final ResultCollector resultCollector = new ResultCollector(printState, failState);</span>
+<span class="nc" id="L338">                    final ClasspathDescriptor classpathDescriptor = checkClasspath(resultCollector, artifactFileResolver, RUNTIME_SCOPE,</span>
+<span class="nc" id="L339">                            getOutputDirectory(project));</span>
+<span class="nc" id="L340">                    classpathResultBuilder.put(&quot;runtime&quot;, new SimpleImmutableEntry&lt;&gt;(resultCollector, classpathDescriptor));</span>
+                }
+
+<span class="nc bnc" id="L343" title="All 2 branches missed.">                if (checkTestClasspath) {</span>
+<span class="nc" id="L344">                    LOG.info(&quot;Checking test classpath&quot;);</span>
+<span class="nc" id="L345">                    final ResultCollector resultCollector = new ResultCollector(printState, failState);</span>
+<span class="nc" id="L346">                    final ClasspathDescriptor classpathDescriptor = checkClasspath(resultCollector,</span>
+                            artifactFileResolver,
+                            TEST_SCOPE,
+<span class="nc" id="L349">                            getOutputDirectory(project),</span>
+<span class="nc" id="L350">                            getTestOutputDirectory(project));</span>
+<span class="nc" id="L351">                    classpathResultBuilder.put(&quot;test&quot;, new SimpleImmutableEntry&lt;&gt;(resultCollector, classpathDescriptor));</span>
+                }
+
+<span class="nc" id="L354">                final ImmutableMap&lt;String, Entry&lt;ResultCollector, ClasspathDescriptor&gt;&gt; classpathResults = classpathResultBuilder.build();</span>
+
+<span class="nc bnc" id="L356" title="All 2 branches missed.">                if (useResultFile) {</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">                    checkState(resultFile != null, &quot;resultFile must be set if useResultFile is true&quot;);</span>
+<span class="nc" id="L358">                    writeResultFile(resultFile, classpathResults);</span>
+                }
+
+<span class="nc" id="L361">                boolean failed = false;</span>
+
+<span class="nc bnc" id="L363" title="All 2 branches missed.">                for (Map.Entry&lt;String, Entry&lt;ResultCollector, ClasspathDescriptor&gt;&gt; classpathEntry : classpathResults.entrySet()) {</span>
+<span class="nc" id="L364">                    String classpathName = classpathEntry.getKey();</span>
+<span class="nc" id="L365">                    ResultCollector resultCollector = classpathEntry.getValue().getKey();</span>
+
+<span class="nc bnc" id="L367" title="All 2 branches missed.">                    for (final ConflictState state : printState) {</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">                        for (final ConflictType type : ConflictType.values()) {</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">                            if (resultCollector.hasConflictsFor(type, state)) {</span>
+<span class="nc" id="L370">                                final Map&lt;String, Collection&lt;ConflictResult&gt;&gt; results = resultCollector.getResults(type, state);</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">                                for (final Map.Entry&lt;String, Collection&lt;ConflictResult&gt;&gt; entry : results.entrySet()) {</span>
+<span class="nc" id="L372">                                    final String artifactNames = entry.getKey();</span>
+<span class="nc" id="L373">                                    final Collection&lt;ConflictResult&gt; conflictResults = entry.getValue();</span>
+
+<span class="nc" id="L375">                                    LOG.warn(format(&quot;Found duplicate %s %s in [%s]:&quot;, state.getHint(), type.getType(), artifactNames));</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">                                    for (final ConflictResult conflictResult : conflictResults) {</span>
+<span class="nc" id="L377">                                        LOG.warn(format(&quot;  %s&quot;, conflictResult.getName()));</span>
+<span class="nc" id="L378">                                    }</span>
+<span class="nc" id="L379">                                }</span>
+                            }
+                        }
+<span class="nc" id="L382">                    }</span>
+
+<span class="nc" id="L384">                    failed |= resultCollector.isFailed();</span>
+
+<span class="nc bnc" id="L386" title="All 2 branches missed.">                    if (resultCollector.isFailed()) {</span>
+<span class="nc" id="L387">                        LOG.warn(format(&quot;Found duplicate classes/resources in %s classpath.&quot;, classpathName));</span>
+                    }
+<span class="nc" id="L389">                }</span>
+
+<span class="nc bnc" id="L391" title="All 2 branches missed.">                if (failed) {</span>
+<span class="nc" id="L392">                    throw new MojoExecutionException(&quot;Found duplicate classes/resources!&quot;);</span>
+                }
+<span class="nc" id="L394">            } catch (final DependencyResolutionRequiredException e) {</span>
+<span class="nc" id="L395">                throw new MojoFailureException(&quot;Could not resolve dependencies&quot;, e);</span>
+<span class="nc" id="L396">            } catch (final InvalidVersionSpecificationException e) {</span>
+<span class="nc" id="L397">                throw new MojoFailureException(&quot;Invalid version specified&quot;, e);</span>
+<span class="nc" id="L398">            } catch (final OverConstrainedVersionException e) {</span>
+<span class="nc" id="L399">                throw new MojoFailureException(&quot;Version too constrained&quot;, e);</span>
+<span class="nc" id="L400">            } catch (final IOException e) {</span>
+<span class="nc" id="L401">                throw new MojoExecutionException(&quot;While loading artifacts&quot;, e);</span>
+<span class="nc" id="L402">            }</span>
+        }
+<span class="nc" id="L404">    }</span>
+
+    private ImmutableSet&lt;String&gt; getIgnoredResourcePatterns() {
+<span class="nc" id="L407">        ImmutableSet.Builder&lt;String&gt; builder = ImmutableSet.builder();</span>
+<span class="nc" id="L408">        builder.add(ignoredResourcePatterns);</span>
+
+<span class="nc" id="L410">        return builder.build();</span>
+    }
+
+    private ImmutableSet&lt;String&gt; getIgnoredClassPatterns() {
+<span class="nc" id="L414">        ImmutableSet.Builder&lt;String&gt; builder = ImmutableSet.builder();</span>
+<span class="nc" id="L415">        builder.add(ignoredClassPatterns);</span>
+
+<span class="nc" id="L417">        return builder.build();</span>
+    }
+
+    /**
+     * Checks the maven classpath for a given set of scopes whether it contains duplicates. In addition to the
+     * artifacts on the classpath, one or more additional project folders are added.
+     */
+    private ClasspathDescriptor checkClasspath(final ResultCollector resultCollector,
+            final ArtifactFileResolver artifactFileResolver,
+            final Set&lt;String&gt; scopes,
+            final File... projectFolders)
+            throws MojoExecutionException, InvalidVersionSpecificationException, OverConstrainedVersionException, DependencyResolutionRequiredException {
+
+        // Map of files to artifacts. Depending on the type of build, referenced projects in a multi-module build
+        // may be local folders in the project instead of repo jar references.
+<span class="nc" id="L432">        final Multimap&lt;File, Artifact&gt; fileToArtifactMap = artifactFileResolver.resolveArtifactsForScopes(scopes);</span>
+
+<span class="nc" id="L434">        final ClasspathDescriptor classpathDescriptor = ClasspathDescriptor.createClasspathDescriptor(project,</span>
+                fileToArtifactMap,
+<span class="nc" id="L436">                getIgnoredResourcePatterns(),</span>
+<span class="nc" id="L437">                getIgnoredClassPatterns(),</span>
+<span class="nc" id="L438">                Arrays.asList(ignoredDependencies),</span>
+                useDefaultResourceIgnoreList,
+                useDefaultClassIgnoreList,
+                projectFolders);
+
+        // Now a scope specific classpath descriptor (scope relevant artifacts and project folders) and the global artifact resolver
+        // are primed. Run conflict resolution for classes and resources.
+<span class="nc" id="L445">        checkForDuplicates(CLASS, resultCollector, classpathDescriptor, artifactFileResolver);</span>
+<span class="nc" id="L446">        checkForDuplicates(RESOURCE, resultCollector, classpathDescriptor, artifactFileResolver);</span>
+<span class="nc" id="L447">        return classpathDescriptor;</span>
+    }
+
+    private void checkForDuplicates(final ConflictType type, final ResultCollector resultCollector, final ClasspathDescriptor classpathDescriptor,
+            final ArtifactFileResolver artifactFileResolver)
+            throws OverConstrainedVersionException {
+        // only look at entries with a size &gt; 1.
+<span class="nc" id="L454">        final Map&lt;String, Collection&lt;File&gt;&gt; filteredMap = ImmutableMap.copyOf(Maps.filterEntries(classpathDescriptor.getClasspathElementLocations(type),</span>
+                entry -&gt; {
+<span class="nc" id="L456">                    checkNotNull(entry, &quot;entry is null&quot;);</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">                    checkState(entry.getValue() != null, &quot;Entry '%s' is invalid&quot;, entry);</span>
+
+<span class="nc bnc" id="L459" title="All 2 branches missed.">                    return entry.getValue().size() &gt; 1;</span>
+                }));
+
+<span class="nc bnc" id="L462" title="All 2 branches missed.">        for (final Map.Entry&lt;String, Collection&lt;File&gt;&gt; entry : filteredMap.entrySet()) {</span>
+<span class="nc" id="L463">            final String name = entry.getKey();</span>
+<span class="nc" id="L464">            final Collection&lt;File&gt; elements = entry.getValue();</span>
+
+            // Map which contains a printable name for the conflicting entry (which is either the printable name for an artifact or
+            // a folder name for a project folder) as keys and a classpath element as value.
+<span class="nc" id="L468">            final SortedSet&lt;ClasspathElement&gt; conflictingClasspathElements = artifactFileResolver.getClasspathElementsForElements(elements);</span>
+
+<span class="nc" id="L470">            ImmutableSet.Builder&lt;Artifact&gt; artifactBuilder = ImmutableSet.builder();</span>
+
+<span class="nc bnc" id="L472" title="All 2 branches missed.">            for (ClasspathElement conflictingClasspathElement : conflictingClasspathElements) {</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">                if (conflictingClasspathElement.hasArtifact()) {</span>
+<span class="nc" id="L474">                    artifactBuilder.add(conflictingClasspathElement.getArtifact());</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">                } else if (conflictingClasspathElement.isLocalFolder()) {</span>
+<span class="nc" id="L476">                    artifactBuilder.add(project.getArtifact());</span>
+                }
+<span class="nc" id="L478">            }</span>
+
+<span class="nc" id="L480">            final boolean excepted = isExcepted(type, name, artifactBuilder.build());</span>
+<span class="nc" id="L481">            final ConflictState conflictState = DuplicateFinderMojo.determineConflictState(type, name, elements);</span>
+
+<span class="nc" id="L483">            resultCollector.addConflict(type, name, conflictingClasspathElements, excepted, conflictState);</span>
+<span class="nc" id="L484">        }</span>
+<span class="nc" id="L485">    }</span>
+
+    /**
+     * Detects class/resource differences via SHA256 hash comparison.
+     */
+    private static ConflictState determineConflictState(final ConflictType type, final String name, final Iterable&lt;File&gt; elements) {
+<span class="nc" id="L491">        File firstFile = null;</span>
+<span class="nc" id="L492">        String firstSHA256 = null;</span>
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        final String resourcePath = type == ConflictType.CLASS ? name.replace('.', '/') + &quot;.class&quot; : name;</span>
+
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        for (final File element : elements) {</span>
+            try {
+<span class="nc" id="L498">                final String newSHA256 = getSHA256HexOfElement(element, resourcePath);</span>
+
+<span class="nc bnc" id="L500" title="All 2 branches missed.">                if (firstSHA256 == null) {</span>
+                    // save sha256 hash from the first element
+<span class="nc" id="L502">                    firstSHA256 = newSHA256;</span>
+<span class="nc" id="L503">                    firstFile = element;</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">                } else if (!newSHA256.equals(firstSHA256)) {</span>
+<span class="nc" id="L505">                    LOG.debug(format(&quot;Found different SHA256 hashes for elements %s in file %s and %s&quot;, resourcePath, firstFile, element));</span>
+<span class="nc" id="L506">                    return ConflictState.CONFLICT_CONTENT_DIFFERENT;</span>
+                }
+<span class="nc" id="L508">            } catch (final IOException ex) {</span>
+<span class="nc" id="L509">                LOG.warn(format(&quot;Could not read content from file %s!&quot;, element), ex);</span>
+<span class="nc" id="L510">            }</span>
+<span class="nc" id="L511">        }</span>
+
+<span class="nc" id="L513">        return ConflictState.CONFLICT_CONTENT_EQUAL;</span>
+    }
+
+    /**
+     * Calculates the SHA256 Hash of a class in a file.
+     *
+     * @param file         the archive contains the class
+     * @param resourcePath the name of the class
+     * @return the MD% Hash as Hex-Value
+     * @throws IOException if any error occurs on reading class in archive
+     */
+    private static String getSHA256HexOfElement(final File file, final String resourcePath) throws IOException {
+
+<span class="nc" id="L526">        try (Closer closer = Closer.create()) {</span>
+            InputStream in;
+
+<span class="nc bnc" id="L529" title="All 2 branches missed.">            if (file.isDirectory()) {</span>
+<span class="nc" id="L530">                final File resourceFile = new File(file, resourcePath);</span>
+<span class="nc" id="L531">                in = closer.register(new BufferedInputStream(new FileInputStream(resourceFile)));</span>
+<span class="nc" id="L532">            } else {</span>
+<span class="nc" id="L533">                final ZipFile zip = new ZipFile(file);</span>
+
+<span class="nc" id="L535">                closer.register(zip::close);</span>
+
+<span class="nc" id="L537">                final ZipEntry zipEntry = zip.getEntry(resourcePath);</span>
+
+<span class="nc bnc" id="L539" title="All 2 branches missed.">                if (zipEntry == null) {</span>
+<span class="nc" id="L540">                    throw new IOException(format(&quot;Could not find %s in archive %s&quot;, resourcePath, file));</span>
+                }
+
+<span class="nc" id="L543">                in = zip.getInputStream(zipEntry);</span>
+            }
+
+<span class="nc" id="L546">            return SHA_256.newHasher().putBytes(ByteStreams.toByteArray(in)).hash().toString();</span>
+        }
+    }
+
+    private boolean isExcepted(final ConflictType type, final String name, final Set&lt;Artifact&gt; artifacts)
+            throws OverConstrainedVersionException {
+<span class="nc" id="L552">        final ImmutableSet.Builder&lt;ConflictingDependency&gt; conflictBuilder = ImmutableSet.builder();</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">        checkState(conflictingDependencies != null, &quot;conflictingDependencies is null&quot;);</span>
+
+        // Find all exception definitions from the configuration that match these artifacts.
+<span class="nc bnc" id="L556" title="All 2 branches missed.">        for (final ConflictingDependency conflictingDependency : conflictingDependencies) {</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">            if (conflictingDependency.isForArtifacts(artifacts)) {</span>
+<span class="nc" id="L558">                conflictBuilder.add(conflictingDependency);</span>
+            }
+        }
+
+        // If any of the possible candidates covers this class or resource, then the conflict is excepted.
+<span class="nc bnc" id="L563" title="All 2 branches missed.">        for (final ConflictingDependency conflictingDependency : conflictBuilder.build()) {</span>
+<span class="nc bnc" id="L564" title="All 4 branches missed.">            if (type == ConflictType.CLASS &amp;&amp; conflictingDependency.containsClass(name)) {</span>
+<span class="nc" id="L565">                return true;</span>
+<span class="nc bnc" id="L566" title="All 4 branches missed.">            } else if (type == ConflictType.RESOURCE &amp;&amp; conflictingDependency.containsResource(name)) {</span>
+<span class="nc" id="L567">                return true;</span>
+            }
+<span class="nc" id="L569">        }</span>
+<span class="nc" id="L570">        return false;</span>
+    }
+
+    private void writeResultFile(File resultFile, ImmutableMap&lt;String, Entry&lt;ResultCollector, ClasspathDescriptor&gt;&gt; results)
+            throws MojoExecutionException, InvalidVersionSpecificationException, OverConstrainedVersionException {
+<span class="nc" id="L575">        File parent = resultFile.getParentFile();</span>
+<span class="nc bnc" id="L576" title="All 2 branches missed.">        if (!parent.exists()) {</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">            if (!parent.mkdirs()) {</span>
+<span class="nc" id="L578">                throw new MojoExecutionException(&quot;Could not create parent folders for &quot; + parent.getAbsolutePath());</span>
+            }
+        }
+<span class="nc bnc" id="L581" title="All 4 branches missed.">        if (!parent.isDirectory() || !parent.canWrite()) {</span>
+<span class="nc" id="L582">            throw new MojoExecutionException(&quot;Can not create result file in &quot; + parent.getAbsolutePath());</span>
+        }
+
+        try {
+<span class="nc" id="L586">            SMOutputFactory factory = new SMOutputFactory(XMLOutputFactory2.newFactory());</span>
+<span class="nc" id="L587">            SMOutputDocument resultDocument = factory.createOutputDocument(resultFile);</span>
+<span class="nc" id="L588">            resultDocument.setIndentation(&quot;\n&quot; + Strings.repeat(&quot; &quot;, 64), 1, 4);</span>
+
+<span class="nc" id="L590">            SMOutputElement rootElement = resultDocument.addElement(&quot;duplicate-finder-result&quot;);</span>
+<span class="nc" id="L591">            XMLWriterUtils.addAttribute(rootElement, &quot;version&quot;, SAVE_FILE_VERSION);</span>
+
+<span class="nc" id="L593">            XMLWriterUtils.addProjectInformation(rootElement, project);</span>
+
+<span class="nc" id="L595">            addConfiguration(rootElement);</span>
+
+<span class="nc" id="L597">            SMOutputElement resultsElement = rootElement.addElement(&quot;results&quot;);</span>
+<span class="nc bnc" id="L598" title="All 2 branches missed.">            for (Map.Entry&lt;String, Entry&lt;ResultCollector, ClasspathDescriptor&gt;&gt; entry : results.entrySet()) {</span>
+<span class="nc" id="L599">                SMOutputElement resultElement = resultsElement.addElement(&quot;result&quot;);</span>
+<span class="nc" id="L600">                XMLWriterUtils.addAttribute(resultElement, &quot;name&quot;, entry.getKey());</span>
+<span class="nc" id="L601">                XMLWriterUtils.addResultCollector(resultElement, entry.getValue().getKey());</span>
+<span class="nc" id="L602">                XMLWriterUtils.addClasspathDescriptor(resultElement, resultFileMinClasspathCount, entry.getValue().getValue());</span>
+<span class="nc" id="L603">            }</span>
+
+<span class="nc" id="L605">            resultDocument.closeRootAndWriter();</span>
+<span class="nc" id="L606">        } catch (XMLStreamException e) {</span>
+<span class="nc" id="L607">            throw new MojoExecutionException(&quot;While writing result file&quot;, e);</span>
+<span class="nc" id="L608">        }</span>
+<span class="nc" id="L609">    }</span>
+
+    private void addConfiguration(SMOutputElement rootElement)
+            throws XMLStreamException {
+<span class="nc" id="L613">        SMOutputElement prefs = XMLWriterUtils.addElement(rootElement, &quot;configuration&quot;, null);</span>
+        // Simple configuration options
+<span class="nc" id="L615">        XMLWriterUtils.addAttribute(prefs, &quot;skip&quot;, skip);</span>
+<span class="nc" id="L616">        XMLWriterUtils.addAttribute(prefs, &quot;checkCompileClasspath&quot;, checkCompileClasspath);</span>
+<span class="nc" id="L617">        XMLWriterUtils.addAttribute(prefs, &quot;checkRuntimeClasspath&quot;, checkRuntimeClasspath);</span>
+<span class="nc" id="L618">        XMLWriterUtils.addAttribute(prefs, &quot;checkTestClasspath&quot;, checkTestClasspath);</span>
+<span class="nc" id="L619">        XMLWriterUtils.addAttribute(prefs, &quot;failBuildInCaseOfDifferentContentConflict&quot;, failBuildInCaseOfDifferentContentConflict);</span>
+<span class="nc" id="L620">        XMLWriterUtils.addAttribute(prefs, &quot;failBuildInCaseOfEqualContentConflict&quot;, failBuildInCaseOfEqualContentConflict);</span>
+<span class="nc" id="L621">        XMLWriterUtils.addAttribute(prefs, &quot;failBuildInCaseOfConflict&quot;, failBuildInCaseOfConflict);</span>
+<span class="nc" id="L622">        XMLWriterUtils.addAttribute(prefs, &quot;printEqualFiles&quot;, printEqualFiles);</span>
+<span class="nc" id="L623">        XMLWriterUtils.addAttribute(prefs, &quot;preferLocal&quot;, preferLocal);</span>
+<span class="nc" id="L624">        XMLWriterUtils.addAttribute(prefs, &quot;includePomProjects&quot;, includePomProjects);</span>
+        // Ignoring Dependencies and resources
+<span class="nc" id="L626">        XMLWriterUtils.addAttribute(prefs, &quot;useDefaultResourceIgnoreList&quot;, useDefaultResourceIgnoreList);</span>
+<span class="nc" id="L627">        XMLWriterUtils.addAttribute(prefs, &quot;useDefaultClassIgnoreList&quot;, useDefaultClassIgnoreList);</span>
+        // Result file options
+<span class="nc" id="L629">        XMLWriterUtils.addAttribute(prefs, &quot;useResultFile&quot;, useResultFile);</span>
+<span class="nc" id="L630">        XMLWriterUtils.addAttribute(prefs, &quot;resultFileMinClasspathCount&quot;, resultFileMinClasspathCount);</span>
+<span class="nc" id="L631">        XMLWriterUtils.addAttribute(prefs, &quot;resultFile&quot;, resultFile.getAbsolutePath());</span>
+
+<span class="nc" id="L633">        SMOutputElement ignoredResourcesElement = prefs.addElement(&quot;ignoredResourcePatterns&quot;);</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">        for (String ignoredResource : getIgnoredResourcePatterns()) {</span>
+<span class="nc" id="L635">            XMLWriterUtils.addElement(ignoredResourcesElement, &quot;ignoredResourcePattern&quot;, ignoredResource);</span>
+<span class="nc" id="L636">        }</span>
+
+<span class="nc" id="L638">        SMOutputElement ignoredClassElement = prefs.addElement(&quot;ignoredClassPatterns&quot;);</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">        for (String ignoredClass : getIgnoredClassPatterns()) {</span>
+<span class="nc" id="L640">            XMLWriterUtils.addElement(ignoredClassElement, &quot;ignoredClassPattern&quot;, ignoredClass);</span>
+<span class="nc" id="L641">        }</span>
+
+<span class="nc" id="L643">        SMOutputElement conflictingDependenciesElement = prefs.addElement(&quot;conflictingDependencies&quot;);</span>
+<span class="nc bnc" id="L644" title="All 2 branches missed.">        for (ConflictingDependency conflictingDependency : conflictingDependencies) {</span>
+<span class="nc" id="L645">            XMLWriterUtils.addConflictingDependency(conflictingDependenciesElement, &quot;conflictingDependency&quot;, conflictingDependency);</span>
+        }
+
+<span class="nc" id="L648">        SMOutputElement ignoredDependenciesElement = prefs.addElement(&quot;ignoredDependencies&quot;);</span>
+<span class="nc bnc" id="L649" title="All 2 branches missed.">        for (MavenCoordinates ignoredDependency : ignoredDependencies) {</span>
+<span class="nc" id="L650">            XMLWriterUtils.addMavenCoordinate(ignoredDependenciesElement, &quot;dependency&quot;, ignoredDependency);</span>
+        }
+<span class="nc" id="L652">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
