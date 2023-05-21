@@ -41,6 +41,17 @@
    <li class="nav-header">Overview</li>
     <li><a href="index.html" title="Introduction"><span class="none"></span>Introduction</a></li>
     <li><a href="plugin-info.html" title="Goals"><span class="none"></span>Goals</a></li>
+    <li><a href="simple_options.html" title="Simple configuration"><span class="none"></span>Simple configuration</a></li>
+    <li><a href="classpath_exceptions.html" title="Classpath Exceptions"><span class="none"></span>Classpath Exceptions</a></li>
+    <li><a href="ignoring_dependencies_and_resources.html" title="Ignoring Dependencies and Resources"><span class="none"></span>Ignoring Dependencies and Resources</a></li>
+    <li><a href="result_file_options.html" title="Result File Options"><span class="none"></span>Result File Options</a></li>
+    <li><a title="Developer Information"><span class="icon-chevron-down"></span>Developer Information</a>
+     <ul class="nav nav-list">
+      <li><a href="development_guidelines.html" title="Development Guidelines"><span class="none"></span>Development Guidelines</a></li>
+      <li><a href="writing_integration_test.html" title="Writing Integration Tests"><span class="none"></span>Writing Integration Tests</a></li>
+      <li><a href="result_file_format.html" title="Result File Format"><span class="none"></span>Result File Format</a></li>
+      <li><a href="default_ignored_elements.html" title="Default ignored elements"><span class="none"></span>Default ignored elements</a></li>
+     </ul></li>
     <li><a href="https://www.apache.org/licenses/LICENSE-2.0" class="externalLink" title="License"><span class="none"></span>License</a></li>
    <li class="nav-header">Project Documentation</li>
     <li><a href="project-info.html" title="Project Information"><span class="icon-chevron-right"></span>Project Information</a></li>
@@ -90,8 +101,8 @@
 <td>0</td>
 <td>0</td>
 <td>100.0%</td>
-<td>434.0&#xa0;s</td>
-<td>7.6&#xa0;s</td></tr></table><section>
+<td>369.1&#xa0;s</td>
+<td>6.5&#xa0;s</td></tr></table><section>
 <h2>Build Details</h2></section>
 <table class="table table-striped">
 <tr class="a">
@@ -102,237 +113,237 @@
 <tr class="b">
 <td>test-resource-conflict-local/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-exclude-currentproject/pom.xml</td>
 <td>success</td>
-<td>9.2&#xa0;s</td>
+<td>7.2&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-issue-9-jars/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-equal-fail/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-equal-fail-equal-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-currentproject-implicit/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-wildcard-exclude/pom.xml</td>
 <td>success</td>
-<td>8.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-default-print-equal/pom.xml</td>
 <td>success</td>
-<td>8.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>setup-it/pom.xml</td>
 <td>success</td>
-<td>13.0&#xa0;s</td>
+<td>12.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-ignore-local-package/pom.xml</td>
 <td>success</td>
-<td>8.1&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-diff-fail-equal-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-pom-project/pom.xml</td>
 <td>success</td>
-<td>6.1&#xa0;s</td>
+<td>5.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-fail/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-default/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-class-exclude/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-equal-fail-equal-content/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-equal-fail-diff-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-classpath-mincount-default/pom.xml</td>
 <td>success</td>
-<td>8.2&#xa0;s</td>
+<td>7.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-exclude-versionranges/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-equal-fail/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-class-exclude-non-match/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-ignore-local-all/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-test-testpath/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-pull-24/pom.xml</td>
 <td>success</td>
-<td>10.0&#xa0;s</td>
+<td>8.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-wildcard-exclude/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-diff-ignore-dependency/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-fail/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-issue-35/pom.xml</td>
 <td>success</td>
-<td>11.1&#xa0;s</td>
+<td>9.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-wildcard-exclude-with-resource/pom.xml</td>
 <td>success</td>
-<td>8.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-issue-31/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-issue-33/pom.xml</td>
 <td>success</td>
-<td>9.0&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-default/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-issue-10/pom.xml</td>
 <td>success</td>
-<td>10.0&#xa0;s</td>
+<td>9.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-diff-ignore-dependency/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-package-exclude/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-compile-compilepath/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-diff-fail-diff-content/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-test-compilepath/pom.xml</td>
 <td>success</td>
-<td>8.5&#xa0;s</td>
+<td>7.3&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-classpath-mincount/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-exclude-versionranges-fail/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-diff-fail/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-diff-fail/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-wildcard-exclude-with-class/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-equal-fail-diff-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-default-print-equal/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-currentproject-exists/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-ignore-multibuild-class/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>7.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-skip-property/pom.xml</td>
@@ -342,47 +353,47 @@
 <tr class="b">
 <td>test-class-conflict-ignore-local-class/pom.xml</td>
 <td>success</td>
-<td>8.1&#xa0;s</td>
+<td>7.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-issue-9-local-project/pom.xml</td>
 <td>success</td>
-<td>8.0&#xa0;s</td>
+<td>7.1&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-diff-fail-diff-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-class-conflict-class-exclude-with-regex/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-class-exclude-three-ways/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-issue-10-local/pom.xml</td>
 <td>success</td>
-<td>9.0&#xa0;s</td>
+<td>8.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-class-conflict-package-exclude-with-dot/pom.xml</td>
 <td>success</td>
-<td>7.1&#xa0;s</td>
+<td>6.1&#xa0;s</td>
 <td></td></tr>
 <tr class="a">
 <td>test-resource-conflict-diff-fail-equal-content/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr>
 <tr class="b">
 <td>test-resource-conflict-compile-testpath/pom.xml</td>
 <td>success</td>
-<td>7.0&#xa0;s</td>
+<td>6.0&#xa0;s</td>
 <td></td></tr></table>
         </main>
       </div>
