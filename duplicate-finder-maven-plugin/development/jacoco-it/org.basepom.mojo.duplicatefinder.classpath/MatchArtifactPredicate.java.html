@@ -20,36 +20,39 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
-import org.basepom.mojo.duplicatefinder.PluginLog;
 import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.lang.String.format;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class MatchArtifactPredicate implements Predicate&lt;Artifact&gt; {
 
-<span class="fc" id="L30">    private static final PluginLog LOG = new PluginLog(MatchArtifactPredicate.class);</span>
+<span class="fc" id="L33">    private static final Logger LOG = LoggerFactory.getLogger(MatchArtifactPredicate.class);</span>
 
     private final List&lt;MavenCoordinates&gt; mavenCoordinates;
 
-<span class="fc" id="L34">    MatchArtifactPredicate(final Collection&lt;MavenCoordinates&gt; dependencies) {</span>
-<span class="fc" id="L35">        this.mavenCoordinates = ImmutableList.copyOf(checkNotNull(dependencies, &quot;dependencies is null&quot;));</span>
-<span class="fc" id="L36">    }</span>
+<span class="fc" id="L37">    MatchArtifactPredicate(final Collection&lt;MavenCoordinates&gt; dependencies) {</span>
+<span class="fc" id="L38">        this.mavenCoordinates = ImmutableList.copyOf(checkNotNull(dependencies, &quot;dependencies is null&quot;));</span>
+<span class="fc" id="L39">    }</span>
 
     @Override
     public boolean apply(final Artifact artifact) {
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (artifact != null) {</span>
-<span class="fc bfc" id="L41" title="All 2 branches covered.">            for (final MavenCoordinates mavenCoordinate : mavenCoordinates) {</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (artifact != null) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            for (final MavenCoordinates mavenCoordinate : mavenCoordinates) {</span>
                 try {
-<span class="fc bfc" id="L43" title="All 2 branches covered.">                    if (mavenCoordinate.matches(artifact)) {</span>
-<span class="fc" id="L44">                        LOG.debug(&quot;Ignoring artifact '%s' (matches %s)&quot;, artifact, mavenCoordinate);</span>
-<span class="fc" id="L45">                        return true;</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                    if (mavenCoordinate.matches(artifact)) {</span>
+<span class="fc" id="L47">                        LOG.debug(format(&quot;Ignoring artifact '%s' (matches %s)&quot;, artifact, mavenCoordinate));</span>
+<span class="fc" id="L48">                        return true;</span>
                     }
-<span class="nc" id="L47">                } catch (final OverConstrainedVersionException e) {</span>
-<span class="nc" id="L48">                    LOG.warn(&quot;Caught '%s' while comparing '%s' to '%s'&quot;, e.getMessage(), mavenCoordinate, artifact);</span>
-<span class="fc" id="L49">                }</span>
-<span class="fc" id="L50">            }</span>
+<span class="nc" id="L50">                } catch (final OverConstrainedVersionException e) {</span>
+<span class="nc" id="L51">                    LOG.warn(format(&quot;Caught '%s' while comparing '%s' to '%s'&quot;, e.getMessage(), mavenCoordinate, artifact));</span>
+<span class="fc" id="L52">                }</span>
+<span class="fc" id="L53">            }</span>
         }
-<span class="fc" id="L52">        return false;</span>
+<span class="fc" id="L55">        return false;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
