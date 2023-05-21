@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1684648078818">
-    <module artifactId="duplicate-finder-maven-plugin" groupId="org.basepom.maven" version="2.0.0-SNAPSHOT"/>
+<licensePluginReport goal="CHECK" timestamp="1684694138025">
+    <module artifactId="duplicate-finder-maven-plugin" groupId="org.basepom.maven" version="2.0.1-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="src/build/findbugsExcludeFilter.xml" result="PRESENT"/>
