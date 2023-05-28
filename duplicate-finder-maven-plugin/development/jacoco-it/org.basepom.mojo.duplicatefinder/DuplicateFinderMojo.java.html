@@ -200,7 +200,7 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOu
      * Quiets the plugin (report only errors).
      *
      * @since 1.1.0
-     * @deprecated
+     * @deprecated Maven logging controls the log level now.
      */
 <span class="fc" id="L205">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.quiet&quot;)</span>
     @Deprecated
@@ -243,7 +243,7 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOu
      * internal classes (e.g. the classes in rt.jar).
      *
      * @since 1.1.1
-     * @deprecated
+     * @deprecated Inspecting the boot classpath is no longer supported in Java 9+
      */
 <span class="fc" id="L248">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;duplicate-finder.includeBootClasspath&quot;)</span>
     @Deprecated
@@ -253,7 +253,7 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOu
      * System property that contains the boot class path.
      *
      * @since 1.1.1
-     * @deprecated
+     * @deprecated Inspecting the boot classpath is no longer supported in Java 9+
      */
 <span class="fc" id="L258">    @Parameter(property = &quot;duplicate-finder.bootClasspathProperty&quot;)</span>
     @Deprecated
