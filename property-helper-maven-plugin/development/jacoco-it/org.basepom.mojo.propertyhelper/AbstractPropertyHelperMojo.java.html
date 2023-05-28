@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractPropertyHelperMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">AbstractPropertyHelperMojo.java</span></div><h1>AbstractPropertyHelperMojo.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import org.basepom.mojo.propertyhelper.beans.DateDefinition;
+import org.basepom.mojo.propertyhelper.beans.IgnoreWarnFail;
+import org.basepom.mojo.propertyhelper.beans.MacroDefinition;
+import org.basepom.mojo.propertyhelper.beans.NumberDefinition;
+import org.basepom.mojo.propertyhelper.beans.PropertyGroup;
+import org.basepom.mojo.propertyhelper.beans.StringDefinition;
+import org.basepom.mojo.propertyhelper.beans.UuidDefinition;
+import org.basepom.mojo.propertyhelper.macros.MacroType;
+import org.basepom.mojo.propertyhelper.util.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import javax.annotation.CheckForNull;
+import javax.inject.Inject;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+
+/**
+ * Base code for all the mojos.
+ */
+<span class="fc" id="L55">public abstract class AbstractPropertyHelperMojo</span>
+        extends AbstractMojo {
+
+<span class="fc" id="L58">    protected static final Log LOG = Log.findLog();</span>
+<span class="fc" id="L59">    protected final ValueCache valueCache = new ValueCache();</span>
+<span class="fc" id="L60">    private final Map&lt;String, String&gt; values = Maps.newHashMap();</span>
+
+    /**
+     * Defines the action to take if a property is present multiple times.
+     */
+<span class="fc" id="L65">    @Parameter(defaultValue = &quot;fail&quot;)</span>
+    public String onDuplicateProperty = &quot;fail&quot;;
+
+    /**
+     * Defines the action to take if a referenced property is missing.
+     */
+<span class="fc" id="L71">    @Parameter(defaultValue = &quot;fail&quot;)</span>
+    public String onMissingProperty = &quot;fail&quot;;
+
+    /**
+     * List of the property group ids to activate for a plugin execution.
+     */
+<span class="fc" id="L77">    @Parameter</span>
+    public String[] activeGroups = new String[0];
+
+    /**
+     * List of available property groups. A property group contains one or more property definitions and must be activated with activeGroups.
+     */
+<span class="fc" id="L83">    @Parameter</span>
+    public PropertyGroup[] propertyGroups = new PropertyGroup[0];
+
+    /**
+     * Number property definitions.
+     */
+<span class="fc" id="L89">    @Parameter</span>
+    public NumberDefinition[] numbers = new NumberDefinition[0];
+
+    /**
+     * String property definitions.
+     */
+<span class="fc" id="L95">    @Parameter</span>
+    public StringDefinition[] strings = new StringDefinition[0];
+
+    /**
+     * Date property definitions.
+     */
+<span class="fc" id="L101">    @Parameter</span>
+    public DateDefinition[] dates = new DateDefinition[0];
+
+    /**
+     * Macro definitions.
+     */
+<span class="fc" id="L107">    @Parameter</span>
+    public MacroDefinition[] macros = new MacroDefinition[0];
+
+    /**
+     * Uuid definitions.
+     */
+<span class="fc" id="L113">    @Parameter</span>
+    public UuidDefinition[] uuids = new UuidDefinition[0];
+
+    /**
+     * The maven project (effective pom).
+     */
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true)
+    public MavenProject project;
+    @Parameter(defaultValue = &quot;${settings}&quot;, readonly = true)
+    public Settings settings;
+
+    @Parameter(required = true, readonly = true, defaultValue = &quot;${project.basedir}&quot;)
+    public File basedir;
+    /**
+     * If set to true, goal execution is skipped.
+     */
+    @Parameter(defaultValue = &quot;false&quot;)
+    boolean skip;
+<span class="fc" id="L131">    public List&lt;NumberField&gt; numberFields = null;</span>
+
+<span class="fc" id="L133">    @Inject</span>
+    public Map&lt;String, MacroType&gt; macroMap = null;
+
+    private boolean isSnapshot;
+
+    @Override
+    public void execute()
+            throws MojoExecutionException {
+<span class="fc" id="L141">        isSnapshot = project.getArtifact().isSnapshot();</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        LOG.debug(&quot;Project is a %s.&quot;, isSnapshot ? &quot;snapshot&quot; : &quot;release&quot;);</span>
+<span class="fc" id="L143">        LOG.trace(&quot;%s on duplicate, %s on missing&quot;, onDuplicateProperty, onMissingProperty);</span>
+
+        try {
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            if (skip) {</span>
+<span class="nc" id="L147">                LOG.debug(&quot;Skipping execution!&quot;);</span>
+            } else {
+<span class="fc" id="L149">                doExecute();</span>
+            }
+<span class="nc" id="L151">        } catch (IOException e) {</span>
+<span class="nc" id="L152">            throw new MojoExecutionException(&quot;While running mojo: &quot;, e);</span>
+        } finally {
+<span class="fc" id="L154">            LOG.debug(&quot;Ended %s mojo run!&quot;, this.getClass().getSimpleName());</span>
+        }
+<span class="fc" id="L156">    }</span>
+
+    public MavenProject getProject() {
+<span class="nc" id="L159">        checkNotNull(project, &quot;project is null&quot;);</span>
+<span class="nc" id="L160">        return project;</span>
+    }
+
+    public Settings getSettings() {
+<span class="nc" id="L164">        checkNotNull(settings, &quot;settings is null&quot;);</span>
+<span class="nc" id="L165">        return settings;</span>
+    }
+
+    public File getBasedir() {
+<span class="nc" id="L169">        checkNotNull(basedir, &quot;basedir is null&quot;);</span>
+<span class="nc" id="L170">        return basedir;</span>
+    }
+
+    public Map&lt;String, MacroType&gt; getMacros() {
+<span class="fc" id="L174">        checkNotNull(macroMap, &quot;macroMap is null&quot;);</span>
+<span class="fc" id="L175">        return macroMap;</span>
+    }
+
+    @CheckForNull
+    public List&lt;NumberField&gt; getNumbers() {
+<span class="nc" id="L180">        return numberFields;</span>
+    }
+
+    /**
+     * Subclasses need to implement this method.
+     */
+    protected abstract void doExecute() throws IOException, MojoExecutionException;
+
+    protected void loadPropertyElements() throws MojoExecutionException, IOException {
+<span class="fc" id="L189">        final Builder&lt;PropertyElement&gt; propertyElements = ImmutableList.builder();</span>
+
+<span class="fc" id="L191">        numberFields = NumberField.createNumbers(valueCache, numbers);</span>
+<span class="fc" id="L192">        propertyElements.addAll(numberFields);</span>
+<span class="fc" id="L193">        propertyElements.addAll(StringField.createStrings(valueCache, strings));</span>
+<span class="fc" id="L194">        propertyElements.addAll(DateField.createDates(valueCache, dates));</span>
+<span class="fc" id="L195">        propertyElements.addAll(MacroField.createMacros(valueCache, macros, this));</span>
+<span class="fc" id="L196">        propertyElements.addAll(UuidField.createUuids(valueCache, uuids));</span>
+
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        for (final PropertyElement pe : propertyElements.build()) {</span>
+<span class="fc" id="L199">            final Optional&lt;String&gt; value = pe.getPropertyValue();</span>
+<span class="fc" id="L200">            values.put(pe.getPropertyName(), value.orElse(null));</span>
+
+<span class="fc bfc" id="L202" title="All 2 branches covered.">            if (pe.isExport()) {</span>
+<span class="fc" id="L203">                final String result = value.orElse(&quot;&quot;);</span>
+<span class="fc" id="L204">                project.getProperties().setProperty(pe.getPropertyName(), result);</span>
+<span class="fc" id="L205">                LOG.debug(&quot;Exporting Property name: %s, value: %s&quot;, pe.getPropertyName(), result);</span>
+<span class="fc" id="L206">            } else {</span>
+<span class="fc" id="L207">                LOG.debug(&quot;Property name: %s, value: %s&quot;, pe.getPropertyName(),</span>
+<span class="fc" id="L208">                        value.orElse(&quot;&lt;null&gt;&quot;));</span>
+            }
+<span class="fc" id="L210">        }</span>
+
+        // Now generate the property groups.
+<span class="fc" id="L213">        final ImmutableMap.Builder&lt;String, Entry&lt;PropertyGroup, List&lt;PropertyElement&gt;&gt;&gt; builder = ImmutableMap.builder();</span>
+
+<span class="fc" id="L215">        final Set&lt;String&gt; propertyNames = Sets.newHashSet();</span>
+
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        if (propertyGroups != null) {</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            for (final PropertyGroup propertyGroup : propertyGroups) {</span>
+<span class="fc" id="L219">                final List&lt;PropertyElement&gt; propertyFields = PropertyField.createProperties(project.getModel(), values, propertyGroup);</span>
+<span class="fc" id="L220">                builder.put(propertyGroup.getId(), new SimpleImmutableEntry&lt;&gt;(propertyGroup, propertyFields));</span>
+            }
+        }
+
+<span class="fc" id="L224">        final Map&lt;String, Entry&lt;PropertyGroup, List&lt;PropertyElement&gt;&gt;&gt; propertyPairs = builder.build();</span>
+
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        if (activeGroups != null) {</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">            for (final String activeGroup : activeGroups) {</span>
+<span class="fc" id="L228">                final Entry&lt;PropertyGroup, List&lt;PropertyElement&gt;&gt; propertyElement = propertyPairs.get(activeGroup);</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">                checkState(propertyElement != null, &quot;activated group '%s' does not exist&quot;, activeGroup);</span>
+
+<span class="fc" id="L231">                final PropertyGroup propertyGroup = propertyElement.getKey();</span>
+<span class="pc bpc" id="L232" title="6 of 8 branches missed.">                if ((propertyGroup.isActiveOnRelease() &amp;&amp; !isSnapshot) || (propertyGroup.isActiveOnSnapshot() &amp;&amp; isSnapshot)) {</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">                    for (final PropertyElement pe : propertyElement.getValue()) {</span>
+<span class="fc" id="L234">                        final Optional&lt;String&gt; value = pe.getPropertyValue();</span>
+<span class="fc" id="L235">                        final String propertyName = pe.getPropertyName();</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">                        IgnoreWarnFail.checkState(propertyGroup.getOnDuplicateProperty(), !propertyNames.contains(propertyName),</span>
+                                &quot;property name '&quot; + propertyName + &quot;'&quot;);
+<span class="fc" id="L238">                        propertyNames.add(propertyName);</span>
+
+<span class="fc" id="L240">                        project.getProperties().setProperty(propertyName, value.orElse(&quot;&quot;));</span>
+<span class="fc" id="L241">                    }</span>
+                } else {
+<span class="nc" id="L243">                    LOG.debug(&quot;Skipping property group %s: Snapshot: %b, activeOnSnapshot: %b, activeOnRelease: %b&quot;, activeGroup, isSnapshot,</span>
+<span class="nc" id="L244">                            propertyGroup.isActiveOnSnapshot(), propertyGroup.isActiveOnRelease());</span>
+                }
+            }
+        }
+<span class="fc" id="L248">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
