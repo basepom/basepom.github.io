@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UuidField.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">UuidField.java</span></div><h1>UuidField.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.basepom.mojo.propertyhelper.beans.UuidDefinition;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+public class UuidField
+        implements PropertyElement {
+
+    private final UuidDefinition uuidDefinition;
+    private final ValueProvider valueProvider;
+
+<span class="fc" id="L35">    public UuidField(final UuidDefinition uuidDefinition, final ValueProvider valueProvider) {</span>
+<span class="fc" id="L36">        this.uuidDefinition = checkNotNull(uuidDefinition, &quot;uuidDefinition is null&quot;);</span>
+<span class="fc" id="L37">        this.valueProvider = checkNotNull(valueProvider, &quot;valueProvider is null&quot;);</span>
+<span class="fc" id="L38">    }</span>
+
+    public static List&lt;UuidField&gt; createUuids(final ValueCache valueCache, final UuidDefinition... uuidDefinitions)
+            throws IOException {
+<span class="fc" id="L42">        checkNotNull(valueCache, &quot;valueCache is null&quot;);</span>
+
+<span class="fc" id="L44">        final Builder&lt;UuidField&gt; result = ImmutableList.builder();</span>
+
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (UuidDefinition uuidDefinition : uuidDefinitions) {</span>
+<span class="fc" id="L47">            uuidDefinition.check();</span>
+<span class="fc" id="L48">            final ValueProvider uuidValue = valueCache.getValueProvider(uuidDefinition);</span>
+<span class="fc" id="L49">            final UuidField uuidField = new UuidField(uuidDefinition, uuidValue);</span>
+<span class="fc" id="L50">            result.add(uuidField);</span>
+        }
+
+<span class="fc" id="L53">        return result.build();</span>
+    }
+
+    @Override
+    public String getPropertyName() {
+<span class="fc" id="L58">        return uuidDefinition.getId();</span>
+    }
+
+    @Override
+    public Optional&lt;String&gt; getPropertyValue() {
+        // Only add the value from the provider if it is not null.
+<span class="fc" id="L64">        UUID result = null;</span>
+<span class="fc" id="L65">        final Optional&lt;String&gt; propValue = valueProvider.getValue();</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (propValue.isPresent()) {</span>
+<span class="fc" id="L68">            result = UUID.fromString(propValue.get());</span>
+        }
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (result == null) {</span>
+<span class="fc" id="L72">            final Optional&lt;UUID&gt; definedValue = uuidDefinition.getValue();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (definedValue.isPresent()) {</span>
+<span class="fc" id="L74">                result = definedValue.get();</span>
+            }
+        }
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (result == null) {</span>
+<span class="fc" id="L79">            result = UUID.randomUUID();</span>
+        }
+
+<span class="fc" id="L82">        valueProvider.setValue(result.toString());</span>
+<span class="fc" id="L83">        return uuidDefinition.formatResult(result.toString());</span>
+    }
+
+    @Override
+    public boolean isExport() {
+<span class="fc" id="L88">        return uuidDefinition.isExport();</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L93">        return getPropertyValue().orElse(&quot;&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
