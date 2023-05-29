@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"org.basepom.mojo.repack","l":"HelpMojo"},{"p":"org.basepom.mojo.repack","l":"RepackMojo"}];updateSearchResults();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<licensePluginReport goal="CHECK" timestamp="1685398865261">
+    <module artifactId="repack-maven-plugin" groupId="org.basepom.maven" version="1.0.0-SNAPSHOT"/>
+    <files>
+        <file path="pom.xml" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/ArtifactsLibraries.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/DependencyDefinition.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/DependencyDefinitionFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/LayoutType.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/OptionalArtifactFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/PluginLog.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/RepackMojo.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/Reporter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/ScopeExclusionFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/repack/Wildcard.java" result="PRESENT"/>
+        <file path="src/site/site.xml" result="PRESENT"/>
+        <file path="src/test/java/org/basepom/mojo/repack/DependencyDefinitionTest.java" result="PRESENT"/>
+        <file path="src/test/java/org/basepom/mojo/repack/WildcardMatchingTest.java" result="PRESENT"/>
+    </files>
+</licensePluginReport>
