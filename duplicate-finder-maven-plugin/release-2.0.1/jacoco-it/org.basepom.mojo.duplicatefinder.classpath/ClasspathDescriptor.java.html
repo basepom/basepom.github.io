@@ -140,7 +140,7 @@ public class ClasspathDescriptor {
 
 <span class="pc bpc" id="L141" title="1 of 2 branches missed.">                if (file.exists()) {</span>
                     // Add to the classpath if the artifact predicate does not apply (then it is not in the ignoredDependencies list).
-<span class="pc bpc" id="L143" title="1 of 2 branches missed.">                    if (!matchArtifactPredicate.apply(artifact)) {</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">                    if (!matchArtifactPredicate.apply(artifact)) {</span>
 <span class="fc" id="L144">                        classpathDescriptor.addClasspathElement(file);</span>
                     }
                 } else {
@@ -185,20 +185,20 @@ public class ClasspathDescriptor {
 <span class="fc" id="L185">        Predicate&lt;String&gt; resourcesPredicate = s -&gt; false;</span>
 
         // predicate matching the default ignores
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        if (useDefaultResourceIgnoreList) {</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if (useDefaultResourceIgnoreList) {</span>
 <span class="fc" id="L189">            resourcesPredicate = resourcesPredicate.or(DEFAULT_IGNORED_RESOURCES_PREDICATE);</span>
 <span class="fc" id="L190">            ignoredResourcePatternsBuilder.addAll(DEFAULT_IGNORED_RESOURCES_PREDICATE.getPatterns());</span>
         }
 
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">        if (!ignoredResourcePatterns.isEmpty()) {</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        if (!ignoredResourcePatterns.isEmpty()) {</span>
             try {
                 // predicate matching the user ignores
-<span class="nc" id="L196">                MatchPatternPredicate ignoredResourcesPredicate = new MatchPatternPredicate(ignoredResourcePatterns);</span>
-<span class="nc" id="L197">                resourcesPredicate = resourcesPredicate.or(ignoredResourcesPredicate);</span>
-<span class="nc" id="L198">                ignoredResourcePatternsBuilder.addAll(ignoredResourcesPredicate.getPatterns());</span>
+<span class="fc" id="L196">                MatchPatternPredicate ignoredResourcesPredicate = new MatchPatternPredicate(ignoredResourcePatterns);</span>
+<span class="fc" id="L197">                resourcesPredicate = resourcesPredicate.or(ignoredResourcesPredicate);</span>
+<span class="fc" id="L198">                ignoredResourcePatternsBuilder.addAll(ignoredResourcesPredicate.getPatterns());</span>
 <span class="nc" id="L199">            } catch (final PatternSyntaxException pse) {</span>
 <span class="nc" id="L200">                throw new MojoExecutionException(&quot;Error compiling resourceIgnore pattern: &quot; + pse.getMessage());</span>
-<span class="nc" id="L201">            }</span>
+<span class="fc" id="L201">            }</span>
         }
 
 <span class="fc" id="L204">        this.resourcesPredicate = resourcesPredicate;</span>
@@ -215,15 +215,15 @@ public class ClasspathDescriptor {
 <span class="fc" id="L215">            ignoredClassPatternsBuilder.addAll(DEFAULT_IGNORED_CLASS_PREDICATE.getPatterns());</span>
         }
 
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        if (!ignoredClassPatterns.isEmpty()) {</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">        if (!ignoredClassPatterns.isEmpty()) {</span>
             try {
                 // predicate matching the user ignores
-<span class="nc" id="L221">                MatchPatternPredicate ignoredPackagePredicate = new MatchPatternPredicate(ignoredClassPatterns);</span>
-<span class="nc" id="L222">                classPredicate = classPredicate.or(ignoredPackagePredicate);</span>
-<span class="nc" id="L223">                ignoredClassPatternsBuilder.addAll(ignoredPackagePredicate.getPatterns());</span>
+<span class="fc" id="L221">                MatchPatternPredicate ignoredPackagePredicate = new MatchPatternPredicate(ignoredClassPatterns);</span>
+<span class="fc" id="L222">                classPredicate = classPredicate.or(ignoredPackagePredicate);</span>
+<span class="fc" id="L223">                ignoredClassPatternsBuilder.addAll(ignoredPackagePredicate.getPatterns());</span>
 <span class="nc" id="L224">            } catch (final PatternSyntaxException pse) {</span>
 <span class="nc" id="L225">                throw new MojoExecutionException(&quot;Error compiling classIgnore pattern: &quot; + pse.getMessage());</span>
-<span class="nc" id="L226">            }</span>
+<span class="fc" id="L226">            }</span>
         }
 
 <span class="fc" id="L229">        this.classPredicate = classPredicate;</span>
@@ -260,7 +260,7 @@ public class ClasspathDescriptor {
 
 <span class="fc" id="L261">        ClasspathCacheElement cached = CACHED_BY_FILE.get(element);</span>
 
-<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        if (cached == null) {</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        if (cached == null) {</span>
 <span class="fc" id="L264">            final ClasspathCacheElement.Builder cacheBuilder = ClasspathCacheElement.builder(element);</span>
 <span class="fc bfc" id="L265" title="All 2 branches covered.">            if (element.isDirectory()) {</span>
 <span class="fc" id="L266">                addDirectory(cacheBuilder, element, new PackageNameHolder());</span>
@@ -271,7 +271,7 @@ public class ClasspathDescriptor {
 <span class="fc" id="L271">            final ClasspathCacheElement oldCached = CACHED_BY_FILE.putIfAbsent(element, newCached);</span>
 <span class="fc" id="L272">            cached = MoreObjects.firstNonNull(oldCached, newCached);</span>
 <span class="fc" id="L273">        } else {</span>
-<span class="nc" id="L274">            LOG.debug(format(&quot;Cache hit for '%s'&quot;, element.getAbsolutePath()));</span>
+<span class="fc" id="L274">            LOG.debug(format(&quot;Cache hit for '%s'&quot;, element.getAbsolutePath()));</span>
         }
 
 <span class="fc" id="L277">        cached.putResources(resourcesWithElements, resourcesPredicate);</span>
@@ -292,13 +292,13 @@ public class ClasspathDescriptor {
                     }
 
 <span class="pc bpc" id="L294" title="1 of 2 branches missed.">                } else if (file.isFile()) {</span>
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">                    if (&quot;class&quot;.equals(Files.getFileExtension(file.getName()))) {</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">                    if (&quot;class&quot;.equals(Files.getFileExtension(file.getName()))) {</span>
 <span class="fc" id="L296">                        final String className = packageName.getQualifiedName(Files.getNameWithoutExtension(file.getName()));</span>
 <span class="fc" id="L297">                        cacheBuilder.addClass(className);</span>
 <span class="fc" id="L298">                    } else {</span>
-<span class="nc" id="L299">                        final String resourcePath = packageName.getQualifiedPath(file.getName());</span>
-<span class="nc" id="L300">                        cacheBuilder.addResource(resourcePath);</span>
-<span class="nc" id="L301">                    }</span>
+<span class="fc" id="L299">                        final String resourcePath = packageName.getQualifiedPath(file.getName());</span>
+<span class="fc" id="L300">                        cacheBuilder.addResource(resourcePath);</span>
+<span class="fc" id="L301">                    }</span>
                 } else {
 <span class="nc" id="L303">                    LOG.warn(format(&quot;Ignoring unknown file type for '%s'&quot;, file.getAbsolutePath()));</span>
                 }
@@ -351,15 +351,15 @@ public class ClasspathDescriptor {
 <span class="fc" id="L351">            return Optional.empty();</span>
         }
 <span class="fc bfc" id="L353" title="All 2 branches covered.">        for (int i = 0; i &lt; nameElements.size() - 1; i++) {</span>
-<span class="pc bpc" id="L354" title="1 of 2 branches missed.">            if (!SourceVersion.isIdentifier(nameElements.get(i))) {</span>
-<span class="nc" id="L355">                LOG.debug(format(&quot;Ignoring %s, %s is not a valid package element&quot;, fullClassPath, nameElements.get(i)));</span>
-<span class="nc" id="L356">                return Optional.empty();</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">            if (!SourceVersion.isIdentifier(nameElements.get(i))) {</span>
+<span class="fc" id="L355">                LOG.debug(format(&quot;Ignoring %s, %s is not a valid package element&quot;, fullClassPath, nameElements.get(i)));</span>
+<span class="fc" id="L356">                return Optional.empty();</span>
             }
         }
 
 <span class="fc" id="L360">        String className = Files.getNameWithoutExtension(classFileName);</span>
 <span class="fc bfc" id="L361" title="All 2 branches covered.">        if (!(SourceVersion.isIdentifier(className)</span>
-<span class="pc bpc" id="L362" title="1 of 2 branches missed.">                || &quot;module-info&quot;.equals(className)</span>
+<span class="fc bfc" id="L362" title="All 2 branches covered.">                || &quot;module-info&quot;.equals(className)</span>
 <span class="pc bpc" id="L363" title="1 of 2 branches missed.">                || &quot;package-info&quot;.equals(className))) {</span>
 <span class="nc" id="L364">            LOG.debug(format(&quot;Ignoring %s, %s is not a valid class identifier&quot;, fullClassPath, className));</span>
 <span class="nc" id="L365">            return Optional.empty();</span>

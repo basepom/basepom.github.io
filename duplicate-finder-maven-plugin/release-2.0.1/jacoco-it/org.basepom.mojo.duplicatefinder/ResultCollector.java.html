@@ -67,11 +67,11 @@ public class ResultCollector {
 
     public void addConflict(ConflictType type, String name, SortedSet&lt;ClasspathElement&gt; conflictingClasspathElements, boolean excepted,
             final ConflictState state) {
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (!excepted) {</span>
-<span class="nc" id="L71">            this.conflictState = ConflictState.max(this.conflictState, state);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (!excepted) {</span>
+<span class="fc" id="L71">            this.conflictState = ConflictState.max(this.conflictState, state);</span>
 
             // Record the type of conflicts seen.
-<span class="nc" id="L74">            seenResults.get(type).add(state);</span>
+<span class="fc" id="L74">            seenResults.get(type).add(state);</span>
         }
 
 <span class="fc" id="L77">        ConflictResult conflictResult = new ConflictResult(type, name, conflictingClasspathElements, excepted, state);</span>
@@ -80,14 +80,14 @@ public class ResultCollector {
 <span class="fc" id="L80">    }</span>
 
     public Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getResults(final ConflictType type, final ConflictState state) {
-<span class="nc" id="L83">        Multimap&lt;String, ConflictResult&gt; result = Multimaps.filterValues(results, conflictResult -&gt; {</span>
-<span class="nc" id="L84">            checkNotNull(conflictResult, &quot;conflictResult is null&quot;);</span>
-<span class="nc bnc" id="L85" title="All 2 branches missed.">            return conflictResult.getConflictState() == state</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                    &amp;&amp; conflictResult.getType() == type</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">                    &amp;&amp; !conflictResult.isExcepted();</span>
+<span class="fc" id="L83">        Multimap&lt;String, ConflictResult&gt; result = Multimaps.filterValues(results, conflictResult -&gt; {</span>
+<span class="fc" id="L84">            checkNotNull(conflictResult, &quot;conflictResult is null&quot;);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            return conflictResult.getConflictState() == state</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                    &amp;&amp; conflictResult.getType() == type</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                    &amp;&amp; !conflictResult.isExcepted();</span>
         });
 
-<span class="nc" id="L90">        return ImmutableMap.copyOf(result.asMap());</span>
+<span class="fc" id="L90">        return ImmutableMap.copyOf(result.asMap());</span>
     }
 
     Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getAllResults() {
@@ -139,11 +139,11 @@ public class ResultCollector {
         }
 
         public boolean isPrinted() {
-<span class="pc bpc" id="L142" title="3 of 4 branches missed.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
+<span class="fc bfc" id="L142" title="All 4 branches covered.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
         }
 
         public boolean isFailed() {
-<span class="pc bpc" id="L146" title="3 of 4 branches missed.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
+<span class="fc bfc" id="L146" title="All 4 branches covered.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
         }
 
         public ConflictState getConflictState() {

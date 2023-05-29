@@ -79,13 +79,13 @@ public final class XMLWriterUtils {
         }
 
 <span class="fc" id="L81">        SMOutputElement classesElement = conflictingDependencyElement.addElement(&quot;classes&quot;);</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        for (String className : conflictingDependency.getClasses()) {</span>
-<span class="nc" id="L83">            addElement(classesElement, &quot;class&quot;, className);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (String className : conflictingDependency.getClasses()) {</span>
+<span class="fc" id="L83">            addElement(classesElement, &quot;class&quot;, className);</span>
         }
 
 <span class="fc" id="L86">        SMOutputElement resourcesElement = conflictingDependencyElement.addElement(&quot;resources&quot;);</span>
-<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        for (String resourceName : conflictingDependency.getResources()) {</span>
-<span class="nc" id="L88">            addElement(resourcesElement, &quot;resource&quot;, resourceName);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (String resourceName : conflictingDependency.getResources()) {</span>
+<span class="fc" id="L88">            addElement(resourcesElement, &quot;resource&quot;, resourceName);</span>
         }
 
 <span class="fc" id="L91">        SMOutputElement resourcePatternsElement = conflictingDependencyElement.addElement(&quot;resourcePatterns&quot;);</span>
@@ -153,12 +153,12 @@ public final class XMLWriterUtils {
 <span class="fc" id="L153">            addAttribute(conflictName, &quot;name&quot;, entry.getName());</span>
 <span class="fc" id="L154">            addAttribute(conflictName, &quot;artifact&quot;, entry.hasArtifact());</span>
 <span class="fc" id="L155">            addAttribute(conflictName, &quot;localFolder&quot;, entry.isLocalFolder());</span>
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">            if (entry.hasArtifact()) {</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            if (entry.hasArtifact()) {</span>
 <span class="fc" id="L157">                addArtifact(conflictName, &quot;artifact&quot;, entry.getArtifact());</span>
             } else {
-<span class="nc" id="L159">                final File file = entry.getFile();</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (file.isDirectory()) {</span>
-<span class="nc" id="L161">                    addElement(conflictName, &quot;directory&quot;, file);</span>
+<span class="fc" id="L159">                final File file = entry.getFile();</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">                if (file.isDirectory()) {</span>
+<span class="fc" id="L161">                    addElement(conflictName, &quot;directory&quot;, file);</span>
                 } else {
 <span class="nc" id="L163">                    addElement(conflictName, &quot;file&quot;, file);</span>
                 }

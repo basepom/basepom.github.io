@@ -49,7 +49,7 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArt
     }
 
     public boolean hasArtifact() {
-<span class="nc" id="L52">        return false;</span>
+<span class="fc" id="L52">        return false;</span>
     }
 
     @Override
@@ -131,24 +131,24 @@ import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArt
 
         private final File localFolder;
 
-<span class="nc" id="L134">        public ClasspathLocalFolder(final File localFolder) {</span>
-<span class="nc" id="L135">            this.localFolder = checkNotNull(localFolder, &quot;localFolder is null&quot;);</span>
-<span class="nc" id="L136">            checkState(localFolder.isDirectory(), &quot;localFolder must be a directory&quot;);</span>
-<span class="nc" id="L137">        }</span>
+<span class="fc" id="L134">        public ClasspathLocalFolder(final File localFolder) {</span>
+<span class="fc" id="L135">            this.localFolder = checkNotNull(localFolder, &quot;localFolder is null&quot;);</span>
+<span class="fc" id="L136">            checkState(localFolder.isDirectory(), &quot;localFolder must be a directory&quot;);</span>
+<span class="fc" id="L137">        }</span>
 
         @Override
         public String getName() {
-<span class="nc" id="L141">            return localFolder.getAbsolutePath();</span>
+<span class="fc" id="L141">            return localFolder.getAbsolutePath();</span>
         }
 
         @Override
         public boolean isLocalFolder() {
-<span class="nc" id="L146">            return true;</span>
+<span class="fc" id="L146">            return true;</span>
         }
 
         @Override
         public File getFile() {
-<span class="nc" id="L151">            return localFolder;</span>
+<span class="fc" id="L151">            return localFolder;</span>
         }
 
         @Override

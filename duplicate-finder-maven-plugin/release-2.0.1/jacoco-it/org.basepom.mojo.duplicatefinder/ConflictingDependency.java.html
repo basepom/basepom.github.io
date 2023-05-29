@@ -68,8 +68,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
     // Called by maven
     public void setClasses(final String[] classes) {
-<span class="nc" id="L71">        this.classes.addAll(Arrays.asList(classes));</span>
-<span class="nc" id="L72">    }</span>
+<span class="fc" id="L71">        this.classes.addAll(Arrays.asList(classes));</span>
+<span class="fc" id="L72">    }</span>
 
     public String[] getPackages() {
 <span class="fc" id="L75">        return packages.toArray(new String[0]);</span>
@@ -86,13 +86,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
     // Called by maven
     public void setResources(final String[] resources) {
-<span class="nc" id="L89">        this.resources.addAll(Arrays.asList(resources));</span>
-<span class="nc" id="L90">    }</span>
+<span class="fc" id="L89">        this.resources.addAll(Arrays.asList(resources));</span>
+<span class="fc" id="L90">    }</span>
 
     // Called by maven
     public void setCurrentProject(final boolean currentProject) {
-<span class="nc" id="L94">        this.currentProject = currentProject;</span>
-<span class="nc" id="L95">    }</span>
+<span class="fc" id="L94">        this.currentProject = currentProject;</span>
+<span class="fc" id="L95">    }</span>
 
     boolean hasCurrentProject() {
 <span class="fc" id="L98">        return currentProject;</span>
@@ -111,10 +111,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
     void addProjectMavenCoordinates(final MavenCoordinates projectMavenCoordinates) {
 <span class="fc" id="L113">        this.currentProjectIncluded = conflictingDependencies.contains(projectMavenCoordinates);</span>
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        if (this.currentProject) {</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (this.currentProject) {</span>
             // The exclusion should also look at the current project, add the project
             // coordinates to the list of exclusions.
-<span class="nc" id="L117">            conflictingDependencies.add(projectMavenCoordinates);</span>
+<span class="fc" id="L117">            conflictingDependencies.add(projectMavenCoordinates);</span>
         }
 <span class="fc" id="L119">    }</span>
 
@@ -165,50 +165,50 @@ import static com.google.common.base.Preconditions.checkNotNull;
     }
 
     boolean isWildcard() {
-<span class="pc bpc" id="L168" title="6 of 8 branches missed.">        return classes.isEmpty() &amp;&amp; packages.isEmpty() &amp;&amp; resources.isEmpty() &amp;&amp; matchingResources.length == 0;</span>
+<span class="pc bpc" id="L168" title="1 of 8 branches missed.">        return classes.isEmpty() &amp;&amp; packages.isEmpty() &amp;&amp; resources.isEmpty() &amp;&amp; matchingResources.length == 0;</span>
     }
 
     public boolean containsClass(final String className) {
-<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (isWildcard()) {</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (isWildcard()) {</span>
             // Nothing given --&gt; match everything.
-<span class="nc" id="L174">            return true;</span>
+<span class="fc" id="L174">            return true;</span>
         }
 
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">        if (classes.contains(className)) {</span>
-<span class="nc" id="L178">            return true;</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (classes.contains(className)) {</span>
+<span class="fc" id="L178">            return true;</span>
         } else {
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">            for (final String packageName : packages) {</span>
-<span class="pc bpc" id="L181" title="1 of 2 branches missed.">                final String pkgName = packageName.endsWith(&quot;.&quot;) ? packageName : packageName + &quot;.&quot;;</span>
-<span class="pc bpc" id="L182" title="1 of 2 branches missed.">                if (className.startsWith(pkgName)) {</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            for (final String packageName : packages) {</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">                final String pkgName = packageName.endsWith(&quot;.&quot;) ? packageName : packageName + &quot;.&quot;;</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">                if (className.startsWith(pkgName)) {</span>
 <span class="fc" id="L183">                    return true;</span>
                 }
-<span class="nc" id="L185">            }</span>
-<span class="nc" id="L186">            return false;</span>
+<span class="fc" id="L185">            }</span>
+<span class="fc" id="L186">            return false;</span>
         }
     }
 
     public boolean containsResource(final String resource) {
-<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (isWildcard()) {</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (isWildcard()) {</span>
             // Nothing given --&gt; match everything
-<span class="nc" id="L193">            return true;</span>
+<span class="fc" id="L193">            return true;</span>
         }
 
-<span class="nc bnc" id="L196" title="All 4 branches missed.">        final String resourceAsRelative = resource.startsWith(&quot;/&quot;) || resource.startsWith(&quot;\\&quot;) ? resource.substring(1) : resource;</span>
+<span class="pc bpc" id="L196" title="2 of 4 branches missed.">        final String resourceAsRelative = resource.startsWith(&quot;/&quot;) || resource.startsWith(&quot;\\&quot;) ? resource.substring(1) : resource;</span>
 
-<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (resources.contains(resourceAsRelative) ||</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">                resources.contains(&quot;/&quot; + resourceAsRelative) ||</span>
-<span class="nc bnc" id="L200" title="All 2 branches missed.">                resources.contains(&quot;\\&quot; + resourceAsRelative)) {</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (resources.contains(resourceAsRelative) ||</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">                resources.contains(&quot;/&quot; + resourceAsRelative) ||</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">                resources.contains(&quot;\\&quot; + resourceAsRelative)) {</span>
 
-<span class="nc" id="L202">            return true;</span>
+<span class="fc" id="L202">            return true;</span>
         }
 
-<span class="nc bnc" id="L205" title="All 2 branches missed.">        for (Pattern matchingResource : matchingResources) {</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        for (Pattern matchingResource : matchingResources) {</span>
 <span class="nc bnc" id="L206" title="All 2 branches missed.">            if (matchingResource.matcher(resourceAsRelative).matches()) {</span>
 <span class="nc" id="L207">                return true;</span>
             }
         }
 
-<span class="nc" id="L211">        return false;</span>
+<span class="fc" id="L211">        return false;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
