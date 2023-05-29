@@ -1,0 +1,5 @@
+module:org.basepom.mojo.propertyhelper
+org.basepom.mojo.propertyhelper
+org.basepom.mojo.propertyhelper.beans
+org.basepom.mojo.propertyhelper.macros
+org.basepom.mojo.propertyhelper.util
