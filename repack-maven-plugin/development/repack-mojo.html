@@ -41,6 +41,7 @@
    <li class="nav-header">Overview</li>
     <li><a href="index.html" title="Introduction"><span class="none"></span>Introduction</a></li>
     <li><a href="plugin-info.html" title="Goals"><span class="none"></span>Goals</a></li>
+    <li><a href="why-repack.html" title="Why Repack?"><span class="none"></span>Why Repack?</a></li>
     <li><a href="https://www.apache.org/licenses/LICENSE-2.0" class="externalLink" title="License"><span class="none"></span>License</a></li>
    <li class="nav-header">Project Documentation</li>
     <li><a href="project-info.html" title="Project Information"><span class="icon-chevron-right"></span>Project Information</a></li>
@@ -83,34 +84,6 @@
 <li>Binds by default to the <a href="http://maven.apache.org/ref/current/maven-core/lifecycles.html" class="externalLink">lifecycle phase</a>: <code>package</code>.</li>
       </ul>
       <section>
-<h2>Required Parameters</h2>
-        
-<table class="table table-striped">
-          
-<tr class="a">
-            
-<th>Name</th>
-            
-<th>Type</th>
-            
-<th>Since</th>
-            
-<th>Description</th>
-          </tr>
-          
-<tr class="b">
-            
-<td><code><a href="#outputDirectory">&lt;outputDirectory&gt;</a></code></td>
-            
-<td><code>File</code></td>
-            
-<td><code>-</code></td>
-            
-<td>Directory containing the generated archive.<br /><strong>Default value is</strong>: <code>${project.build.directory}</code>.<br /><strong>User property is</strong>: <code>repack.output-directory</code>.<br /></td>
-          </tr>
-        </table>
-      </section>
-      <section>
 <h2>Optional Parameters</h2>
         
 <table class="table table-striped">
@@ -128,6 +101,17 @@
           
 <tr class="b">
             
+<td><code><a href="#attachRepackedArtifact">&lt;attachRepackedArtifact&gt;</a></code></td>
+            
+<td><code>boolean</code></td>
+            
+<td><code>-</code></td>
+            
+<td>Attach the repacked archive to the build cycle.<br /><strong>Default value is</strong>: <code>true</code>.<br /><strong>User property is</strong>: <code>repack.attach-artifact</code>.<br /></td>
+          </tr>
+          
+<tr class="a">
+            
 <td><code><a href="#excludedDependencies">&lt;excludedDependencies&gt;</a></code></td>
             
 <td><code>Set&lt;DependencyDefinition&gt;</code></td>
@@ -137,7 +121,7 @@
 <td>Collection of artifact definitions to exclude.<br /><strong>Alias is</strong>: <code>excludedDependencies</code>.</td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#finalName">&lt;finalName&gt;</a></code></td>
             
@@ -148,7 +132,7 @@
 <td>Name of the generated archive.<br /><strong>Default value is</strong>: <code>${project.build.finalName}</code>.<br /><strong>User property is</strong>: <code>repack.final-name</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#includedDependencies">&lt;includedDependencies&gt;</a></code></td>
             
@@ -159,7 +143,7 @@
 <td>Collection of artifact definitions to include.<br /><strong>Alias is</strong>: <code>includes</code>.</td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#includeOptional">&lt;includeOptional&gt;</a></code></td>
             
@@ -170,7 +154,7 @@
 <td>Include optional dependencies<br /><strong>Default value is</strong>: <code>false</code>.<br /><strong>User property is</strong>: <code>repack.include-optional</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#includeProvidedScope">&lt;includeProvidedScope&gt;</a></code></td>
             
@@ -181,7 +165,7 @@
 <td>Include provided scoped dependencies.<br /><strong>Default value is</strong>: <code>false</code>.<br /><strong>User property is</strong>: <code>repack.include-provided-scope</code>.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#includeSystemScope">&lt;includeSystemScope&gt;</a></code></td>
             
@@ -192,7 +176,7 @@
 <td>Include system scoped dependencies.<br /><strong>Default value is</strong>: <code>false</code>.<br /><strong>User property is</strong>: <code>repack.include-system-scope</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#layout">&lt;layout&gt;</a></code></td>
             
@@ -203,7 +187,7 @@
 <td>The type of archive (which corresponds to how the dependencies are laid out inside it). Possible values are <code>JAR</code>, <code>WAR</code>, <code>ZIP</code>, <code>DIR</code>, <code>NONE</code>. Defaults to <code>JAR</code>.<br /><strong>Default value is</strong>: <code>JAR</code>.<br /><strong>User property is</strong>: <code>repack.layout</code>.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#layoutFactory">&lt;layoutFactory&gt;</a></code></td>
             
@@ -214,7 +198,7 @@
 <td>The layout factory that will be used to create the executable archive if no explicit layout is set. Alternative layouts implementations can be provided by 3rd parties.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#mainClass">&lt;mainClass&gt;</a></code></td>
             
@@ -225,7 +209,7 @@
 <td>The name of the main class. If not specified the first compiled class found that contains a <code>main</code> method will be used.<br /><strong>User property is</strong>: <code>repack.main-class</code>.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#optionalDependencies">&lt;optionalDependencies&gt;</a></code></td>
             
@@ -234,6 +218,17 @@
 <td><code>-</code></td>
             
 <td>A list of optional libraries that should be included even if optional dependencies are not included by default.<br /></td>
+          </tr>
+          
+<tr class="a">
+            
+<td><code><a href="#outputDirectory">&lt;outputDirectory&gt;</a></code></td>
+            
+<td><code>File</code></td>
+            
+<td><code>-</code></td>
+            
+<td>Directory containing the generated archive.<br /><strong>Default value is</strong>: <code>${project.build.directory}</code>.<br /><strong>User property is</strong>: <code>repack.output-directory</code>.<br /></td>
           </tr>
           
 <tr class="b">
@@ -260,17 +255,6 @@
           
 <tr class="b">
             
-<td><code><a href="#repackArtifactAttached">&lt;repackArtifactAttached&gt;</a></code></td>
-            
-<td><code>boolean</code></td>
-            
-<td><code>-</code></td>
-            
-<td>Attach the repacked archive to the build cycle.<br /><strong>Default value is</strong>: <code>true</code>.<br /><strong>User property is</strong>: <code>repack.artifact-attached</code>.<br /></td>
-          </tr>
-          
-<tr class="a">
-            
 <td><code><a href="#repackClassifier">&lt;repackClassifier&gt;</a></code></td>
             
 <td><code>String</code></td>
@@ -280,7 +264,7 @@
 <td>Classifier to add to the repacked archive. Use the blank string to replace the main artifact.<br /><strong>Default value is</strong>: <code>repacked</code>.<br /><strong>User property is</strong>: <code>repack.classifier</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#report">&lt;report&gt;</a></code></td>
             
@@ -291,7 +275,7 @@
 <td>Do a summary report.<br /><strong>Default value is</strong>: <code>true</code>.<br /><strong>User property is</strong>: <code>repack.report</code>.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#runtimeUnpackedDependencies">&lt;runtimeUnpackedDependencies&gt;</a></code></td>
             
@@ -302,7 +286,7 @@
 <td>A list of the libraries that must be unpacked at runtime (do not work within the fat jar).<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#skip">&lt;skip&gt;</a></code></td>
             
@@ -317,6 +301,20 @@
       <section>
 <h2>Parameter Details</h2>
         <section><section>
+<h4><strong>&lt;attachRepackedArtifact&gt;</strong></h4>
+        
+<div>Attach the repacked archive to the build cycle.</div>
+        
+<ul>
+          
+<li><strong>Type</strong>: <code>boolean</code></li>
+          
+<li><strong>Required</strong>: <code>No</code></li>
+          
+<li><strong>User Property</strong>: <code>repack.attach-artifact</code></li>
+          
+<li><strong>Default</strong>: <code>true</code></li>
+        </ul><hr /></section><section>
 <h4><strong>&lt;excludedDependencies&gt;</strong></h4>
         
 <div>Collection of artifact definitions to exclude.</div>
@@ -451,7 +449,7 @@
           
 <li><strong>Type</strong>: <code>java.io.File</code></li>
           
-<li><strong>Required</strong>: <code>Yes</code></li>
+<li><strong>Required</strong>: <code>No</code></li>
           
 <li><strong>User Property</strong>: <code>repack.output-directory</code></li>
           
@@ -484,20 +482,6 @@
 <li><strong>User Property</strong>: <code>repack.quiet</code></li>
           
 <li><strong>Default</strong>: <code>false</code></li>
-        </ul><hr /></section><section>
-<h4><strong>&lt;repackArtifactAttached&gt;</strong></h4>
-        
-<div>Attach the repacked archive to the build cycle.</div>
-        
-<ul>
-          
-<li><strong>Type</strong>: <code>boolean</code></li>
-          
-<li><strong>Required</strong>: <code>No</code></li>
-          
-<li><strong>User Property</strong>: <code>repack.artifact-attached</code></li>
-          
-<li><strong>Default</strong>: <code>true</code></li>
         </ul><hr /></section><section>
 <h4><strong>&lt;repackClassifier&gt;</strong></h4>
         

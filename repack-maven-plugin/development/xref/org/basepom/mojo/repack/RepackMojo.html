@@ -115,7 +115,7 @@
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>     <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L108" href="#L108">108</a> <em class="jxr_javadoccomment">     * Directory containing the generated archive.</em>
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>     @Parameter(defaultValue = <span class="jxr_string">"${project.build.directory}"</span>, required = <strong class="jxr_keyword">true</strong>, property = <span class="jxr_string">"repack.output-directory"</span>)
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>     @Parameter(defaultValue = <span class="jxr_string">"${project.build.directory}"</span>, property = <span class="jxr_string">"repack.output-directory"</span>)
 <a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">public</strong> File outputDirectory;
 <a class="jxr_linenumber" name="L112" href="#L112">112</a> 
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>     <em class="jxr_javadoccomment">/**</em>
@@ -151,8 +151,8 @@
 <a class="jxr_linenumber" name="L143" href="#L143">143</a>     <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L144" href="#L144">144</a> <em class="jxr_javadoccomment">     * Attach the repacked archive to the build cycle.</em>
 <a class="jxr_linenumber" name="L145" href="#L145">145</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>     @Parameter(defaultValue = <span class="jxr_string">"true"</span>, property = <span class="jxr_string">"repack.artifact-attached"</span>)
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> repackArtifactAttached = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>     @Parameter(defaultValue = <span class="jxr_string">"true"</span>, property = <span class="jxr_string">"repack.attach-artifact"</span>)
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> attachRepackedArtifact = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L148" href="#L148">148</a> 
 <a class="jxr_linenumber" name="L149" href="#L149">149</a>     <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L150" href="#L150">150</a> <em class="jxr_javadoccomment">     * A list of the libraries that must be unpacked at runtime (do not work within the fat jar).</em>
@@ -294,7 +294,7 @@
 <a class="jxr_linenumber" name="L286" href="#L286">286</a> 
 <a class="jxr_linenumber" name="L287" href="#L287">287</a>             <strong class="jxr_keyword">boolean</strong> repackReplacesSource = source.getFile().equals(targetFile);
 <a class="jxr_linenumber" name="L288" href="#L288">288</a> 
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>             <strong class="jxr_keyword">if</strong> (repackArtifactAttached) {
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>             <strong class="jxr_keyword">if</strong> (attachRepackedArtifact) {
 <a class="jxr_linenumber" name="L290" href="#L290">290</a>                 <strong class="jxr_keyword">if</strong> (repackReplacesSource) {
 <a class="jxr_linenumber" name="L291" href="#L291">291</a>                     source.setFile(targetFile);
 <a class="jxr_linenumber" name="L292" href="#L292">292</a>                 } <strong class="jxr_keyword">else</strong> {

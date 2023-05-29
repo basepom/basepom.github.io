@@ -107,7 +107,7 @@ import org.springframework.boot.loader.tools.Repackager;
     /**
      * Directory containing the generated archive.
      */
-    @Parameter(defaultValue = &quot;${project.build.directory}&quot;, required = true, property = &quot;repack.output-directory&quot;)
+    @Parameter(defaultValue = &quot;${project.build.directory}&quot;, property = &quot;repack.output-directory&quot;)
     public File outputDirectory;
 
     /**
@@ -143,8 +143,8 @@ import org.springframework.boot.loader.tools.Repackager;
     /**
      * Attach the repacked archive to the build cycle.
      */
-<span class="nc" id="L146">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;repack.artifact-attached&quot;)</span>
-    public boolean repackArtifactAttached = true;
+<span class="nc" id="L146">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;repack.attach-artifact&quot;)</span>
+    public boolean attachRepackedArtifact = true;
 
     /**
      * A list of the libraries that must be unpacked at runtime (do not work within the fat jar).
@@ -286,7 +286,7 @@ import org.springframework.boot.loader.tools.Repackager;
 
 <span class="nc" id="L287">            boolean repackReplacesSource = source.getFile().equals(targetFile);</span>
 
-<span class="nc bnc" id="L289" title="All 2 branches missed.">            if (repackArtifactAttached) {</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">            if (attachRepackedArtifact) {</span>
 <span class="nc bnc" id="L290" title="All 2 branches missed.">                if (repackReplacesSource) {</span>
 <span class="nc" id="L291">                    source.setFile(targetFile);</span>
                 } else {
