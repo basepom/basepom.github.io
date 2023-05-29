@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClasspathDescriptor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">duplicate-finder-maven-plugin Maven Mojo</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.duplicatefinder.classpath</a> &gt; <span class="el_source">ClasspathDescriptor.java</span></div><h1>ClasspathDescriptor.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.basepom.mojo.duplicatefinder.classpath;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.lang.model.SourceVersion;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.io.Files;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+import org.basepom.mojo.duplicatefinder.ConflictType;
+import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.lang.String.format;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+@SuppressFBWarnings(&quot;NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE&quot;)
+public class ClasspathDescriptor {
+
+<span class="fc" id="L62">    private static final Logger LOG = LoggerFactory.getLogger(ClasspathDescriptor.class);</span>
+
+<span class="fc" id="L64">    private static final MatchPatternPredicate DEFAULT_IGNORED_RESOURCES_PREDICATE = new MatchPatternPredicate(Arrays.asList(</span>
+            // Standard jar folders
+            &quot;^META-INF/.*&quot;,
+            &quot;^OSGI-INF/.*&quot;,
+            // directory name that shows up all the time
+            &quot;^licenses/.*&quot;,
+            // file names that show up all the time
+            &quot;.*license(\\.txt)?$&quot;,
+            &quot;.*notice(\\.txt)?$&quot;,
+            &quot;.*readme(\\.txt)?$&quot;,
+            &quot;.*changelog(\\.txt)?$&quot;,
+            &quot;.*third-party(\\.txt)?$&quot;,
+            // HTML stuff from javadocs.
+            &quot;.*package\\.html$&quot;,
+            &quot;.*overview\\.html$&quot;));
+
+    @VisibleForTesting
+<span class="fc" id="L81">    static final MatchPatternPredicate DEFAULT_IGNORED_CLASS_PREDICATE = new MatchPatternPredicate(Arrays.asList(</span>
+
+            &quot;^(.*\\.)?.*\\$.*$&quot;,      // matches inner classes in any package
+            &quot;^(.*\\.)?package-info$&quot;, // matches package-info in any package
+            &quot;^(.*\\.)?module-info$&quot;   // matches module-info in any package
+    ));
+
+<span class="fc" id="L88">    private static final MatchPatternPredicate DEFAULT_IGNORED_LOCAL_DIRECTORIES = new MatchPatternPredicate(Arrays.asList(</span>
+            &quot;^.git$&quot;,
+            &quot;^.svn$&quot;,
+            &quot;^.hg$&quot;,
+            &quot;^.bzr$&quot;));
+
+    /**
+     * This is a global, static cache which can be reused through multiple runs of the plugin in the same VM,
+     * e.g. for a multi-module build.
+     */
+<span class="fc" id="L98">    private static final ConcurrentMap&lt;File, ClasspathCacheElement&gt; CACHED_BY_FILE = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="nc" id="L100">    private final Multimap&lt;String, File&gt; classesWithElements = MultimapBuilder.treeKeys().hashSetValues().build();</span>
+<span class="nc" id="L101">    private final Multimap&lt;String, File&gt; resourcesWithElements = MultimapBuilder.treeKeys().hashSetValues().build();</span>
+
+    private final Predicate&lt;String&gt; resourcesPredicate;
+    private final Predicate&lt;String&gt; classPredicate;
+
+    private final ImmutableList&lt;Pattern&gt; ignoredResourcePatterns;
+    private final ImmutableList&lt;Pattern&gt; ignoredClassPatterns;
+
+    public static ClasspathDescriptor createClasspathDescriptor(final MavenProject project,
+            final Multimap&lt;File, Artifact&gt; fileToArtifactMap,
+            final Collection&lt;String&gt; ignoredResourcePatterns,
+            final Collection&lt;String&gt; ignoredClassPatterns,
+            final Collection&lt;MavenCoordinates&gt; ignoredDependencies,
+            final boolean useDefaultResourceIgnoreList,
+            final boolean useDefaultClassIgnoreList,
+            final File[] projectFolders) throws MojoExecutionException, InvalidVersionSpecificationException {
+<span class="nc" id="L117">        checkNotNull(project, &quot;project is null&quot;);</span>
+<span class="nc" id="L118">        checkNotNull(fileToArtifactMap, &quot;fileToArtifactMap is null&quot;);</span>
+<span class="nc" id="L119">        checkNotNull(ignoredResourcePatterns, &quot;ignoredResourcePatterns is null&quot;);</span>
+<span class="nc" id="L120">        checkNotNull(ignoredClassPatterns, &quot;ignoredClassPatterns is null&quot;);</span>
+<span class="nc" id="L121">        checkNotNull(ignoredDependencies, &quot;ignoredDependencies is null&quot;);</span>
+<span class="nc" id="L122">        checkNotNull(projectFolders, &quot;projectFolders is null&quot;);</span>
+
+<span class="nc" id="L124">        final ClasspathDescriptor classpathDescriptor = new ClasspathDescriptor(useDefaultResourceIgnoreList, ignoredResourcePatterns,</span>
+                useDefaultClassIgnoreList, ignoredClassPatterns);
+
+<span class="nc" id="L127">        File file = null;</span>
+
+<span class="nc" id="L129">        final MatchArtifactPredicate matchArtifactPredicate = new MatchArtifactPredicate(ignoredDependencies);</span>
+
+<span class="nc" id="L131">        Artifact artifact = null;</span>
+
+        try {
+            // any entry is either a jar in the repo or a folder in the target folder of a referenced
+            // project. Add the elements that are not ignored by the ignoredDependencies predicate to
+            // the classpath descriptor.
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            for (final Entry&lt;File, Artifact&gt; entry : fileToArtifactMap.entries()) {</span>
+<span class="nc" id="L138">                artifact = entry.getValue();</span>
+<span class="nc" id="L139">                file = entry.getKey();</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                if (file.exists()) {</span>
+                    // Add to the classpath if the artifact predicate does not apply (then it is not in the ignoredDependencies list).
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                    if (!matchArtifactPredicate.apply(artifact)) {</span>
+<span class="nc" id="L144">                        classpathDescriptor.addClasspathElement(file);</span>
+                    }
+                } else {
+                    // e.g. when running the goal explicitly on a cleaned multi-module project, referenced
+                    // projects will try to use the output folders of a referenced project but these do not
+                    // exist. Obviously, in this case the plugin might return incorrect results (unfortunately
+                    // false negatives, but there is not much it can do here (besides fail the build here with a
+                    // cryptic error message. Maybe add a flag?).
+<span class="nc" id="L152">                    LOG.debug(format(&quot;Classpath element '%s' does not exist.&quot;, file.getAbsolutePath()));</span>
+                }
+<span class="nc" id="L154">            }</span>
+<span class="nc" id="L155">        } catch (final IOException ex) {</span>
+<span class="nc" id="L156">            throw new MojoExecutionException(format(&quot;Error trying to access file '%s' for artifact '%s'&quot;, file, artifact), ex);</span>
+<span class="nc" id="L157">        }</span>
+
+        try {
+            // Add project folders unconditionally.
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            for (final File projectFile : projectFolders) {</span>
+<span class="nc" id="L162">                file = projectFile;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                if (projectFile.exists()) {</span>
+<span class="nc" id="L164">                    classpathDescriptor.addClasspathElement(file);</span>
+                } else {
+                    // See above. This may happen in the project has been cleaned before running the goal directly.
+<span class="nc" id="L167">                    LOG.debug(format(&quot;Project folder '%s' does not exist.&quot;, file.getAbsolutePath()));</span>
+                }
+            }
+<span class="nc" id="L170">        } catch (final IOException ex) {</span>
+<span class="nc" id="L171">            throw new MojoExecutionException(format(&quot;Error trying to access project folder '%s'&quot;, file), ex);</span>
+<span class="nc" id="L172">        }</span>
+
+<span class="nc" id="L174">        return classpathDescriptor;</span>
+    }
+
+    private ClasspathDescriptor(final boolean useDefaultResourceIgnoreList,
+            final Collection&lt;String&gt; ignoredResourcePatterns,
+            final boolean useDefaultClassIgnoreList,
+            final Collection&lt;String&gt; ignoredClassPatterns)
+<span class="nc" id="L181">            throws MojoExecutionException {</span>
+<span class="nc" id="L182">        final Builder&lt;Pattern&gt; ignoredResourcePatternsBuilder = ImmutableList.builder();</span>
+
+        // build resource predicate...
+<span class="nc" id="L185">        Predicate&lt;String&gt; resourcesPredicate = s -&gt; false;</span>
+
+        // predicate matching the default ignores
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (useDefaultResourceIgnoreList) {</span>
+<span class="nc" id="L189">            resourcesPredicate = resourcesPredicate.or(DEFAULT_IGNORED_RESOURCES_PREDICATE);</span>
+<span class="nc" id="L190">            ignoredResourcePatternsBuilder.addAll(DEFAULT_IGNORED_RESOURCES_PREDICATE.getPatterns());</span>
+        }
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (!ignoredResourcePatterns.isEmpty()) {</span>
+            try {
+                // predicate matching the user ignores
+<span class="nc" id="L196">                MatchPatternPredicate ignoredResourcesPredicate = new MatchPatternPredicate(ignoredResourcePatterns);</span>
+<span class="nc" id="L197">                resourcesPredicate = resourcesPredicate.or(ignoredResourcesPredicate);</span>
+<span class="nc" id="L198">                ignoredResourcePatternsBuilder.addAll(ignoredResourcesPredicate.getPatterns());</span>
+<span class="nc" id="L199">            } catch (final PatternSyntaxException pse) {</span>
+<span class="nc" id="L200">                throw new MojoExecutionException(&quot;Error compiling resourceIgnore pattern: &quot; + pse.getMessage());</span>
+<span class="nc" id="L201">            }</span>
+        }
+
+<span class="nc" id="L204">        this.resourcesPredicate = resourcesPredicate;</span>
+<span class="nc" id="L205">        this.ignoredResourcePatterns = ignoredResourcePatternsBuilder.build();</span>
+
+<span class="nc" id="L207">        final Builder&lt;Pattern&gt; ignoredClassPatternsBuilder = ImmutableList.builder();</span>
+
+        // build class predicate.
+<span class="nc" id="L210">        Predicate&lt;String&gt; classPredicate = s -&gt; false;</span>
+
+        // predicate matching the default ignores
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (useDefaultClassIgnoreList) {</span>
+<span class="nc" id="L214">            classPredicate = classPredicate.or(DEFAULT_IGNORED_CLASS_PREDICATE);</span>
+<span class="nc" id="L215">            ignoredClassPatternsBuilder.addAll(DEFAULT_IGNORED_CLASS_PREDICATE.getPatterns());</span>
+        }
+
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (!ignoredClassPatterns.isEmpty()) {</span>
+            try {
+                // predicate matching the user ignores
+<span class="nc" id="L221">                MatchPatternPredicate ignoredPackagePredicate = new MatchPatternPredicate(ignoredClassPatterns);</span>
+<span class="nc" id="L222">                classPredicate = classPredicate.or(ignoredPackagePredicate);</span>
+<span class="nc" id="L223">                ignoredClassPatternsBuilder.addAll(ignoredPackagePredicate.getPatterns());</span>
+<span class="nc" id="L224">            } catch (final PatternSyntaxException pse) {</span>
+<span class="nc" id="L225">                throw new MojoExecutionException(&quot;Error compiling classIgnore pattern: &quot; + pse.getMessage());</span>
+<span class="nc" id="L226">            }</span>
+        }
+
+<span class="nc" id="L229">        this.classPredicate = classPredicate;</span>
+<span class="nc" id="L230">        this.ignoredClassPatterns = ignoredClassPatternsBuilder.build();</span>
+<span class="nc" id="L231">    }</span>
+
+    public ImmutableMap&lt;String, Collection&lt;File&gt;&gt; getClasspathElementLocations(final ConflictType type) {
+<span class="nc" id="L234">        checkNotNull(type, &quot;type is null&quot;);</span>
+<span class="nc bnc" id="L235" title="All 3 branches missed.">        switch (type) {</span>
+            case CLASS:
+<span class="nc" id="L237">                return ImmutableMultimap.copyOf(classesWithElements).asMap();</span>
+            case RESOURCE:
+<span class="nc" id="L239">                return ImmutableMultimap.copyOf(resourcesWithElements).asMap();</span>
+            default:
+<span class="nc" id="L241">                throw new IllegalStateException(&quot;Type '&quot; + type + &quot;' unknown!&quot;);</span>
+        }
+    }
+
+    public ImmutableList&lt;Pattern&gt; getIgnoredResourcePatterns() {
+<span class="nc" id="L246">        return ignoredResourcePatterns;</span>
+    }
+
+    public ImmutableList&lt;Pattern&gt; getIgnoredClassPatterns() {
+<span class="nc" id="L250">        return ignoredClassPatterns;</span>
+    }
+
+    public ImmutableList&lt;Pattern&gt; getIgnoredDirectoryPatterns() {
+<span class="nc" id="L254">        return DEFAULT_IGNORED_LOCAL_DIRECTORIES.getPatterns();</span>
+    }
+
+
+    private void addClasspathElement(final File element) throws IOException {
+<span class="nc" id="L259">        checkState(element.exists(), &quot;Path '%s' does not exist!&quot;, element.getAbsolutePath());</span>
+
+<span class="nc" id="L261">        ClasspathCacheElement cached = CACHED_BY_FILE.get(element);</span>
+
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (cached == null) {</span>
+<span class="nc" id="L264">            final ClasspathCacheElement.Builder cacheBuilder = ClasspathCacheElement.builder(element);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">            if (element.isDirectory()) {</span>
+<span class="nc" id="L266">                addDirectory(cacheBuilder, element, new PackageNameHolder());</span>
+            } else {
+<span class="nc" id="L268">                addArchive(cacheBuilder, element);</span>
+            }
+<span class="nc" id="L270">            final ClasspathCacheElement newCached = cacheBuilder.build();</span>
+<span class="nc" id="L271">            final ClasspathCacheElement oldCached = CACHED_BY_FILE.putIfAbsent(element, newCached);</span>
+<span class="nc" id="L272">            cached = MoreObjects.firstNonNull(oldCached, newCached);</span>
+<span class="nc" id="L273">        } else {</span>
+<span class="nc" id="L274">            LOG.debug(format(&quot;Cache hit for '%s'&quot;, element.getAbsolutePath()));</span>
+        }
+
+<span class="nc" id="L277">        cached.putResources(resourcesWithElements, resourcesPredicate);</span>
+<span class="nc" id="L278">        cached.putClasses(classesWithElements, classPredicate);</span>
+
+<span class="nc" id="L280">    }</span>
+
+    private void addDirectory(final ClasspathCacheElement.Builder cacheBuilder, final File workDir, final PackageNameHolder packageName) {
+<span class="nc" id="L283">        final File[] files = workDir.listFiles();</span>
+
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (files != null) {</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">            for (final File file : files) {</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">                if (file.isDirectory()) {</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">                    if (DEFAULT_IGNORED_LOCAL_DIRECTORIES.apply(file.getName())) {</span>
+<span class="nc" id="L289">                        LOG.debug(format(&quot;Ignoring local directory '%s'&quot;, file.getAbsolutePath()));</span>
+                    } else {
+<span class="nc" id="L291">                        addDirectory(cacheBuilder, file, packageName.getChildPackage(file.getName()));</span>
+                    }
+
+<span class="nc bnc" id="L294" title="All 2 branches missed.">                } else if (file.isFile()) {</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">                    if (&quot;class&quot;.equals(Files.getFileExtension(file.getName()))) {</span>
+<span class="nc" id="L296">                        final String className = packageName.getQualifiedName(Files.getNameWithoutExtension(file.getName()));</span>
+<span class="nc" id="L297">                        cacheBuilder.addClass(className);</span>
+<span class="nc" id="L298">                    } else {</span>
+<span class="nc" id="L299">                        final String resourcePath = packageName.getQualifiedPath(file.getName());</span>
+<span class="nc" id="L300">                        cacheBuilder.addResource(resourcePath);</span>
+<span class="nc" id="L301">                    }</span>
+                } else {
+<span class="nc" id="L303">                    LOG.warn(format(&quot;Ignoring unknown file type for '%s'&quot;, file.getAbsolutePath()));</span>
+                }
+            }
+        }
+<span class="nc" id="L307">    }</span>
+
+    private void addArchive(final ClasspathCacheElement.Builder cacheBuilder, final File element) throws IOException {
+
+        try (
+<span class="nc" id="L312">            final InputStream input = element.toURI().toURL().openStream();</span>
+<span class="nc" id="L313">            final ZipInputStream zipInput = new ZipInputStream(input)) {</span>
+
+            ZipEntry entry;
+
+<span class="nc bnc" id="L317" title="All 2 branches missed.">            while ((entry = zipInput.getNextEntry()) != null) {</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">                if (!entry.isDirectory()) {</span>
+<span class="nc" id="L319">                    final String name = entry.getName();</span>
+<span class="nc" id="L320">                    Optional&lt;List&lt;String&gt;&gt; validatedElements = validateClassName(name);</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">                    if (validatedElements.isPresent()) {</span>
+<span class="nc" id="L322">                        List&lt;String&gt; nameElements = validatedElements.get();</span>
+<span class="nc" id="L323">                        final PackageNameHolder packageName = new PackageNameHolder(nameElements.subList(0, nameElements.size() - 1));</span>
+<span class="nc" id="L324">                        final String className = packageName.getQualifiedName(Files.getNameWithoutExtension(name));</span>
+<span class="nc" id="L325">                        cacheBuilder.addClass(className);</span>
+<span class="nc" id="L326">                    } else {</span>
+<span class="nc" id="L327">                        final String resourcePath = name.replace('\\', File.separatorChar);</span>
+<span class="nc" id="L328">                        cacheBuilder.addResource(resourcePath);</span>
+                    }
+<span class="nc" id="L330">                }</span>
+            }
+        }
+<span class="nc" id="L333">    }</span>
+
+    @VisibleForTesting
+    static Optional&lt;List&lt;String&gt;&gt; validateClassName(String fullClassPath) {
+<span class="fc bfc" id="L337" title="All 2 branches covered.">        if (fullClassPath == null) {</span>
+<span class="fc" id="L338">            return Optional.empty();</span>
+        }
+
+        // ZIP/Jars always use &quot;/&quot; as separators
+<span class="fc" id="L342">        final List&lt;String&gt; nameElements = ImmutableList.copyOf(Splitter.on(&quot;/&quot;).splitToList(fullClassPath));</span>
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">        if (nameElements.isEmpty()) {</span>
+<span class="nc" id="L344">            LOG.warn(format(&quot;ZIP entry '%s' split into empty list!&quot;, fullClassPath));</span>
+<span class="nc" id="L345">            return Optional.empty();</span>
+        }
+<span class="fc" id="L347">        String classFileName = nameElements.get(nameElements.size() - 1);</span>
+
+<span class="fc bfc" id="L349" title="All 2 branches covered.">        if (!&quot;class&quot;.equals(Files.getFileExtension(classFileName))) {</span>
+<span class="fc" id="L350">            LOG.debug(format(&quot;Ignoring %s, %s is not a class file&quot;, fullClassPath, classFileName));</span>
+<span class="fc" id="L351">            return Optional.empty();</span>
+        }
+<span class="fc bfc" id="L353" title="All 2 branches covered.">        for (int i = 0; i &lt; nameElements.size() - 1; i++) {</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">            if (!SourceVersion.isIdentifier(nameElements.get(i))) {</span>
+<span class="fc" id="L355">                LOG.debug(format(&quot;Ignoring %s, %s is not a valid package element&quot;, fullClassPath, nameElements.get(i)));</span>
+<span class="fc" id="L356">                return Optional.empty();</span>
+            }
+        }
+
+<span class="fc" id="L360">        String className = Files.getNameWithoutExtension(classFileName);</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">        if (!(SourceVersion.isIdentifier(className)</span>
+<span class="fc bfc" id="L362" title="All 2 branches covered.">                || &quot;module-info&quot;.equals(className)</span>
+<span class="pc bpc" id="L363" title="1 of 2 branches missed.">                || &quot;package-info&quot;.equals(className))) {</span>
+<span class="nc" id="L364">            LOG.debug(format(&quot;Ignoring %s, %s is not a valid class identifier&quot;, fullClassPath, className));</span>
+<span class="nc" id="L365">            return Optional.empty();</span>
+        }
+
+<span class="fc" id="L368">        return Optional.of(nameElements);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
