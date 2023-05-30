@@ -238,16 +238,16 @@ import org.springframework.boot.loader.tools.Repackager;
 
 <span class="nc bnc" id="L239" title="All 2 branches missed.">        if (Strings.nullToEmpty(repackClassifier).isBlank()) {</span>
 <span class="nc bnc" id="L240" title="All 2 branches missed.">            if (Strings.nullToEmpty(project.getArtifact().getClassifier()).isBlank()) {</span>
-<span class="nc" id="L241">                LOG.report(quiet, &quot;Repacked archive will replace main artifact!&quot;);</span>
+<span class="nc" id="L241">                LOG.report(quiet, &quot;Repacked archive will replace main artifact&quot;);</span>
             } else {
-<span class="nc" id="L243">                LOG.report(quiet, &quot;Repacked archive will have no classifier (main artifact has '%s' classifier)!&quot;, project.getArtifact().getClassifier());</span>
+<span class="nc" id="L243">                LOG.report(quiet, &quot;Repacked archive will have no classifier, main artifact has classifier '%s'&quot;, project.getArtifact().getClassifier());</span>
             }
         } else {
 <span class="nc bnc" id="L246" title="All 2 branches missed.">            if (repackClassifier.equals(project.getArtifact().getClassifier())) {</span>
-<span class="nc" id="L247">                LOG.report(quiet, &quot;Repacked archive will replace main artifact using classifier '%s'!&quot;, repackClassifier);</span>
+<span class="nc" id="L247">                LOG.report(quiet, &quot;Repacked archive will replace main artifact using classifier '%s'&quot;, repackClassifier);</span>
             } else {
 <span class="nc" id="L249">                LOG.report(quiet, &quot;Repacked archive will use classifier '%s', main artifact has %s&quot;, repackClassifier,</span>
-<span class="nc bnc" id="L250" title="All 2 branches missed.">                        project.getArtifact().getClassifier() == null ? &quot;no classifier&quot; : &quot;classifier '&quot; + project.getArtifact().getClassifier() + &quot;'!&quot;);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                        project.getArtifact().getClassifier() == null ? &quot;no classifier&quot; : &quot;classifier '&quot; + project.getArtifact().getClassifier() + &quot;'&quot;);</span>
             }
         }
 
