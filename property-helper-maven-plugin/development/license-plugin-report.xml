@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1685550296947">
-    <module artifactId="property-helper-maven-plugin" groupId="org.basepom.maven" version="3.1.1"/>
+<licensePluginReport goal="CHECK" timestamp="1685550424130">
+    <module artifactId="property-helper-maven-plugin" groupId="org.basepom.maven" version="3.1.2-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="samples/uuid-persist/pom.xml" result="PRESENT"/>
