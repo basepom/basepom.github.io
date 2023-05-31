@@ -30,7 +30,7 @@
           <ul class="breadcrumb">
         <li id="publishDate">Last Published: 2023-05-31<span class="divider">|</span>
 </li>
-          <li id="projectVersion">Version: 1.0.1-SNAPSHOT</li>
+          <li id="projectVersion">Version: 1.0.0</li>
           </ul>
         </div>
       </header>
@@ -41,7 +41,7 @@
    <li class="nav-header">Overview</li>
     <li><a href="index.html" title="Introduction"><span class="none"></span>Introduction</a></li>
     <li><a href="plugin-info.html" title="Goals"><span class="none"></span>Goals</a></li>
-    <li><a href="dependencies.html" title="Dependency inclusion and exclusion"><span class="none"></span>Dependency inclusion and exclusion</a></li>
+    <li><a href="include-exclude-dependencies.html" title="Dependency inclusion and exclusion"><span class="none"></span>Dependency inclusion and exclusion</a></li>
     <li><a href="why-repack.html" title="Why Repack?"><span class="none"></span>Why Repack?</a></li>
     <li><a href="https://www.apache.org/licenses/LICENSE-2.0" class="externalLink" title="License"><span class="none"></span>License</a></li>
    <li class="nav-header">Project Documentation</li>
@@ -105,7 +105,7 @@ function toggleDisplay(elementId) {
 <td>0</td>
 <td>0</td>
 <td>100.0%</td>
-<td>0.185 s</td></tr></table><br />
+<td>0.082 s</td></tr></table><br />
 <p>Note: failures are anticipated and checked for with assertions while errors are unanticipated.</p><br /></section><section><a id="Package_List"></a>
 <h1>Package List</h1>
 <p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><br />
@@ -125,7 +125,7 @@ function toggleDisplay(elementId) {
 <td>0</td>
 <td>0</td>
 <td>100.0%</td>
-<td>0.185 s</td></tr></table><br />
+<td>0.082 s</td></tr></table><br />
 <p>Note: package statistics are not computed recursively, they only sum up all of its testsuites numbers.</p><section><a id="org.basepom.mojo.repack"></a>
 <h2>org.basepom.mojo.repack</h2>
 <table class="table table-striped">
@@ -139,15 +139,6 @@ function toggleDisplay(elementId) {
 <th>Success Rate</th>
 <th>Time</th></tr>
 <tr class="b">
-<td style="text-align: left;"><a href="#org.basepom.mojo.repack.WildcardMatchingTest"><img src="images/icon_success_sml.gif" /></a></td>
-<td><a href="#org.basepom.mojo.repack.WildcardMatchingTest">WildcardMatchingTest</a></td>
-<td>6</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>100.0%</td>
-<td>0.133 s</td></tr>
-<tr class="a">
 <td style="text-align: left;"><a href="#org.basepom.mojo.repack.DependencyDefinitionTest"><img src="images/icon_success_sml.gif" /></a></td>
 <td><a href="#org.basepom.mojo.repack.DependencyDefinitionTest">DependencyDefinitionTest</a></td>
 <td>3</td>
@@ -155,49 +146,58 @@ function toggleDisplay(elementId) {
 <td>0</td>
 <td>0</td>
 <td>100.0%</td>
-<td>0.052 s</td></tr></table></section><br /></section><section><a id="Test_Cases"></a>
+<td>0.046 s</td></tr>
+<tr class="a">
+<td style="text-align: left;"><a href="#org.basepom.mojo.repack.WildcardMatchingTest"><img src="images/icon_success_sml.gif" /></a></td>
+<td><a href="#org.basepom.mojo.repack.WildcardMatchingTest">WildcardMatchingTest</a></td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>100.0%</td>
+<td>0.036 s</td></tr></table></section><br /></section><section><a id="Test_Cases"></a>
 <h1>Test Cases</h1>
-<p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><section><a id="org.basepom.mojo.repack.WildcardMatchingTest"></a>
-<h2>WildcardMatchingTest</h2>
-<table class="table table-striped">
-<tr class="a">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testEndGlobs"></a>testEndGlobs</td>
-<td>0.073 s</td></tr>
-<tr class="b">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testSingleWildcards"></a>testSingleWildcards</td>
-<td>0.003 s</td></tr>
-<tr class="a">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testLastChanceSaloon"></a>testLastChanceSaloon</td>
-<td>0.002 s</td></tr>
-<tr class="b">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testMiddleGlobs"></a>testMiddleGlobs</td>
-<td>0.002 s</td></tr>
-<tr class="a">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testEmptyPattern"></a>testEmptyPattern</td>
-<td>0.001 s</td></tr>
-<tr class="b">
-<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
-<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testDirectMatches"></a>testDirectMatches</td>
-<td>0.001 s</td></tr></table></section><section><a id="org.basepom.mojo.repack.DependencyDefinitionTest"></a>
+<p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><section><a id="org.basepom.mojo.repack.DependencyDefinitionTest"></a>
 <h2>DependencyDefinitionTest</h2>
 <table class="table table-striped">
 <tr class="a">
 <td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
 <td><a id="TC_org.basepom.mojo.repack.DependencyDefinitionTest.testParsing"></a>testParsing</td>
-<td>0.038 s</td></tr>
+<td>0.028 s</td></tr>
 <tr class="b">
 <td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
 <td><a id="TC_org.basepom.mojo.repack.DependencyDefinitionTest.testClassifiers"></a>testClassifiers</td>
-<td>0.002 s</td></tr>
+<td>0.003 s</td></tr>
 <tr class="a">
 <td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
 <td><a id="TC_org.basepom.mojo.repack.DependencyDefinitionTest.testWildcardMatches"></a>testWildcardMatches</td>
-<td>0.003 s</td></tr></table></section><br /></section>
+<td>0.001 s</td></tr></table></section><section><a id="org.basepom.mojo.repack.WildcardMatchingTest"></a>
+<h2>WildcardMatchingTest</h2>
+<table class="table table-striped">
+<tr class="a">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testEndGlobs"></a>testEndGlobs</td>
+<td>0.02 s</td></tr>
+<tr class="b">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testSingleWildcards"></a>testSingleWildcards</td>
+<td>0.001 s</td></tr>
+<tr class="a">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testLastChanceSaloon"></a>testLastChanceSaloon</td>
+<td>0 s</td></tr>
+<tr class="b">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testMiddleGlobs"></a>testMiddleGlobs</td>
+<td>0.001 s</td></tr>
+<tr class="a">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testEmptyPattern"></a>testEmptyPattern</td>
+<td>0 s</td></tr>
+<tr class="b">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.mojo.repack.WildcardMatchingTest.testDirectMatches"></a>testDirectMatches</td>
+<td>0.001 s</td></tr></table></section><br /></section>
         </main>
       </div>
     </div>
