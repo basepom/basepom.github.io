@@ -1,9 +1,9 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Repack Maven Plugin,org.basepom.mojo.repack,Reporter,241,0,6,0,45,0,16,0,13,0
+Repack Maven Plugin,org.basepom.mojo.repack,DependencyDefinitionFilter,59,0,8,0,14,0,6,0,2,0
+Repack Maven Plugin,org.basepom.mojo.repack,RepackMojo,606,0,52,0,125,0,38,0,12,0
 Repack Maven Plugin,org.basepom.mojo.repack,OptionalArtifactFilter,59,0,8,0,16,0,6,0,2,0
 Repack Maven Plugin,org.basepom.mojo.repack,PluginLog,215,0,2,0,56,0,11,0,10,0
-Repack Maven Plugin,org.basepom.mojo.repack,DependencyDefinitionFilter,59,0,8,0,14,0,6,0,2,0
-Repack Maven Plugin,org.basepom.mojo.repack,Reporter,241,0,6,0,45,0,16,0,13,0
-Repack Maven Plugin,org.basepom.mojo.repack,RepackMojo,606,0,52,0,125,0,38,0,12,0
 Repack Maven Plugin,org.basepom.mojo.repack,LayoutType,59,0,0,0,10,0,3,0,3,0
 Repack Maven Plugin,org.basepom.mojo.repack,ScopeExclusionFilter,37,0,4,0,10,0,4,0,2,0
 Repack Maven Plugin,org.basepom.mojo.repack,Wildcard,9,104,1,26,3,30,2,15,1,2

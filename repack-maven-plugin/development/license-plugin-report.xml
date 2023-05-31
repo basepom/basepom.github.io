@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1685550268426">
-    <module artifactId="repack-maven-plugin" groupId="org.basepom.maven" version="1.0.0"/>
+<licensePluginReport goal="CHECK" timestamp="1685550294827">
+    <module artifactId="repack-maven-plugin" groupId="org.basepom.maven" version="1.0.1-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="src/main/java/org/basepom/mojo/repack/ArtifactsLibraries.java" result="PRESENT"/>
