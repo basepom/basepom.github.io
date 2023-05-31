@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Log.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.util</a> &gt; <span class="el_source">Log.java</span></div><h1>Log.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.util;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Wraps a Logger into a number of convenience methods such as varargs.
+ */
+public final class Log {
+
+<span class="fc" id="L28">    private static final String LOG_NAME = Log.class.getName();</span>
+
+    private final Logger wrappedLogger;
+
+<span class="fc" id="L32">    private Log(final Logger wrappedLogger) {</span>
+<span class="fc" id="L33">        this.wrappedLogger = checkNotNull(wrappedLogger, &quot;wrappedLogger is null&quot;);</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * Finds the logger for the current class by using the call stack.
+     */
+    public static Log findLog() {
+<span class="fc" id="L40">        return findLog(0);</span>
+    }
+
+    /**
+     * Finds the logger for the caller by using the call stack.
+     */
+    public static Log findCallerLog() {
+<span class="nc" id="L47">        return findLog(1);</span>
+    }
+
+    /**
+     * Returns a Logger for a given class.
+     */
+    public static Log forClass(final Class&lt;?&gt; clazz) {
+<span class="nc" id="L54">        return forName(clazz.getName());</span>
+    }
+
+    /**
+     * Returns a Logger for a given class or category name.
+     */
+    public static Log forName(final String name) {
+<span class="fc" id="L61">        return new Log(LoggerFactory.getLogger(name));</span>
+    }
+
+    /**
+     * Returns a Logger for a given log4j logger.
+     */
+    public static Log forLogger(final Logger wrappedLogger) {
+<span class="nc" id="L68">        return new Log(wrappedLogger);</span>
+    }
+
+    private static Log findLog(final int depth) {
+<span class="fc" id="L72">        final StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();</span>
+<span class="fc" id="L73">        int i = 1;</span>
+<span class="pc bpc" id="L74" title="1 of 4 branches missed.">        while (i &lt; stacktrace.length &amp;&amp; stacktrace[i].getClassName().equals(LOG_NAME)) {</span>
+<span class="fc" id="L75">            i++;</span>
+        }
+
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (i + depth &lt; stacktrace.length) {</span>
+<span class="fc" id="L79">            return forName(stacktrace[i + depth].getClassName());</span>
+        }
+<span class="nc" id="L81">        throw new IllegalStateException(</span>
+<span class="nc" id="L82">                String.format(&quot;Attempt to generate a logger for an invalid depth (%d vs. %d).&quot;, depth,</span>
+<span class="nc" id="L83">                        stacktrace.length - i));</span>
+    }
+
+    @VisibleForTesting
+    Logger getWrappedLogger() {
+<span class="nc" id="L88">        return wrappedLogger;</span>
+    }
+
+    // ========================================================================
+    //
+    // Level mgt.
+    //
+    // ========================================================================
+
+    public boolean isTraceEnabled() {
+<span class="nc" id="L98">        return wrappedLogger.isTraceEnabled();</span>
+    }
+
+    public boolean isDebugEnabled() {
+<span class="nc" id="L102">        return wrappedLogger.isDebugEnabled();</span>
+    }
+
+    public boolean isErrorEnabled() {
+<span class="nc" id="L106">        return wrappedLogger.isErrorEnabled();</span>
+    }
+
+    public boolean isWarnEnabled() {
+<span class="nc" id="L110">        return wrappedLogger.isWarnEnabled();</span>
+    }
+
+    public boolean isInfoEnabled() {
+<span class="nc" id="L114">        return wrappedLogger.isInfoEnabled();</span>
+    }
+
+    // ========================================================================
+    //
+    // Trace level methods
+    //
+    // ========================================================================
+
+    public void trace(final Throwable t, final String message, final Object... args) {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (wrappedLogger.isTraceEnabled()) {</span>
+<span class="nc" id="L125">            wrappedLogger.trace(String.format(message, args), t);</span>
+        }
+<span class="nc" id="L127">    }</span>
+
+    public void trace(final String message, final Throwable t, final Object... args) {
+<span class="nc" id="L130">        trace(t, message, args);</span>
+<span class="nc" id="L131">    }</span>
+
+    public void trace(final Throwable t, final String message) {
+<span class="nc" id="L134">        wrappedLogger.trace(message, t);</span>
+<span class="nc" id="L135">    }</span>
+
+    public void trace(final String message) {
+<span class="nc" id="L138">        wrappedLogger.trace(message);</span>
+<span class="nc" id="L139">    }</span>
+
+    public void trace(final String message, final Object... args) {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (wrappedLogger.isTraceEnabled()) {</span>
+<span class="nc" id="L143">            wrappedLogger.trace(String.format(message, args));</span>
+        }
+<span class="nc" id="L145">    }</span>
+
+    // ========================================================================
+    //
+    // Debug level methods
+    //
+    // ========================================================================
+
+    public void debug(final Throwable t, final String message, final Object... args) {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L155">            wrappedLogger.debug(String.format(message, args), t);</span>
+        }
+<span class="nc" id="L157">    }</span>
+
+    public void debug(final String message, final Throwable t, final Object... args) {
+<span class="nc" id="L160">        debug(t, message, args);</span>
+<span class="nc" id="L161">    }</span>
+
+    public void debug(final Throwable t, final String message) {
+<span class="nc" id="L164">        wrappedLogger.debug(message, t);</span>
+<span class="nc" id="L165">    }</span>
+
+    public void debug(final String message) {
+<span class="nc" id="L168">        wrappedLogger.debug(message);</span>
+<span class="nc" id="L169">    }</span>
+
+    public void debug(final String message, final Object... args) {
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L173">            wrappedLogger.debug(String.format(message, args));</span>
+        }
+<span class="fc" id="L175">    }</span>
+
+    // ========================================================================
+    //
+    // Info level methods
+    //
+    // ========================================================================
+
+    public void info(final Throwable t, final String message, final Object... args) {
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (wrappedLogger.isInfoEnabled()) {</span>
+<span class="nc" id="L185">            wrappedLogger.info(String.format(message, args), t);</span>
+        }
+<span class="nc" id="L187">    }</span>
+
+    public void info(final String message, final Throwable t, final Object... args) {
+<span class="nc" id="L190">        info(t, message, args);</span>
+<span class="nc" id="L191">    }</span>
+
+    public void info(final Throwable t, final String message) {
+<span class="nc" id="L194">        wrappedLogger.info(message, t);</span>
+<span class="nc" id="L195">    }</span>
+
+    public void info(final String message, final Object... args) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (wrappedLogger.isInfoEnabled()) {</span>
+<span class="nc" id="L199">            wrappedLogger.info(String.format(message, args));</span>
+        }
+<span class="nc" id="L201">    }</span>
+
+    public void info(final String message) {
+<span class="nc" id="L204">        wrappedLogger.info(message);</span>
+<span class="nc" id="L205">    }</span>
+
+    public void infoDebug(final Throwable t, final String infoMessage, final Object... args) {
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L209">            wrappedLogger.info(String.format(infoMessage, args), t);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        } else if (wrappedLogger.isInfoEnabled()) {</span>
+<span class="nc" id="L211">            wrappedLogger.info(summarize(t, infoMessage, args));</span>
+        }
+<span class="nc" id="L213">    }</span>
+
+    public void infoDebug(final String infoMessage, final Throwable t, final Object... args) {
+<span class="nc" id="L216">        infoDebug(t, infoMessage, args);</span>
+<span class="nc" id="L217">    }</span>
+
+    public void infoDebug(final Throwable t, final String infoMessage) {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L221">            wrappedLogger.info(infoMessage, t);</span>
+        } else {
+<span class="nc" id="L223">            wrappedLogger.info(summarize(t, infoMessage));</span>
+        }
+<span class="nc" id="L225">    }</span>
+
+    // ========================================================================
+    //
+    // Warn level methods
+    //
+    // ========================================================================
+
+    public void warn(final Throwable t, final String message, final Object... args) {
+<span class="nc" id="L234">        wrappedLogger.warn(String.format(message, args), t);</span>
+<span class="nc" id="L235">    }</span>
+
+    public void warn(final String message, final Throwable t, final Object... args) {
+<span class="nc" id="L238">        warn(t, message, args);</span>
+<span class="nc" id="L239">    }</span>
+
+    public void warn(final Throwable t, final String message) {
+<span class="nc" id="L242">        wrappedLogger.warn(message, t);</span>
+<span class="nc" id="L243">    }</span>
+
+    public void warn(final String message, final Object... args) {
+<span class="fc" id="L246">        wrappedLogger.warn(String.format(message, args));</span>
+<span class="fc" id="L247">    }</span>
+
+    public void warn(final String message) {
+<span class="nc" id="L250">        wrappedLogger.warn(message);</span>
+<span class="nc" id="L251">    }</span>
+
+    public void warnDebug(final Throwable t, final String warnMessage, final Object... args) {
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L255">            wrappedLogger.warn(String.format(warnMessage, args), t);</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">        } else if (isWarnEnabled()) {</span>
+<span class="nc" id="L257">            wrappedLogger.warn(summarize(t, warnMessage, args));</span>
+        }
+<span class="nc" id="L259">    }</span>
+
+    public void warnDebug(final String warnMessage, final Throwable t, final Object... args) {
+<span class="nc" id="L262">        warnDebug(t, warnMessage, args);</span>
+<span class="nc" id="L263">    }</span>
+
+    public void warnDebug(final Throwable t, final String warnMessage) {
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L267">            wrappedLogger.warn(warnMessage, t);</span>
+        } else {
+<span class="nc" id="L269">            wrappedLogger.warn(summarize(t, warnMessage));</span>
+        }
+<span class="nc" id="L271">    }</span>
+
+    // ========================================================================
+    //
+    // Error level methods
+    //
+    // ========================================================================
+
+    public void error(final Throwable t, final String message, final Object... args) {
+<span class="nc" id="L280">        wrappedLogger.error(String.format(message, args), t);</span>
+<span class="nc" id="L281">    }</span>
+
+    public void error(final String message, final Throwable t, final Object... args) {
+<span class="nc" id="L284">        error(t, message, args);</span>
+<span class="nc" id="L285">    }</span>
+
+    public void error(final Throwable t, final String message) {
+<span class="nc" id="L288">        wrappedLogger.error(message, t);</span>
+<span class="nc" id="L289">    }</span>
+
+    public void error(final String message, final Object... args) {
+<span class="nc" id="L292">        wrappedLogger.error(String.format(message, args));</span>
+<span class="nc" id="L293">    }</span>
+
+    public void error(final String message) {
+<span class="nc" id="L296">        wrappedLogger.error(message);</span>
+<span class="nc" id="L297">    }</span>
+
+    public void errorDebug(final Throwable t, final String errorMessage, final Object... args) {
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L301">            wrappedLogger.error(String.format(errorMessage, args), t);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        } else if (isErrorEnabled()) {</span>
+<span class="nc" id="L303">            wrappedLogger.error(summarize(t, errorMessage, args));</span>
+        }
+<span class="nc" id="L305">    }</span>
+
+    public void errorDebug(final String errorMessage, final Throwable t, final Object... args) {
+<span class="nc" id="L308">        errorDebug(t, errorMessage, args);</span>
+<span class="nc" id="L309">    }</span>
+
+    public void errorDebug(final Throwable t, final String errorMessage) {
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (wrappedLogger.isDebugEnabled()) {</span>
+<span class="nc" id="L313">            wrappedLogger.error(errorMessage, t);</span>
+        } else {
+<span class="nc" id="L315">            wrappedLogger.error(summarize(t, errorMessage));</span>
+        }
+<span class="nc" id="L317">    }</span>
+
+    private String summarize(final Throwable t, final String format, final Object... args) {
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        final String message = (t == null) ? null : t.getMessage();</span>
+
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (message == null) {</span>
+<span class="nc" id="L323">            return format(format, args);</span>
+        }
+
+<span class="nc" id="L326">        final int index = message.indexOf('\n');</span>
+
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (index == -1) {</span>
+<span class="nc" id="L329">            return format(format, args) + &quot;: &quot; + message;</span>
+        }
+
+<span class="nc" id="L332">        final String shortMsg = message.substring(0, index);</span>
+<span class="nc" id="L333">        return format(format, args) + &quot; (Switch to DEBUG for full stack trace): &quot; + shortMsg;</span>
+    }
+
+    private String format(final String format, final Object... args) {
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (format != null) {</span>
+<span class="nc" id="L338">            return String.format(format, args);</span>
+        } else {
+<span class="nc" id="L340">            final StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">            if (args != null) {</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc" id="L343">                    sb.append(args[i]);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">                    if (i &lt; args.length - 1) {</span>
+<span class="nc" id="L345">                        sb.append(&quot;, &quot;);</span>
+                    }
+                }
+            }
+<span class="nc" id="L349">            return sb.toString();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

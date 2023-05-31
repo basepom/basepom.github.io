@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MacroField.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">MacroField.java</span></div><h1>MacroField.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+
+import org.basepom.mojo.propertyhelper.beans.MacroDefinition;
+import org.basepom.mojo.propertyhelper.macros.MacroType;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import org.apache.maven.plugin.MojoExecutionException;
+
+public class MacroField
+        implements PropertyElement {
+
+    private final MacroDefinition macroDefinition;
+    private final ValueProvider valueProvider;
+    private final AbstractPropertyHelperMojo mojo;
+
+    public MacroField(final MacroDefinition macroDefinition,
+            final ValueProvider valueProvider,
+<span class="nc" id="L41">            final AbstractPropertyHelperMojo mojo) {</span>
+<span class="nc" id="L42">        this.macroDefinition = macroDefinition;</span>
+<span class="nc" id="L43">        this.valueProvider = valueProvider;</span>
+<span class="nc" id="L44">        this.mojo = mojo;</span>
+<span class="nc" id="L45">    }</span>
+
+    public static List&lt;MacroField&gt; createMacros(final ValueCache valueCache,
+            final MacroDefinition[] macroDefinitions,
+            final AbstractPropertyHelperMojo mojo)
+            throws IOException {
+<span class="nc" id="L51">        checkNotNull(valueCache, &quot;valueCache is null&quot;);</span>
+<span class="nc" id="L52">        checkNotNull(macroDefinitions, &quot;macroDefinitions is null&quot;);</span>
+<span class="nc" id="L53">        checkNotNull(mojo, &quot;mojo is null&quot;);</span>
+
+<span class="nc" id="L55">        final Builder&lt;MacroField&gt; result = ImmutableList.builder();</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        for (MacroDefinition macroDefinition : macroDefinitions) {</span>
+<span class="nc" id="L58">            macroDefinition.check();</span>
+<span class="nc" id="L59">            final ValueProvider macroValue = valueCache.getValueProvider(macroDefinition);</span>
+<span class="nc" id="L60">            final MacroField macroField = new MacroField(macroDefinition, macroValue, mojo);</span>
+<span class="nc" id="L61">            result.add(macroField);</span>
+        }
+
+<span class="nc" id="L64">        return result.build();</span>
+    }
+
+    @Override
+    public String getPropertyName() {
+<span class="nc" id="L69">        return macroDefinition.getId();</span>
+    }
+
+    @Override
+    public Optional&lt;String&gt; getPropertyValue() throws MojoExecutionException {
+<span class="nc" id="L74">        final Optional&lt;String&gt; type = macroDefinition.getMacroType();</span>
+        final MacroType macroType;
+
+        try {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (type.isPresent()) {</span>
+<span class="nc" id="L79">                macroType = mojo.getMacros().get(type.get());</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                checkState(macroType != null, &quot;Could not locate macro '%s'&quot;, type.get());</span>
+            } else {
+<span class="nc" id="L82">                final Optional&lt;String&gt; macroClassName = macroDefinition.getMacroClass();</span>
+<span class="nc" id="L83">                checkState(macroClassName.isPresent(), &quot;No definition for macro '%s' found!&quot;, macroDefinition.getId());</span>
+<span class="nc" id="L84">                final Class&lt;?&gt; macroClass = Class.forName(macroClassName.get());</span>
+<span class="nc" id="L85">                macroType = (MacroType) macroClass.getDeclaredConstructor().newInstance();</span>
+            }
+
+<span class="nc" id="L88">            Optional&lt;String&gt; result = macroType.getValue(macroDefinition, valueProvider, mojo);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (result.isPresent()) {</span>
+<span class="nc" id="L90">                return macroDefinition.formatResult(result.get());</span>
+            }
+<span class="nc" id="L92">            return result;</span>
+<span class="nc" id="L93">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L94">            throw new MojoExecutionException(format(&quot;Could not instantiate '%s'&quot;, macroDefinition), e);</span>
+        }
+    }
+
+    @Override
+    public boolean isExport() {
+<span class="nc" id="L100">        return macroDefinition.isExport();</span>
+    }
+
+    @Override
+    public String toString() {
+        try {
+<span class="nc" id="L106">            return getPropertyValue().orElse(&quot;&quot;);</span>
+<span class="nc" id="L107">        } catch (Exception e) {</span>
+<span class="nc" id="L108">            return &quot;&lt;unset&gt;&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
