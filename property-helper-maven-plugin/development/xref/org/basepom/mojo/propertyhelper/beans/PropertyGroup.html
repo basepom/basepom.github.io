@@ -145,21 +145,23 @@
 <a class="jxr_linenumber" name="L137" href="#L137">137</a>     }
 <a class="jxr_linenumber" name="L138" href="#L138">138</a> 
 <a class="jxr_linenumber" name="L139" href="#L139">139</a>     <strong class="jxr_keyword">public</strong> String getPropertyValue(<strong class="jxr_keyword">final</strong> <a name="InterpolatorFactory" href="../../../../../org/basepom/mojo/propertyhelper/InterpolatorFactory.html#InterpolatorFactory">InterpolatorFactory</a> interpolatorFactory, <strong class="jxr_keyword">final</strong> String propertyName, <strong class="jxr_keyword">final</strong> Map&lt;String, String&gt; propElements)
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>             <strong class="jxr_keyword">throws</strong> IOException, InterpolationException {
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>         <strong class="jxr_keyword">throws</strong> IOException, InterpolationException {
 <a class="jxr_linenumber" name="L141" href="#L141">141</a> 
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>         ImmutableMap&lt;String, PropertyDefinition&gt; definitionMap = ImmutableMap.copyOf(
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>                 Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>             Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));
 <a class="jxr_linenumber" name="L144" href="#L144">144</a> 
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">if</strong> (!definitionMap.containsKey(propertyName)) {
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>             <strong class="jxr_keyword">return</strong> <span class="jxr_string">""</span>;
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>         }
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">final</strong> <a name="PropertyDefinition" href="../../../../../org/basepom/mojo/propertyhelper/beans/PropertyDefinition.html#PropertyDefinition">PropertyDefinition</a> propertyDefinition = definitionMap.get(propertyName);
+<a class="jxr_linenumber" name="L146" href="#L146">146</a> 
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>         String result = <span class="jxr_string">""</span>;
 <a class="jxr_linenumber" name="L148" href="#L148">148</a> 
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>         <strong class="jxr_keyword">final</strong> <a name="PropertyDefinition" href="../../../../../org/basepom/mojo/propertyhelper/beans/PropertyDefinition.html#PropertyDefinition">PropertyDefinition</a> propertyDefinition = definitionMap.get(propertyName);
-<a class="jxr_linenumber" name="L150" href="#L150">150</a> 
-<a class="jxr_linenumber" name="L151" href="#L151">151</a>         <strong class="jxr_keyword">final</strong> String result = interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements);
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>         <strong class="jxr_keyword">return</strong> TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(), result);
-<a class="jxr_linenumber" name="L153" href="#L153">153</a>     }
-<a class="jxr_linenumber" name="L154" href="#L154">154</a> }
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         <strong class="jxr_keyword">if</strong> (propertyDefinition != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>             result = TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(),
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>                 interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements));
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>         }
+<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>         <strong class="jxr_keyword">return</strong> result;
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>     }
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2014&#x2013;2023 <a href="https://github.com/basepom">The basepom project</a>. All rights reserved.</div>

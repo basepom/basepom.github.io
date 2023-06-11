@@ -137,19 +137,21 @@ public class PropertyGroup {
     }
 
     public String getPropertyValue(final InterpolatorFactory interpolatorFactory, final String propertyName, final Map&lt;String, String&gt; propElements)
-            throws IOException, InterpolationException {
+        throws IOException, InterpolationException {
 
 <span class="fc" id="L142">        ImmutableMap&lt;String, PropertyDefinition&gt; definitionMap = ImmutableMap.copyOf(</span>
-<span class="fc" id="L143">                Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));</span>
+<span class="fc" id="L143">            Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));</span>
 
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        if (!definitionMap.containsKey(propertyName)) {</span>
-<span class="nc" id="L146">            return &quot;&quot;;</span>
+<span class="fc" id="L145">        final PropertyDefinition propertyDefinition = definitionMap.get(propertyName);</span>
+
+<span class="fc" id="L147">        String result = &quot;&quot;;</span>
+
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (propertyDefinition != null) {</span>
+<span class="fc" id="L150">            result = TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(),</span>
+<span class="fc" id="L151">                interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements));</span>
         }
 
-<span class="fc" id="L149">        final PropertyDefinition propertyDefinition = definitionMap.get(propertyName);</span>
-
-<span class="fc" id="L151">        final String result = interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements);</span>
-<span class="fc" id="L152">        return TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(), result);</span>
+<span class="fc" id="L154">        return result;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
