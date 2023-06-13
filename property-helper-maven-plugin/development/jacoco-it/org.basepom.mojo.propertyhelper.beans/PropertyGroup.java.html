@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.codehaus.plexus.interpolation.InterpolationException;
 
-public class PropertyGroup {
+<span class="fc" id="L37">public class PropertyGroup {</span>
 
     /**
      * Property group id.
@@ -66,92 +66,88 @@ public class PropertyGroup {
      */
 <span class="fc" id="L67">    PropertyDefinition[] properties = new PropertyDefinition[0];</span>
 
-    // Must be noargs c'tor for maven property injection */
-<span class="fc" id="L70">    public PropertyGroup() {</span>
-<span class="fc" id="L71">    }</span>
-
     public String getId() {
-<span class="fc" id="L74">        return id;</span>
+<span class="fc" id="L70">        return id;</span>
     }
 
     public PropertyGroup setId(String id) {
-<span class="fc" id="L78">        this.id = id;</span>
-<span class="fc" id="L79">        return this;</span>
+<span class="fc" id="L74">        this.id = id;</span>
+<span class="fc" id="L75">        return this;</span>
     }
 
     public boolean isActiveOnRelease() {
-<span class="fc" id="L83">        return activeOnRelease;</span>
+<span class="fc" id="L79">        return activeOnRelease;</span>
     }
 
     public PropertyGroup setActiveOnRelease(final boolean activeOnRelease) {
-<span class="nc" id="L87">        this.activeOnRelease = activeOnRelease;</span>
-<span class="nc" id="L88">        return this;</span>
+<span class="nc" id="L83">        this.activeOnRelease = activeOnRelease;</span>
+<span class="nc" id="L84">        return this;</span>
     }
 
     public boolean isActiveOnSnapshot() {
-<span class="nc" id="L92">        return activeOnSnapshot;</span>
+<span class="nc" id="L88">        return activeOnSnapshot;</span>
     }
 
     public PropertyGroup setActiveOnSnapshot(final boolean activeOnSnapshot) {
-<span class="nc" id="L96">        this.activeOnSnapshot = activeOnSnapshot;</span>
-<span class="nc" id="L97">        return this;</span>
+<span class="nc" id="L92">        this.activeOnSnapshot = activeOnSnapshot;</span>
+<span class="nc" id="L93">        return this;</span>
     }
 
     public IgnoreWarnFail getOnDuplicateProperty() {
-<span class="fc" id="L101">        return IgnoreWarnFail.forString(onDuplicateProperty);</span>
+<span class="fc" id="L97">        return IgnoreWarnFail.forString(onDuplicateProperty);</span>
     }
 
     public PropertyGroup setOnDuplicateProperty(final String onDuplicateProperty) {
-<span class="nc" id="L105">        IgnoreWarnFail.forString(onDuplicateProperty);</span>
-<span class="nc" id="L106">        this.onDuplicateProperty = onDuplicateProperty;</span>
-<span class="nc" id="L107">        return this;</span>
+<span class="nc" id="L101">        IgnoreWarnFail.forString(onDuplicateProperty);</span>
+<span class="nc" id="L102">        this.onDuplicateProperty = onDuplicateProperty;</span>
+<span class="nc" id="L103">        return this;</span>
     }
 
     public IgnoreWarnFail getOnMissingProperty() {
-<span class="fc" id="L111">        return IgnoreWarnFail.forString(onMissingProperty);</span>
+<span class="fc" id="L107">        return IgnoreWarnFail.forString(onMissingProperty);</span>
     }
 
     public PropertyGroup setOnMissingProperty(final String onMissingProperty) {
-<span class="nc" id="L115">        IgnoreWarnFail.forString(onMissingProperty);</span>
-<span class="nc" id="L116">        this.onMissingProperty = onMissingProperty;</span>
-<span class="nc" id="L117">        return this;</span>
+<span class="nc" id="L111">        IgnoreWarnFail.forString(onMissingProperty);</span>
+<span class="nc" id="L112">        this.onMissingProperty = onMissingProperty;</span>
+<span class="nc" id="L113">        return this;</span>
     }
 
     public Map&lt;String, String&gt; getProperties() {
-<span class="fc" id="L121">        return ImmutableMap.copyOf(Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), getValueFunction())));</span>
+<span class="fc" id="L117">        return ImmutableMap.copyOf(Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), getValueFunction())));</span>
     }
 
     public PropertyGroup setProperties(final Map&lt;String, String&gt; properties) {
-<span class="fc" id="L125">        checkNotNull(properties, &quot;properties is null&quot;);</span>
-<span class="fc" id="L126">        this.properties = new PropertyDefinition[properties.size()];</span>
+<span class="fc" id="L121">        checkNotNull(properties, &quot;properties is null&quot;);</span>
+<span class="fc" id="L122">        this.properties = new PropertyDefinition[properties.size()];</span>
 
-<span class="fc" id="L128">        int i = 0;</span>
-<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        for (Entry&lt;String, String&gt; entry : properties.entrySet()) {</span>
-<span class="nc" id="L130">            this.properties[i] = new PropertyDefinition(entry.getKey(), entry.getValue());</span>
-<span class="nc" id="L131">        }</span>
-<span class="nc" id="L132">        return this;</span>
+<span class="fc" id="L124">        int i = 0;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        for (Entry&lt;String, String&gt; entry : properties.entrySet()) {</span>
+<span class="nc" id="L126">            this.properties[i] = new PropertyDefinition(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L127">        }</span>
+<span class="nc" id="L128">        return this;</span>
     }
 
     public Set&lt;String&gt; getPropertyNames() {
-<span class="nc" id="L136">        return ImmutableSet.copyOf(Arrays.stream(properties).map(getNameFunction()).collect(toImmutableSet()));</span>
+<span class="nc" id="L132">        return ImmutableSet.copyOf(Arrays.stream(properties).map(getNameFunction()).collect(toImmutableSet()));</span>
     }
 
     public String getPropertyValue(final InterpolatorFactory interpolatorFactory, final String propertyName, final Map&lt;String, String&gt; propElements)
         throws IOException, InterpolationException {
 
-<span class="fc" id="L142">        ImmutableMap&lt;String, PropertyDefinition&gt; definitionMap = ImmutableMap.copyOf(</span>
-<span class="fc" id="L143">            Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));</span>
+<span class="fc" id="L138">        ImmutableMap&lt;String, PropertyDefinition&gt; definitionMap = ImmutableMap.copyOf(</span>
+<span class="fc" id="L139">            Arrays.stream(properties).collect(toImmutableMap(getNameFunction(), identity())));</span>
 
-<span class="fc" id="L145">        final PropertyDefinition propertyDefinition = definitionMap.get(propertyName);</span>
+<span class="fc" id="L141">        final PropertyDefinition propertyDefinition = definitionMap.get(propertyName);</span>
 
-<span class="fc" id="L147">        String result = &quot;&quot;;</span>
+<span class="fc" id="L143">        String result = &quot;&quot;;</span>
 
-<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (propertyDefinition != null) {</span>
-<span class="fc" id="L150">            result = TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(),</span>
-<span class="fc" id="L151">                interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements));</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        if (propertyDefinition != null) {</span>
+<span class="fc" id="L146">            result = TransformerRegistry.applyTransformers(propertyDefinition.getTransformers(),</span>
+<span class="fc" id="L147">                interpolatorFactory.interpolate(propertyDefinition.getValue(), getOnMissingProperty(), propElements));</span>
         }
 
-<span class="fc" id="L154">        return result;</span>
+<span class="fc" id="L150">        return result;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

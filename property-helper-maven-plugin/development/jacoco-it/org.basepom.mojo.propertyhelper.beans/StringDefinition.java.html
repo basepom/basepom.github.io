@@ -22,7 +22,7 @@ import java.util.Objects;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-public class StringDefinition
+<span class="fc" id="L25">public class StringDefinition</span>
         extends AbstractDefinition&lt;StringDefinition&gt; {
 
     /**
@@ -40,43 +40,40 @@ public class StringDefinition
      */
 <span class="fc" id="L41">    IgnoreWarnFail onMissingValue = IgnoreWarnFail.FAIL;</span>
 
-<span class="fc" id="L43">    public StringDefinition() {</span>
-<span class="fc" id="L44">    }</span>
-
     public List&lt;String&gt; getValues() {
-<span class="fc" id="L47">        return values;</span>
+<span class="fc" id="L44">        return values;</span>
     }
 
     @VisibleForTesting
     public StringDefinition setValues(final List&lt;String&gt; values) {
-<span class="fc" id="L52">        checkNotNull(values, &quot;values is null&quot;);</span>
-<span class="fc" id="L53">        final ImmutableList.Builder&lt;String&gt; builder = ImmutableList.builder();</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">        for (String value : values) {</span>
-<span class="fc" id="L55">            builder.add(Objects.requireNonNullElse(value, &quot;&quot;));</span>
-<span class="fc" id="L56">        }</span>
-<span class="fc" id="L57">        this.values = builder.build();</span>
-<span class="fc" id="L58">        return this;</span>
+<span class="fc" id="L49">        checkNotNull(values, &quot;values is null&quot;);</span>
+<span class="fc" id="L50">        final ImmutableList.Builder&lt;String&gt; builder = ImmutableList.builder();</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc" id="L52">            builder.add(Objects.requireNonNullElse(value, &quot;&quot;));</span>
+<span class="fc" id="L53">        }</span>
+<span class="fc" id="L54">        this.values = builder.build();</span>
+<span class="fc" id="L55">        return this;</span>
     }
 
     public boolean isBlankIsValid() {
-<span class="fc" id="L62">        return blankIsValid;</span>
+<span class="fc" id="L59">        return blankIsValid;</span>
     }
 
     @VisibleForTesting
     public StringDefinition setBlankIsValid(final boolean blankIsValid) {
-<span class="fc" id="L67">        this.blankIsValid = blankIsValid;</span>
-<span class="fc" id="L68">        return this;</span>
+<span class="fc" id="L64">        this.blankIsValid = blankIsValid;</span>
+<span class="fc" id="L65">        return this;</span>
     }
 
     public IgnoreWarnFail getOnMissingValue() {
-<span class="fc" id="L72">        return onMissingValue;</span>
+<span class="fc" id="L69">        return onMissingValue;</span>
     }
 
     @VisibleForTesting
     public StringDefinition setOnMissingValue(final String onMissingValue) {
-<span class="fc" id="L77">        checkNotNull(onMissingValue, &quot;onMissingValue is null&quot;);</span>
-<span class="fc" id="L78">        this.onMissingValue = IgnoreWarnFail.forString(onMissingValue);</span>
-<span class="fc" id="L79">        return this;</span>
+<span class="fc" id="L74">        checkNotNull(onMissingValue, &quot;onMissingValue is null&quot;);</span>
+<span class="fc" id="L75">        this.onMissingValue = IgnoreWarnFail.forString(onMissingValue);</span>
+<span class="fc" id="L76">        return this;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
