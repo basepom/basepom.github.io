@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.inline.mojo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -36,8 +37,8 @@ public final class ScopeLimitingFilter
     public static final String COMPILE_PLUS_RUNTIME = JavaScopes.COMPILE + &quot;+&quot; + JavaScopes.RUNTIME;
     public static final String RUNTIME_PLUS_SYSTEM = JavaScopes.RUNTIME + &quot;+&quot; + JavaScopes.SYSTEM;
 
-<span class="nc" id="L39">    enum Scope {</span>
-<span class="nc" id="L40">        compile, runtime, test, provided, system</span>
+<span class="nc" id="L40">    enum Scope {</span>
+<span class="nc" id="L41">        compile, runtime, test, provided, system</span>
     }
 
     private final ImmutableSet&lt;Scope&gt; scopes;
@@ -47,7 +48,7 @@ public final class ScopeLimitingFilter
      * @return A filter that matches any dependency that would be visible in the given scope.
      */
     public static ScopeLimitingFilter computeDependencyScope(final String scope) {
-<span class="nc" id="L50">        return new ScopeLimitingFilter(computeScopes(scope));</span>
+<span class="nc" id="L51">        return new ScopeLimitingFilter(computeScopes(scope));</span>
     }
 
     /**
@@ -58,86 +59,86 @@ public final class ScopeLimitingFilter
      * @return A filter that matches any dependency that would be visible in the given scope.
      */
     public static ScopeLimitingFilter computeTransitiveScope(final String scope) {
-<span class="nc" id="L61">        return new ScopeLimitingFilter(computeScopes(computeTransitiveScopes(scope)));</span>
+<span class="nc" id="L62">        return new ScopeLimitingFilter(computeScopes(computeTransitiveScopes(scope)));</span>
     }
 
-<span class="nc" id="L64">    private ScopeLimitingFilter(Set&lt;Scope&gt; scopes) {</span>
-<span class="nc" id="L65">        this.scopes = ImmutableSet.copyOf(scopes);</span>
-<span class="nc" id="L66">    }</span>
+<span class="nc" id="L65">    private ScopeLimitingFilter(Set&lt;Scope&gt; scopes) {</span>
+<span class="nc" id="L66">        this.scopes = ImmutableSet.copyOf(scopes);</span>
+<span class="nc" id="L67">    }</span>
 
     private static EnumSet&lt;Scope&gt; computeScopes(final String scope) {
-<span class="nc" id="L69">        checkNotNull(scope, &quot;scope is null&quot;);</span>
+<span class="nc" id="L70">        checkNotNull(scope, &quot;scope is null&quot;);</span>
 
-<span class="nc bnc" id="L71" title="All 7 branches missed.">        switch (scope) {</span>
+<span class="nc bnc" id="L72" title="All 7 branches missed.">        switch (scope) {</span>
             case JavaScopes.COMPILE:
-<span class="nc" id="L73">                return EnumSet.of(compile, system, provided);</span>
+<span class="nc" id="L74">                return EnumSet.of(compile, system, provided);</span>
             case JavaScopes.PROVIDED:
-<span class="nc" id="L75">                return EnumSet.of(provided);</span>
+<span class="nc" id="L76">                return EnumSet.of(provided);</span>
             case JavaScopes.RUNTIME:
-<span class="nc" id="L77">                return EnumSet.of(compile, runtime);</span>
+<span class="nc" id="L78">                return EnumSet.of(compile, runtime);</span>
             case COMPILE_PLUS_RUNTIME:
-<span class="nc" id="L79">                return EnumSet.of(compile, system, provided, runtime);</span>
+<span class="nc" id="L80">                return EnumSet.of(compile, system, provided, runtime);</span>
             case RUNTIME_PLUS_SYSTEM:
-<span class="nc" id="L81">                return EnumSet.of(compile, system, runtime);</span>
+<span class="nc" id="L82">                return EnumSet.of(compile, system, runtime);</span>
             case JavaScopes.TEST:
-<span class="nc" id="L83">                return EnumSet.allOf(Scope.class);</span>
+<span class="nc" id="L84">                return EnumSet.allOf(Scope.class);</span>
             default:
-<span class="nc" id="L85">                throw new IllegalStateException(&quot;Scope '&quot; + scope + &quot;' is unknown!&quot;);</span>
+<span class="nc" id="L86">                throw new IllegalStateException(&quot;Scope '&quot; + scope + &quot;' is unknown!&quot;);</span>
         }
     }
 
     private static String computeTransitiveScopes(final String scope) {
-<span class="nc" id="L90">        checkNotNull(scope, &quot;scope is null&quot;);</span>
+<span class="nc" id="L91">        checkNotNull(scope, &quot;scope is null&quot;);</span>
 
-<span class="nc bnc" id="L92" title="All 3 branches missed.">        switch (scope) {</span>
+<span class="nc bnc" id="L93" title="All 3 branches missed.">        switch (scope) {</span>
             //  runtime dependencies pull in just runtime deps
             case JavaScopes.RUNTIME:
-            // compile and runtime pull in compile and runtime
+                // compile and runtime pull in compile and runtime
             case COMPILE_PLUS_RUNTIME:
-            // runtime and system pull in runtime and system
+                // runtime and system pull in runtime and system
             case RUNTIME_PLUS_SYSTEM:
-<span class="nc" id="L99">                return scope;</span>
+<span class="nc" id="L100">                return scope;</span>
             // test dependencies pull in compile and runtime.
             case JavaScopes.TEST:
-            // compile dependencies pull in compile and runtime
+                // compile dependencies pull in compile and runtime
             case JavaScopes.COMPILE:
-            // provided dependencies pull in just compile and runtime (remove test and provided)
+                // provided dependencies pull in just compile and runtime (remove test and provided)
             case JavaScopes.PROVIDED:
-<span class="nc" id="L106">                return COMPILE_PLUS_RUNTIME;</span>
+<span class="nc" id="L107">                return COMPILE_PLUS_RUNTIME;</span>
             default:
-<span class="nc" id="L108">                throw new IllegalStateException(&quot;Scope '&quot; + scope + &quot;' is unknown!&quot;);</span>
+<span class="nc" id="L109">                throw new IllegalStateException(&quot;Scope '&quot; + scope + &quot;' is unknown!&quot;);</span>
         }
     }
 
     @Override
     public boolean accept(final DependencyNode node, final List&lt;DependencyNode&gt; parents) {
-<span class="nc" id="L114">        checkNotNull(node, &quot;node is null&quot;);</span>
+<span class="nc" id="L115">        checkNotNull(node, &quot;node is null&quot;);</span>
 
-<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (node.getDependency() == null) {</span>
-<span class="nc" id="L117">            return true;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (node.getDependency() == null) {</span>
+<span class="nc" id="L118">            return true;</span>
         }
-<span class="nc" id="L119">        final String scope = node.getDependency().getScope();</span>
-<span class="nc bnc" id="L120" title="All 6 branches missed.">        switch (scope) {</span>
+<span class="nc" id="L120">        final String scope = node.getDependency().getScope();</span>
+<span class="nc bnc" id="L121" title="All 6 branches missed.">        switch (scope) {</span>
             case JavaScopes.COMPILE:
-<span class="nc" id="L122">                return scopes.contains(compile);</span>
+<span class="nc" id="L123">                return scopes.contains(compile);</span>
             case JavaScopes.TEST:
-<span class="nc" id="L124">                return scopes.contains(test);</span>
+<span class="nc" id="L125">                return scopes.contains(test);</span>
             case JavaScopes.RUNTIME:
-<span class="nc" id="L126">                return scopes.contains(runtime);</span>
+<span class="nc" id="L127">                return scopes.contains(runtime);</span>
             case JavaScopes.PROVIDED:
-<span class="nc" id="L128">                return scopes.contains(provided);</span>
+<span class="nc" id="L129">                return scopes.contains(provided);</span>
             case JavaScopes.SYSTEM:
-<span class="nc" id="L130">                return scopes.contains(system);</span>
+<span class="nc" id="L131">                return scopes.contains(system);</span>
             default:
-<span class="nc" id="L132">                return false;</span>
+<span class="nc" id="L133">                return false;</span>
         }
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L138">        return MoreObjects.toStringHelper(this)</span>
-<span class="nc" id="L139">                .add(&quot;scopes&quot;, scopes)</span>
-<span class="nc" id="L140">                .toString();</span>
+<span class="nc" id="L139">        return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L140">                .add(&quot;scopes&quot;, scopes)</span>
+<span class="nc" id="L141">                .toString();</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

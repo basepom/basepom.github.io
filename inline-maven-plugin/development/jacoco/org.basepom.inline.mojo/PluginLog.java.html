@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.inline.mojo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,81 +26,81 @@ final class PluginLog {
 
     private final Logger logger;
 
-<span class="nc" id="L28">    PluginLog(final Class&lt;?&gt; clazz) {</span>
-<span class="nc" id="L29">        checkNotNull(clazz, &quot;clazz is null&quot;);</span>
-<span class="nc" id="L30">        this.logger = LoggerFactory.getLogger(clazz);</span>
-<span class="nc" id="L31">    }</span>
+<span class="nc" id="L29">    PluginLog(final Class&lt;?&gt; clazz) {</span>
+<span class="nc" id="L30">        checkNotNull(clazz, &quot;clazz is null&quot;);</span>
+<span class="nc" id="L31">        this.logger = LoggerFactory.getLogger(clazz);</span>
+<span class="nc" id="L32">    }</span>
 
     public void debug(final String fmt, final Object... args) {
-<span class="nc" id="L34">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L35">        synchronized (logger) {</span>
-<span class="nc" id="L36">            logger.debug(format(fmt, args));</span>
-<span class="nc" id="L37">        }</span>
-<span class="nc" id="L38">    }</span>
+<span class="nc" id="L35">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L36">        synchronized (logger) {</span>
+<span class="nc" id="L37">            logger.debug(format(fmt, args));</span>
+<span class="nc" id="L38">        }</span>
+<span class="nc" id="L39">    }</span>
 
     public void debug(final Throwable t, final String fmt, final Object... args) {
-<span class="nc" id="L41">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L42">        checkNotNull(t, &quot;t is null&quot;);</span>
-<span class="nc" id="L43">        synchronized (logger) {</span>
-<span class="nc" id="L44">            logger.debug(format(fmt, args), t);</span>
-<span class="nc" id="L45">        }</span>
-<span class="nc" id="L46">    }</span>
+<span class="nc" id="L42">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L43">        checkNotNull(t, &quot;t is null&quot;);</span>
+<span class="nc" id="L44">        synchronized (logger) {</span>
+<span class="nc" id="L45">            logger.debug(format(fmt, args), t);</span>
+<span class="nc" id="L46">        }</span>
+<span class="nc" id="L47">    }</span>
 
     public void info(final String fmt, final Object... args) {
-<span class="nc" id="L49">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L50">        synchronized (logger) {</span>
-<span class="nc" id="L51">            logger.info(format(fmt, args));</span>
-<span class="nc" id="L52">        }</span>
-<span class="nc" id="L53">    }</span>
+<span class="nc" id="L50">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L51">        synchronized (logger) {</span>
+<span class="nc" id="L52">            logger.info(format(fmt, args));</span>
+<span class="nc" id="L53">        }</span>
+<span class="nc" id="L54">    }</span>
 
     public void info(final Throwable t, final String fmt, final Object... args) {
-<span class="nc" id="L56">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L57">        checkNotNull(t, &quot;t is null&quot;);</span>
-<span class="nc" id="L58">        synchronized (logger) {</span>
-<span class="nc" id="L59">            logger.info(format(fmt, args), t);</span>
-<span class="nc" id="L60">        }</span>
-<span class="nc" id="L61">    }</span>
+<span class="nc" id="L57">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L58">        checkNotNull(t, &quot;t is null&quot;);</span>
+<span class="nc" id="L59">        synchronized (logger) {</span>
+<span class="nc" id="L60">            logger.info(format(fmt, args), t);</span>
+<span class="nc" id="L61">        }</span>
+<span class="nc" id="L62">    }</span>
 
     public void warn(final String fmt, final Object... args) {
-<span class="nc" id="L64">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L65">        MessageBuilder mb = MessageUtils.buffer();</span>
-<span class="nc" id="L66">        synchronized (logger) {</span>
-<span class="nc" id="L67">            logger.warn(mb.warning(format(fmt, args)).toString());</span>
-<span class="nc" id="L68">        }</span>
-<span class="nc" id="L69">    }</span>
+<span class="nc" id="L65">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L66">        MessageBuilder mb = MessageUtils.buffer();</span>
+<span class="nc" id="L67">        synchronized (logger) {</span>
+<span class="nc" id="L68">            logger.warn(mb.warning(format(fmt, args)).toString());</span>
+<span class="nc" id="L69">        }</span>
+<span class="nc" id="L70">    }</span>
 
     public void warn(final Throwable t, final String fmt, final Object... args) {
-<span class="nc" id="L72">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L73">        checkNotNull(t, &quot;t is null&quot;);</span>
-<span class="nc" id="L74">        MessageBuilder mb = MessageUtils.buffer();</span>
-<span class="nc" id="L75">        synchronized (logger) {</span>
-<span class="nc" id="L76">            logger.warn(mb.warning(format(fmt, args)).toString(), t);</span>
-<span class="nc" id="L77">        }</span>
-<span class="nc" id="L78">    }</span>
+<span class="nc" id="L73">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L74">        checkNotNull(t, &quot;t is null&quot;);</span>
+<span class="nc" id="L75">        MessageBuilder mb = MessageUtils.buffer();</span>
+<span class="nc" id="L76">        synchronized (logger) {</span>
+<span class="nc" id="L77">            logger.warn(mb.warning(format(fmt, args)).toString(), t);</span>
+<span class="nc" id="L78">        }</span>
+<span class="nc" id="L79">    }</span>
 
     public void error(final String fmt, final Object... args) {
-<span class="nc" id="L81">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L82">        MessageBuilder mb = MessageUtils.buffer();</span>
-<span class="nc" id="L83">        synchronized (logger) {</span>
-<span class="nc" id="L84">            logger.error(mb.failure(format(fmt, args)).toString());</span>
-<span class="nc" id="L85">        }</span>
-<span class="nc" id="L86">    }</span>
+<span class="nc" id="L82">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L83">        MessageBuilder mb = MessageUtils.buffer();</span>
+<span class="nc" id="L84">        synchronized (logger) {</span>
+<span class="nc" id="L85">            logger.error(mb.failure(format(fmt, args)).toString());</span>
+<span class="nc" id="L86">        }</span>
+<span class="nc" id="L87">    }</span>
 
     public void error(final Throwable t, final String fmt, final Object... args) {
-<span class="nc" id="L89">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
-<span class="nc" id="L90">        checkNotNull(t, &quot;t is null&quot;);</span>
-<span class="nc" id="L91">        MessageBuilder mb = MessageUtils.buffer();</span>
-<span class="nc" id="L92">        synchronized (logger) {</span>
-<span class="nc" id="L93">            logger.error(mb.failure(format(fmt, args)).toString(), t);</span>
-<span class="nc" id="L94">        }</span>
-<span class="nc" id="L95">    }</span>
+<span class="nc" id="L90">        checkNotNull(fmt, &quot;fmt is null&quot;);</span>
+<span class="nc" id="L91">        checkNotNull(t, &quot;t is null&quot;);</span>
+<span class="nc" id="L92">        MessageBuilder mb = MessageUtils.buffer();</span>
+<span class="nc" id="L93">        synchronized (logger) {</span>
+<span class="nc" id="L94">            logger.error(mb.failure(format(fmt, args)).toString(), t);</span>
+<span class="nc" id="L95">        }</span>
+<span class="nc" id="L96">    }</span>
 
     public void report(final boolean quiet, final String fmt, final Object... args) {
-<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (quiet) {</span>
-<span class="nc" id="L99">            debug(fmt, args);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (quiet) {</span>
+<span class="nc" id="L100">            debug(fmt, args);</span>
         } else {
-<span class="nc" id="L101">            info(fmt, args);</span>
+<span class="nc" id="L102">            info(fmt, args);</span>
         }
-<span class="nc" id="L103">    }</span>
+<span class="nc" id="L104">    }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
