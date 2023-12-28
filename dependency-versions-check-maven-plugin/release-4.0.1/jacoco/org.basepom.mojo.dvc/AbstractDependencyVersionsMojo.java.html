@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDependencyVersionsMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">dependency-versions-check-maven-plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.dvc</a> &gt; <span class="el_source">AbstractDependencyVersionsMojo.java</span></div><h1>AbstractDependencyVersionsMojo.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.dvc;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import org.basepom.mojo.dvc.dependency.DependencyMap;
+import org.basepom.mojo.dvc.dependency.DependencyMapBuilder;
+import org.basepom.mojo.dvc.dependency.DependencyTreeResolver;
+import org.basepom.mojo.dvc.model.ResolverDefinition;
+import org.basepom.mojo.dvc.model.VersionCheckExcludes;
+import org.basepom.mojo.dvc.strategy.StrategyProvider;
+import org.basepom.mojo.dvc.version.VersionResolutionCollection;
+
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.graph.version.SnapshotVersionFilter;
+
+/**
+ * Base code for all the mojos. Contains the dependency resolvers and the common options.
+ */
+<span class="nc" id="L57">public abstract class AbstractDependencyVersionsMojo</span>
+        extends AbstractMojo
+        implements Context {
+
+<span class="nc" id="L61">    private static final ImmutableSet&lt;String&gt; VALID_SCOPES = ImmutableSet.of(</span>
+            ScopeLimitingFilter.COMPILE_PLUS_RUNTIME,
+            JavaScopes.COMPILE,
+            JavaScopes.RUNTIME,
+            JavaScopes.TEST);
+
+<span class="nc" id="L67">    protected final PluginLog log = new PluginLog(this.getClass());</span>
+
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true)
+    public MavenProject project;
+
+    @Parameter(defaultValue = &quot;${session}&quot;, readonly = true)
+    public MavenSession mavenSession;
+
+    @Parameter(defaultValue = &quot;${reactorProjects}&quot;, readonly = true, required = true)
+    public List&lt;MavenProject&gt; reactorProjects;
+
+    @Component
+    public ProjectBuilder mavenProjectBuilder;
+
+    @Component
+    public ProjectDependenciesResolver projectDependenciesResolver;
+
+    @Component
+    public RepositorySystem repositorySystem;
+
+    /**
+     * The strategy provider. This can be requested by other pieces to add additional strategies.
+     */
+    @Component
+    public StrategyProvider strategyProvider;
+
+    /**
+     * List of version checks that will be removed from the version check. This allows potential conflicts to be excluded.
+     * &lt;br&gt;
+     * &lt;pre&gt;
+     * &amp;lt;exclusions&amp;gt;
+     *   &amp;lt;exclusion&amp;gt;
+     *     &amp;lt;dependency&amp;gt;...&amp;lt;/dependency&amp;gt;
+     *     &amp;lt;expected&amp;gt;...&amp;lt;/expected&amp;gt;
+     *     &amp;lt;resolved&amp;gt;...&amp;lt;/resolved&amp;gt;
+     *   &amp;lt;/exclusion&amp;gt;
+     * &amp;lt;/exclusions&amp;gt;
+     * &lt;/pre&gt;
+     * &lt;p&gt;
+     * Each element consists of a dependency pattern &lt;code&gt;[groupId]:[artifactId]&lt;/code&gt; that supports wildcards and an expected version (which is the version
+     * is expected by the artifact) and a resolved version (the version that the dependency resolution has chosen).
+     * &lt;/p&gt;
+     */
+<span class="nc" id="L110">    @Parameter(alias = &quot;exceptions&quot;)</span>
+    public VersionCheckExcludes[] exclusions = new VersionCheckExcludes[0];
+
+    /**
+     * Skip the plugin execution.
+     */
+<span class="nc" id="L116">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.skip&quot;)</span>
+    public boolean skip = false;
+
+    /**
+     * Include POM projects when running on a multi-module project. Dependency resolution on a pom project almost never makes sense as it does not actually
+     * build any artifacts.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L125">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.include-pom-projects&quot;)</span>
+    public boolean includePomProjects = false;
+
+    /**
+     * Silence all non-output and non-error messages.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L133">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.quiet&quot;)</span>
+    public boolean quiet = false;
+
+    /**
+     * Dependency resolution scope. Defaults to &lt;code&gt;test&lt;/code&gt;. Valid choices are &lt;code&gt;compile+runtime&lt;/code&gt;, &lt;code&gt;compile&lt;/code&gt;,
+     * &lt;code&gt;test&lt;/code&gt; and &lt;code&gt;runtime&lt;/code&gt;.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L142">    @Parameter(defaultValue = &quot;test&quot;, property = &quot;scope&quot;)</span>
+    public String scope = JavaScopes.TEST;
+
+    /**
+     * Use deep scan or regular scan. Deep scan looks at all dependencies in the dependency tree, while regular scan only looks one level deep into the direct
+     * dependencies.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L151">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.deep-scan&quot;)</span>
+    public boolean deepScan = false;
+
+    /**
+     * List only direct dependencies or all dependencies.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L159">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.direct-only&quot;)</span>
+    public boolean directOnly = false;
+
+    /**
+     * List only managed dependencies or all dependencies.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L167">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.managed-only&quot;)</span>
+    public boolean managedOnly = false;
+
+    /**
+     * Run dependency resolution in parallel with multiple threads. Should only ever set to &lt;code&gt;false&lt;/code&gt; if the plugin shows stability problems when
+     * resolving dependencies. Please &lt;a href=&quot;issue-management.html&quot;&gt;file a bug&lt;/a&gt; in that case, too.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L176">    @Parameter(defaultValue = &quot;true&quot;, property = &quot;dvc.fast-resolution&quot;)</span>
+    public boolean fastResolution = true;
+
+    /**
+     * Fail the build if an artifact in &lt;code&gt;system&lt;/code&gt; scope can not be resolved. Those are notoriously dependent on the local build environment and some
+     * outright fail (e.g. referencing the &lt;code&gt;tools.jar&lt;/code&gt;, which no longer exists in a JDK8+ environment).
+     * &lt;br&gt;
+     * Setting this flag to &lt;code&gt;true&lt;/code&gt; will fail the build if any &lt;code&gt;system&lt;/code&gt; scoped artifact can not be resolved. This is almost never desired,
+     * except when building a project with a direct &lt;code&gt;system&lt;/code&gt; scoped dependency.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L188">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.unresolved-system-artifacts-fail-build&quot;)</span>
+    protected boolean unresolvedSystemArtifactsFailBuild = false;
+
+    /**
+     * Require all optional dependencies to exist and fail the build if any optional dependency can not resolved. This is almost never needed and actually
+     * causes problems for some projects that use large public dependencies from central that in turn pull in non-public dependencies as optional.
+     *
+     * @since 3.2.0
+     */
+<span class="nc" id="L197">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.optional-dependencies-must-exist&quot;)</span>
+    protected boolean optionalDependenciesMustExist = false;
+
+
+    /**
+     * List of resolvers to apply specific strategies to dependencies.
+     *
+     * &lt;pre&gt;
+     * &amp;lt;resolvers&amp;gt;
+     *   &amp;lt;resolver&amp;gt;
+     *     &amp;lt;strategy&amp;gt;...&amp;lt;strategy&amp;gt;
+     *     &amp;lt;includes&amp;gt;
+     *       &amp;lt;include&amp;gt;...&amp;lt;include&amp;gt;
+     *     &amp;lt;includes&amp;gt;
+     *   &amp;lt;resolver&amp;gt;
+     * &amp;lt;resolvers&amp;gt;
+     * &lt;/pre&gt;
+     * &lt;p&gt;
+     * A resolver maps a specific strategy to a list of includes. The include syntax is &lt;code&gt;[group-id]:[artifact-id]&lt;/code&gt; where each pattern segment
+     * supports full and partial wildcards (&lt;code&gt;*&lt;/code&gt;).
+     * &lt;br&gt;
+     * The plugin includes some default strategies: &lt;code&gt;apr&lt;/code&gt;, &lt;code&gt;default&lt;/code&gt;, &lt;code&gt;single-digit&lt;/code&gt; and
+     * &lt;code&gt;two-digits-backward-compatible&lt;/code&gt;. Additional strategies can be defined and added to the plugin classpath.
+     */
+<span class="nc" id="L221">    @Parameter</span>
+    public ResolverDefinition[] resolvers = new ResolverDefinition[0];
+
+    /**
+     * Sets the default strategy to use to evaluate whether two dependency versions are compatible or not.
+     * &lt;p&gt;
+     * The &lt;code&gt;default&lt;/code&gt; resolution strategy matches the Maven dependency resolution itself; any two dependencies that maven considers compatible will be
+     * accepted.
+     *
+     * @since 3.0.0
+     */
+<span class="nc" id="L232">    @Parameter(defaultValue = &quot;default&quot;, property = &quot;dvc.default-strategy&quot;)</span>
+    public String defaultStrategy = &quot;default&quot;;
+
+    protected StrategyCache strategyCache;
+    protected RepositorySystemSession snapshotFilteredSession;
+
+    @Override
+    @SuppressWarnings(&quot;PMD.AvoidRethrowingException&quot;)
+    public void execute()
+            throws MojoExecutionException, MojoFailureException {
+        try {
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            for (VersionCheckExcludes exclusion : exclusions) {</span>
+<span class="nc" id="L244">                checkState(exclusion.isValid(), &quot;Invalid exclusion specification: '%s'&quot;, exclusion);</span>
+            }
+
+<span class="nc bnc" id="L247" title="All 4 branches missed.">            checkState(!Strings.nullToEmpty(scope).trim().isEmpty() &amp;&amp; VALID_SCOPES.contains(scope), &quot;Scope '%s' is invalid&quot;, scope);</span>
+
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            if (skip) {</span>
+<span class="nc" id="L250">                log.report(quiet, &quot;Skipping plugin execution&quot;);</span>
+<span class="nc" id="L251">                return;</span>
+            }
+
+<span class="nc bnc" id="L254" title="All 4 branches missed.">            if (!includePomProjects &amp;&amp; &quot;pom&quot;.equals(project.getPackaging())) {</span>
+<span class="nc" id="L255">                log.report(quiet, &quot;Ignoring POM project&quot;);</span>
+<span class="nc" id="L256">                return;</span>
+            }
+
+<span class="nc" id="L259">            log.debug(&quot;Starting %s mojo run!&quot;, this.getClass().getSimpleName());</span>
+
+<span class="nc" id="L261">            this.strategyCache = new StrategyCache(strategyProvider, resolvers, defaultStrategy);</span>
+<span class="nc" id="L262">            this.snapshotFilteredSession = new DefaultRepositorySystemSession(mavenSession.getRepositorySession())</span>
+<span class="nc" id="L263">                    .setVersionFilter(new SnapshotVersionFilter());</span>
+
+<span class="nc" id="L265">            final ScopeLimitingFilter scopeFilter = createScopeFilter();</span>
+<span class="nc" id="L266">            final DependencyMap rootDependencyMap = new DependencyMapBuilder(this).mapProject(project, scopeFilter);</span>
+
+<span class="nc" id="L268">            try (DependencyTreeResolver dependencyTreeResolver = new DependencyTreeResolver(this, rootDependencyMap)) {</span>
+<span class="nc" id="L269">                final ImmutableSetMultimap&lt;QualifiedName, VersionResolutionCollection&gt; resolutionMap = dependencyTreeResolver.computeResolutionMap(project,</span>
+                        scopeFilter);
+<span class="nc" id="L271">                doExecute(resolutionMap, rootDependencyMap);</span>
+            }
+<span class="nc" id="L273">        } catch (MojoExecutionException | MojoFailureException e) {</span>
+<span class="nc" id="L274">            throw e;</span>
+<span class="nc" id="L275">        } catch (Exception e) {</span>
+<span class="nc" id="L276">            throw new MojoExecutionException(&quot;While running mojo: &quot;, e);</span>
+        } finally {
+<span class="nc" id="L278">            log.debug(&quot;Ended %s mojo run!&quot;, this.getClass().getSimpleName());</span>
+        }
+<span class="nc" id="L280">    }</span>
+
+    /**
+     * Subclasses need to implement this method.
+     *
+     * @param resolutionMap     The prebuilt resolution map from qualified names to version resolution collections.
+     * @param rootDependencyMap The prebuilt dependency map for all the root dependencies.
+     * @throws Exception When an execution error occurs.
+     */
+    protected abstract void doExecute(ImmutableSetMultimap&lt;QualifiedName, VersionResolutionCollection&gt; resolutionMap, DependencyMap rootDependencyMap)
+            throws Exception;
+
+    /**
+     * Defines the scope used to resolve the project dependencies. The project dependencies will be limited to the dependencies that match this filter. The list
+     * mojo overrides this to limit the scope in which dependencies are listed. By default, include everything.
+     *
+     * @return The {@link ScopeLimitingFilter} instance for the project dependencies.
+     */
+    protected ScopeLimitingFilter createScopeFilter() {
+<span class="nc" id="L299">        return ScopeLimitingFilter.computeDependencyScope(scope);</span>
+    }
+
+    @Override
+    public boolean useFastResolution() {
+<span class="nc" id="L304">        return fastResolution;</span>
+    }
+
+    @Override
+    public boolean useDeepScan() {
+<span class="nc" id="L309">        return deepScan;</span>
+    }
+
+    @Override
+    public boolean isOptionalDependenciesMustExist() {
+<span class="nc" id="L314">        return optionalDependenciesMustExist;</span>
+    }
+
+    @Override
+    public StrategyCache getStrategyCache() {
+<span class="nc" id="L319">        return strategyCache;</span>
+    }
+
+    @Override
+    public ProjectBuilder getProjectBuilder() {
+<span class="nc" id="L324">        return mavenProjectBuilder;</span>
+    }
+
+    @Override
+    public ProjectDependenciesResolver getProjectDependenciesResolver() {
+<span class="nc" id="L329">        return projectDependenciesResolver;</span>
+    }
+
+    @Override
+    public MavenProject getRootProject() {
+<span class="nc" id="L334">        return project;</span>
+    }
+
+    @Override
+    public List&lt;MavenProject&gt; getReactorProjects() {
+<span class="nc" id="L339">        return ImmutableList.copyOf(reactorProjects);</span>
+    }
+
+    @Override
+    public RepositorySystemSession getRepositorySystemSession() {
+<span class="nc" id="L344">        return snapshotFilteredSession;</span>
+    }
+
+    @Override
+    public RepositorySystem getRepositorySystem() {
+<span class="nc" id="L349">        return repositorySystem;</span>
+    }
+
+    @Override
+    public ProjectBuildingRequest createProjectBuildingRequest() {
+<span class="nc" id="L354">        DefaultProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(mavenSession.getProjectBuildingRequest());</span>
+<span class="nc" id="L355">        buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());</span>
+<span class="nc" id="L356">        return buildingRequest;</span>
+    }
+
+    @Override
+    public VersionRangeRequest createVersionRangeRequest(Artifact artifact) {
+<span class="nc" id="L361">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
+<span class="nc" id="L362">        return new VersionRangeRequest(artifact, project.getRemoteProjectRepositories(), &quot;&quot;);</span>
+    }
+
+    @Override
+    public List&lt;VersionCheckExcludes&gt; getExclusions() {
+<span class="nc" id="L367">        return Arrays.asList(exclusions);</span>
+    }
+
+    @Override
+    public boolean isUnresolvedSystemArtifactsFailBuild() {
+<span class="nc" id="L372">        return unresolvedSystemArtifactsFailBuild;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<licensePluginReport goal="CHECK" timestamp="1703743364344">
+    <module artifactId="dependency-versions-check-maven-plugin" groupId="org.basepom.maven" version="4.0.1"/>
+    <files>
+        <file path="pom.xml" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/AbstractDependencyVersionsMojo.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/CheckExclusionsFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/Context.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/PluginLog.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/QualifiedName.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/QualifiedNameMatcher.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/ScopeLimitingFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/StrategyCache.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/dependency/DependencyMap.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/dependency/DependencyMapBuilder.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/dependency/DependencyTreeResolver.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/model/ResolverDefinition.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/model/VersionCheckExcludes.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/mojo/DependencyVersionsCheckMojo.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/mojo/DependencyVersionsListMojo.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/AprVersionStrategy.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/DefaultStrategyProvider.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/DefaultVersionStrategy.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/SingleDigitVersionStrategy.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/Strategy.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/StrategyProvider.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/strategy/TwoDigitsBackwardCompatibleVersionStrategy.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/version/VersionResolution.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/version/VersionResolutionCollection.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/mojo/dvc/version/VersionResolutionElement.java" result="PRESENT"/>
+        <file path="src/site/site.xml" result="PRESENT"/>
+        <file path="src/test/java/org/basepom/mojo/dvc/QualifiedNameMatcherTest.java" result="PRESENT"/>
+        <file path="src/test/java/org/basepom/mojo/dvc/QualifiedNameTest.java" result="PRESENT"/>
+    </files>
+</licensePluginReport>
