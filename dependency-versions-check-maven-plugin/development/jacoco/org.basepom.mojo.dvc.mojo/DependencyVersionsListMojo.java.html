@@ -11,7 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.mojo;
+
+import static com.google.common.base.Preconditions.checkState;
+
+import org.basepom.mojo.dvc.AbstractDependencyVersionsMojo;
+import org.basepom.mojo.dvc.QualifiedName;
+import org.basepom.mojo.dvc.dependency.DependencyMap;
+import org.basepom.mojo.dvc.version.VersionResolutionCollection;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -26,100 +34,92 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.basepom.mojo.dvc.AbstractDependencyVersionsMojo;
-import org.basepom.mojo.dvc.QualifiedName;
-import org.basepom.mojo.dvc.dependency.DependencyMap;
-import org.basepom.mojo.dvc.version.VersionResolutionCollection;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.version.Version;
-
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Resolves all dependencies of a project and lists all versions for any artifact and what version was chosen by the resolver.
  *
  * @since 2.0.0
  */
-<span class="nc" id="L43">@Mojo(name = &quot;list&quot;, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, defaultPhase = LifecyclePhase.VERIFY)</span>
-<span class="nc" id="L44">public final class DependencyVersionsListMojo</span>
-        extends AbstractDependencyVersionsMojo
-{
+<span class="nc" id="L45">@Mojo(name = &quot;list&quot;, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, defaultPhase = LifecyclePhase.VERIFY)</span>
+<span class="nc" id="L46">public final class DependencyVersionsListMojo</span>
+        extends AbstractDependencyVersionsMojo {
+
     /**
      * List only dependencies in conflict or all dependencies.
      */
-<span class="nc" id="L50">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.conflicts-only&quot;)</span>
+<span class="nc" id="L52">    @Parameter(defaultValue = &quot;false&quot;, property = &quot;dvc.conflicts-only&quot;)</span>
     public boolean conflictsOnly = false;
 
     @Override
     protected void doExecute(final ImmutableSetMultimap&lt;QualifiedName, VersionResolutionCollection&gt; resolutionMap, final DependencyMap rootDependencyMap) {
-<span class="nc" id="L55">        final var filteredMap = ImmutableMap.copyOf(Maps.filterValues(</span>
-<span class="nc" id="L56">                resolutionMap.asMap(),</span>
+<span class="nc" id="L57">        final var filteredMap = ImmutableMap.copyOf(Maps.filterValues(</span>
+<span class="nc" id="L58">                resolutionMap.asMap(),</span>
                 v -&gt; {
                     // report if no condition is set.
-<span class="nc" id="L59">                    boolean report = true;</span>
+<span class="nc" id="L61">                    boolean report = true;</span>
 
-<span class="nc bnc" id="L61" title="All 2 branches missed.">                    if (conflictsOnly) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                    if (conflictsOnly) {</span>
                         // do not report if conflicts are requested but none exists
-<span class="nc" id="L63">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasConflict);</span>
+<span class="nc" id="L65">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasConflict);</span>
                     }
-<span class="nc bnc" id="L65" title="All 2 branches missed.">                    if (directOnly) {</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                    if (directOnly) {</span>
                         // do not report if only directs are requested but it is not direct
-<span class="nc" id="L67">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasDirectDependencies);</span>
+<span class="nc" id="L69">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasDirectDependencies);</span>
                     }
 
-<span class="nc bnc" id="L70" title="All 2 branches missed.">                    if (managedOnly) {</span>
-<span class="nc" id="L71">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasManagedDependencies);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                    if (managedOnly) {</span>
+<span class="nc" id="L73">                        report &amp;= v.stream().anyMatch(VersionResolutionCollection::hasManagedDependencies);</span>
                     }
 
-<span class="nc" id="L74">                    return report;</span>
+<span class="nc" id="L76">                    return report;</span>
                 }));
 
-<span class="nc" id="L77">        LOG.report(quiet, &quot;%s%s dependencies%s for '%s' scope%s:&quot;,</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">                (directOnly ? &quot;Direct&quot; : &quot;All&quot;),</span>
-<span class="nc bnc" id="L79" title="All 2 branches missed.">                (managedOnly ? &quot; managed&quot; : &quot;&quot;),</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">                (deepScan ? &quot; using deep scan&quot; : &quot;&quot;),</span>
+<span class="nc" id="L79">        log.report(quiet, &quot;%s%s dependencies%s for '%s' scope%s:&quot;,</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                (directOnly ? &quot;Direct&quot; : &quot;All&quot;),</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                (managedOnly ? &quot; managed&quot; : &quot;&quot;),</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                (deepScan ? &quot; using deep scan&quot; : &quot;&quot;),</span>
                 scope,
-<span class="nc bnc" id="L82" title="All 2 branches missed.">                (conflictsOnly ? &quot;, reporting only conflicts&quot; : &quot;&quot;));</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                (conflictsOnly ? &quot;, reporting only conflicts&quot; : &quot;&quot;));</span>
 
-<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (filteredMap.isEmpty()) {</span>
-<span class="nc" id="L85">            return;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (filteredMap.isEmpty()) {</span>
+<span class="nc" id="L87">            return;</span>
         }
 
-<span class="nc" id="L88">        final var rootDependencies = rootDependencyMap.getAllDependencies();</span>
+<span class="nc" id="L90">        final var rootDependencies = rootDependencyMap.getAllDependencies();</span>
 
         // calculate padding for columnar output
-<span class="nc" id="L91">        final int namePadding = filteredMap.keySet().stream()</span>
-<span class="nc" id="L92">                .map(QualifiedName::length).reduce(0, Math::max);</span>
-<span class="nc" id="L93">        final int scopePadding = rootDependencies.entrySet().stream()</span>
-<span class="nc" id="L94">                .filter(e -&gt; filteredMap.containsKey(e.getKey()))</span>
-<span class="nc" id="L95">                .map(e -&gt; e.getValue().getDependency().getScope().length()).reduce(0, Math::max);</span>
+<span class="nc" id="L93">        final int namePadding = filteredMap.keySet().stream()</span>
+<span class="nc" id="L94">                .map(QualifiedName::length).reduce(0, Math::max);</span>
+<span class="nc" id="L95">        final int scopePadding = rootDependencies.entrySet().stream()</span>
+<span class="nc" id="L96">                .filter(e -&gt; filteredMap.containsKey(e.getKey()))</span>
+<span class="nc" id="L97">                .map(e -&gt; e.getValue().getDependency().getScope().length()).reduce(0, Math::max);</span>
 
-<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (final var entry : filteredMap.entrySet()) {</span>
-<span class="nc" id="L98">            final QualifiedName dependencyName = entry.getKey();</span>
-<span class="nc" id="L99">            final DependencyNode currentDependency = rootDependencies.get(dependencyName);</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">            assert currentDependency != null;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (final var entry : filteredMap.entrySet()) {</span>
+<span class="nc" id="L100">            final QualifiedName dependencyName = entry.getKey();</span>
+<span class="nc" id="L101">            final DependencyNode currentDependency = rootDependencies.get(dependencyName);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            assert currentDependency != null;</span>
 
-<span class="nc" id="L102">            final ImmutableSortedSet&lt;VersionResolutionCollection&gt; resolutions = ImmutableSortedSet.copyOf(entry.getValue());</span>
-<span class="nc" id="L103">            final MessageBuilder mb = MessageUtils.buffer();</span>
+<span class="nc" id="L104">            final ImmutableSortedSet&lt;VersionResolutionCollection&gt; resolutions = ImmutableSortedSet.copyOf(entry.getValue());</span>
+<span class="nc" id="L105">            final MessageBuilder mb = MessageUtils.buffer();</span>
 
-<span class="nc" id="L105">            mb.a(Strings.padEnd(dependencyName.getShortName() + &quot;: &quot;, namePadding + 2, ' '))</span>
-<span class="nc" id="L106">                    .a(Strings.padEnd(currentDependency.getDependency().getScope(), scopePadding + 1, ' '));</span>
+<span class="nc" id="L107">            mb.a(Strings.padEnd(dependencyName.getShortName() + &quot;: &quot;, namePadding + 2, ' '))</span>
+<span class="nc" id="L108">                    .a(Strings.padEnd(currentDependency.getDependency().getScope(), scopePadding + 1, ' '));</span>
 
             // fetch the resolved version from the dependency in the tree.
-<span class="nc" id="L109">            final Version dependencyVersion = currentDependency.getVersion();</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">            checkState(dependencyVersion != null, &quot;Dependency Version for %s is null! File a bug!&quot;, currentDependency);</span>
-<span class="nc" id="L111">            final ComparableVersion actualVersion = new ComparableVersion(dependencyVersion.toString());</span>
+<span class="nc" id="L111">            final Version dependencyVersion = currentDependency.getVersion();</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            checkState(dependencyVersion != null, &quot;Dependency Version for %s is null! File a bug!&quot;, currentDependency);</span>
+<span class="nc" id="L113">            final ComparableVersion actualVersion = new ComparableVersion(dependencyVersion.toString());</span>
 
-<span class="nc" id="L113">            final boolean isDirect = resolutions.stream().anyMatch(VersionResolutionCollection::hasDirectDependencies);</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">            final boolean isManaged = (currentDependency.getManagedBits() &amp; DependencyNode.MANAGED_VERSION) != 0;</span>
+<span class="nc" id="L115">            final boolean isDirect = resolutions.stream().anyMatch(VersionResolutionCollection::hasDirectDependencies);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            final boolean isManaged = (currentDependency.getManagedBits() &amp; DependencyNode.MANAGED_VERSION) != 0;</span>
 
-<span class="nc bnc" id="L116" title="All 2 branches missed.">            if (isManaged) {</span>
-<span class="nc" id="L117">                mb.warning(actualVersion);</span>
-            }
-<span class="nc bnc" id="L119" title="All 2 branches missed.">            else if (isDirect) {</span>
-<span class="nc" id="L120">                mb.strong(actualVersion);</span>
-            }
-            else {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (isManaged) {</span>
+<span class="nc" id="L119">                mb.warning(actualVersion);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            } else if (isDirect) {</span>
+<span class="nc" id="L121">                mb.strong(actualVersion);</span>
+            } else {
 <span class="nc" id="L123">                mb.a(actualVersion);</span>
             }
 
@@ -135,27 +135,24 @@ import static com.google.common.base.Preconditions.checkState;
 
 <span class="nc bnc" id="L136" title="All 2 branches missed.">                    if (resolution.hasConflict()) {</span>
 <span class="nc" id="L137">                        mb.failure(&quot;!&quot; + result + &quot;!&quot;);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                    } else if (resolution.isMatchFor(actualVersion)) {</span>
+<span class="nc" id="L139">                        mb.success(result);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                    } else if (resolution.hasDirectDependencies()) {</span>
+<span class="nc" id="L141">                        mb.strong(&quot;*&quot; + result + &quot;*&quot;);</span>
+                    } else {
+<span class="nc" id="L143">                        mb.a(result);</span>
                     }
-<span class="nc bnc" id="L139" title="All 2 branches missed.">                    else if (resolution.isMatchFor(actualVersion)) {</span>
-<span class="nc" id="L140">                        mb.success(result);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                    if (it.hasNext()) {</span>
+<span class="nc" id="L146">                        mb.a(&quot;, &quot;);</span>
                     }
-<span class="nc bnc" id="L142" title="All 2 branches missed.">                    else if (resolution.hasDirectDependencies()) {</span>
-<span class="nc" id="L143">                        mb.strong(&quot;*&quot; + result + &quot;*&quot;);</span>
-                    }
-                    else {
-<span class="nc" id="L146">                        mb.a(result);</span>
-                    }
-<span class="nc bnc" id="L148" title="All 2 branches missed.">                    if (it.hasNext()) {</span>
-<span class="nc" id="L149">                        mb.a(&quot;, &quot;);</span>
-                    }
-<span class="nc" id="L151">                }</span>
+<span class="nc" id="L148">                }</span>
 
-<span class="nc" id="L153">                mb.a(&quot;)&quot;);</span>
+<span class="nc" id="L150">                mb.a(&quot;)&quot;);</span>
             }
 
-<span class="nc" id="L156">            LOG.info(&quot;%s&quot;, mb);</span>
-<span class="nc" id="L157">        }</span>
-<span class="nc" id="L158">    }</span>
+<span class="nc" id="L153">            log.info(&quot;%s&quot;, mb);</span>
+<span class="nc" id="L154">        }</span>
+<span class="nc" id="L155">    }</span>
 }
 
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

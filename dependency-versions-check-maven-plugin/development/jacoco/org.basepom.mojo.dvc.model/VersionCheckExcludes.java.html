@@ -11,93 +11,87 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.model;
 
-import com.google.common.base.MoreObjects;
-import org.apache.maven.artifact.versioning.ComparableVersion;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.basepom.mojo.dvc.QualifiedName;
 import org.basepom.mojo.dvc.QualifiedNameMatcher;
-import org.eclipse.aether.graph.DependencyNode;
 
 import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.MoreObjects;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.eclipse.aether.graph.DependencyNode;
 
 /**
  * Mojo model, adds an exclude to the checker.
  */
-<span class="nc" id="L29">public class VersionCheckExcludes</span>
-{
-<span class="nc" id="L31">    private String dependency = &quot;&quot;;</span>
+<span class="nc" id="L31">public class VersionCheckExcludes {</span>
+
+<span class="nc" id="L33">    private String dependency = &quot;&quot;;</span>
     private ComparableVersion expected;
     private ComparableVersion resolved;
 
-    public void setDependency(final String dependency)
-    {
-<span class="nc" id="L37">        this.dependency = checkNotNull(dependency, &quot;dependency is null&quot;).trim();</span>
-<span class="nc" id="L38">    }</span>
+    public void setDependency(final String dependency) {
+<span class="nc" id="L38">        this.dependency = checkNotNull(dependency, &quot;dependency is null&quot;).trim();</span>
+<span class="nc" id="L39">    }</span>
 
-    public void setExpected(final String version)
-    {
+    public void setExpected(final String version) {
 <span class="nc" id="L42">        checkNotNull(version, &quot;version is null&quot;);</span>
 <span class="nc" id="L43">        this.expected = new ComparableVersion(version);</span>
 <span class="nc" id="L44">    }</span>
 
-    public void setResolved(final String version)
-    {
-<span class="nc" id="L48">        checkNotNull(version, &quot;version is null&quot;);</span>
-<span class="nc" id="L49">        this.resolved = new ComparableVersion(version);</span>
-<span class="nc" id="L50">    }</span>
+    public void setResolved(final String version) {
+<span class="nc" id="L47">        checkNotNull(version, &quot;version is null&quot;);</span>
+<span class="nc" id="L48">        this.resolved = new ComparableVersion(version);</span>
+<span class="nc" id="L49">    }</span>
 
-    public boolean isValid()
-    {
-<span class="nc bnc" id="L54" title="All 4 branches missed.">        return (expected != null)</span>
+    public boolean isValid() {
+<span class="nc bnc" id="L52" title="All 4 branches missed.">        return (expected != null)</span>
                 &amp;&amp; (resolved != null);
     }
 
-    public boolean matches(final DependencyNode dependencyNode, final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion)
-    {
-<span class="nc" id="L60">        checkNotNull(dependencyNode, &quot;dependencyNode is null&quot;);</span>
-<span class="nc" id="L61">        checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;);</span>
-<span class="nc" id="L62">        checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;);</span>
+    public boolean matches(final DependencyNode dependencyNode, final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion) {
+<span class="nc" id="L57">        checkNotNull(dependencyNode, &quot;dependencyNode is null&quot;);</span>
+<span class="nc" id="L58">        checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;);</span>
+<span class="nc" id="L59">        checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;);</span>
 
-<span class="nc" id="L64">        final QualifiedNameMatcher matcher = new QualifiedNameMatcher(dependency);</span>
-<span class="nc" id="L65">        final QualifiedName artifactName = QualifiedName.fromDependencyNode(dependencyNode);</span>
+<span class="nc" id="L61">        final QualifiedNameMatcher matcher = new QualifiedNameMatcher(dependency);</span>
+<span class="nc" id="L62">        final QualifiedName artifactName = QualifiedName.fromDependencyNode(dependencyNode);</span>
 
-<span class="nc bnc" id="L67" title="All 2 branches missed.">        return matcher.matches(artifactName)</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">                &amp;&amp; this.expected.equals(expectedVersion)</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">                &amp;&amp; this.resolved.equals(resolvedVersion);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return matcher.matches(artifactName)</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                &amp;&amp; this.expected.equals(expectedVersion)</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                &amp;&amp; this.resolved.equals(resolvedVersion);</span>
     }
 
     @Override
-    public String toString()
-    {
-<span class="nc" id="L75">        return MoreObjects.toStringHelper(this)</span>
-<span class="nc" id="L76">                .add(&quot;dependency&quot;, dependency)</span>
-<span class="nc" id="L77">                .add(&quot;expected&quot;, expected)</span>
-<span class="nc" id="L78">                .add(&quot;resolved&quot;, resolved)</span>
-<span class="nc" id="L79">                .toString();</span>
+    public String toString() {
+<span class="nc" id="L71">        return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L72">                .add(&quot;dependency&quot;, dependency)</span>
+<span class="nc" id="L73">                .add(&quot;expected&quot;, expected)</span>
+<span class="nc" id="L74">                .add(&quot;resolved&quot;, resolved)</span>
+<span class="nc" id="L75">                .toString();</span>
     }
 
     @Override
-    public boolean equals(final Object o)
-    {
-<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (this == o) {</span>
-<span class="nc" id="L86">            return true;</span>
+    public boolean equals(final Object o) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L81">            return true;</span>
         }
-<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
-<span class="nc" id="L89">            return false;</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L84">            return false;</span>
         }
-<span class="nc" id="L91">        VersionCheckExcludes that = (VersionCheckExcludes) o;</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">        return Objects.equals(dependency, that.dependency) &amp;&amp;</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">                Objects.equals(expected, that.expected) &amp;&amp;</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">                Objects.equals(resolved, that.resolved);</span>
+<span class="nc" id="L86">        VersionCheckExcludes that = (VersionCheckExcludes) o;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        return Objects.equals(dependency, that.dependency)</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                &amp;&amp; Objects.equals(expected, that.expected)</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                &amp;&amp; Objects.equals(resolved, that.resolved);</span>
     }
 
     @Override
-    public int hashCode()
-    {
-<span class="nc" id="L100">        return Objects.hash(dependency, expected, resolved);</span>
+    public int hashCode() {
+<span class="nc" id="L94">        return Objects.hash(dependency, expected, resolved);</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

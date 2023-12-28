@@ -11,23 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 
 /**
  * Matches the group-id/artifact-id pair of a qualified name. May contain wildcards (*) in either group-id and artifact-id.
  */
-public final class QualifiedNameMatcher
-{
+public final class QualifiedNameMatcher {
 
 <span class="fc" id="L32">    private static final Pattern WILDCARD_REGEXP = Pattern.compile(&quot;[^*]+|(\\*)&quot;);</span>
 <span class="fc" id="L33">    private static final Pattern WILDCARD_MATCH = Pattern.compile(&quot;.*&quot;);</span>
@@ -35,50 +35,45 @@ public final class QualifiedNameMatcher
     private final Pattern groupPattern;
     private final Pattern artifactPattern;
 
-    public static QualifiedNameMatcher fromQualifiedName(final QualifiedName name)
-    {
-<span class="fc" id="L40">        checkNotNull(name, &quot;name is null&quot;);</span>
+    public static QualifiedNameMatcher fromQualifiedName(final QualifiedName name) {
+<span class="fc" id="L39">        checkNotNull(name, &quot;name is null&quot;);</span>
 
-<span class="fc" id="L42">        return new QualifiedNameMatcher(name.getMinimalName());</span>
+<span class="fc" id="L41">        return new QualifiedNameMatcher(name.getMinimalName());</span>
     }
 
-    public QualifiedNameMatcher(final String pattern)
-<span class="fc" id="L46">    {</span>
-<span class="fc" id="L47">        checkNotNull(pattern, &quot;pattern is null&quot;);</span>
-<span class="fc" id="L48">        final List&lt;String&gt; elements = Splitter.on(':').trimResults().splitToList(pattern);</span>
-<span class="pc bpc" id="L49" title="2 of 4 branches missed.">        checkState(elements.size() &gt; 0 &amp;&amp; elements.size() &lt; 3, &quot;Pattern %s is not a valid inclusion pattern!&quot;, pattern);</span>
+<span class="fc" id="L44">    public QualifiedNameMatcher(final String pattern) {</span>
+<span class="fc" id="L45">        checkNotNull(pattern, &quot;pattern is null&quot;);</span>
+<span class="fc" id="L46">        final List&lt;String&gt; elements = Splitter.on(':').trimResults().splitToList(pattern);</span>
+<span class="pc bpc" id="L47" title="2 of 4 branches missed.">        checkState(!elements.isEmpty() &amp;&amp; elements.size() &lt; 3, &quot;Pattern %s is not a valid inclusion pattern!&quot;, pattern);</span>
 
-<span class="fc" id="L51">        this.groupPattern = compileWildcard(elements.get(0).trim());</span>
-<span class="fc bfc" id="L52" title="All 2 branches covered.">        this.artifactPattern = compileWildcard(elements.size() &gt; 1 ? elements.get(1).trim() : &quot;&quot;); // use wildcard match if no artifact present</span>
-<span class="fc" id="L53">    }</span>
+<span class="fc" id="L49">        this.groupPattern = compileWildcard(elements.get(0).trim());</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        this.artifactPattern = compileWildcard(elements.size() &gt; 1 ? elements.get(1).trim() : &quot;&quot;); // use wildcard match if no artifact present</span>
+<span class="fc" id="L51">    }</span>
 
-    public boolean matches(QualifiedName artifactName)
-    {
-<span class="fc" id="L57">        checkNotNull(artifactName, &quot;artifactName is null&quot;);</span>
+    public boolean matches(QualifiedName artifactName) {
+<span class="fc" id="L54">        checkNotNull(artifactName, &quot;artifactName is null&quot;);</span>
 
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        return groupPattern.matcher(artifactName.getGroupId()).matches()</span>
-<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                &amp;&amp; artifactPattern.matcher(artifactName.getArtifactId()).matches();</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        return groupPattern.matcher(artifactName.getGroupId()).matches()</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">                &amp;&amp; artifactPattern.matcher(artifactName.getArtifactId()).matches();</span>
     }
 
     @VisibleForTesting
-    static Pattern compileWildcard(final String wildcard)
-    {
-<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (wildcard.isEmpty()) {</span>
-<span class="fc" id="L67">            return WILDCARD_MATCH;</span>
+    static Pattern compileWildcard(final String wildcard) {
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (wildcard.isEmpty()) {</span>
+<span class="fc" id="L63">            return WILDCARD_MATCH;</span>
         }
 
-<span class="fc" id="L70">        final Matcher m = WILDCARD_REGEXP.matcher(wildcard);</span>
-<span class="fc" id="L71">        final StringBuffer b = new StringBuffer();</span>
-<span class="fc bfc" id="L72" title="All 2 branches covered.">        while (m.find()) {</span>
-<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (m.group(1) != null) {</span>
-<span class="fc" id="L74">                m.appendReplacement(b, &quot;.*&quot;);</span>
-            }
-            else {
-<span class="fc" id="L77">                m.appendReplacement(b, &quot;\\\\Q&quot; + m.group(0) + &quot;\\\\E&quot;);</span>
+<span class="fc" id="L66">        final Matcher m = WILDCARD_REGEXP.matcher(wildcard);</span>
+<span class="fc" id="L67">        final StringBuffer b = new StringBuffer();</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        while (m.find()) {</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (m.group(1) != null) {</span>
+<span class="fc" id="L70">                m.appendReplacement(b, &quot;.*&quot;);</span>
+            } else {
+<span class="fc" id="L72">                m.appendReplacement(b, &quot;\\\\Q&quot; + m.group(0) + &quot;\\\\E&quot;);</span>
             }
         }
-<span class="fc" id="L80">        m.appendTail(b);</span>
-<span class="fc" id="L81">        return Pattern.compile(b.toString());</span>
+<span class="fc" id="L75">        m.appendTail(b);</span>
+<span class="fc" id="L76">        return Pattern.compile(b.toString());</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

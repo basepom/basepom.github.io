@@ -11,50 +11,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.strategy;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Comparator;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import com.google.common.base.Strings;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.basepom.mojo.dvc.PluginLog;
-import org.codehaus.plexus.component.annotations.Component;
-
-import java.util.Comparator;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Implements Apache versioning strategy for two or three digits. It expects versions formatted as x.y, x.y.z. Versions
- * can have an additional qualifier.
+ * Implements Apache versioning strategy for two or three digits. It expects versions formatted as x.y, x.y.z. Versions can have an additional qualifier.
  * &lt;p&gt;
  * Version A (xa.ya.za) can replace Version B (xb.yb.zb) if xa == xb and xa &amp;gt;= xb. component z is always compatible.
  * &lt;p&gt;
  * If an additional qualifier exists, the qualifiers must match.
  */
-@Component(role = Strategy.class, hint = &quot;apr&quot;)
-<span class="nc" id="L36">public class AprVersionStrategy</span>
-        implements Strategy
-{
-<span class="nc" id="L39">    private final Comparator&lt;ArtifactVersion&gt; COMPARATOR = Comparator</span>
-<span class="nc" id="L40">            .comparing(ArtifactVersion::getMajorVersion, (a, e) -&gt; checkMajorCompatible(a, e))</span>
-<span class="nc" id="L41">            .thenComparing(ArtifactVersion::getMinorVersion, (a, e) -&gt; checkMinorCompatible(a, e))</span>
-<span class="nc" id="L42">            .thenComparing(ArtifactVersion::getIncrementalVersion, (a, e) -&gt; checkPatchCompatible(a, e))</span>
-<span class="nc" id="L43">            .thenComparing(ArtifactVersion::getQualifier, (a, e) -&gt; checkQualifierCompatible(Strings.nullToEmpty(a), Strings.nullToEmpty(e)));</span>
+@Named(&quot;apr&quot;)
+@Singleton
+<span class="nc" id="L37">public class AprVersionStrategy</span>
+        implements Strategy {
 
-<span class="nc" id="L45">    protected final PluginLog LOG = new PluginLog(this.getClass());</span>
+<span class="nc" id="L40">    private final Comparator&lt;ArtifactVersion&gt; comparator = Comparator</span>
+<span class="nc" id="L41">            .comparing(ArtifactVersion::getMajorVersion, this::checkMajorCompatible)</span>
+<span class="nc" id="L42">            .thenComparing(ArtifactVersion::getMinorVersion, this::checkMinorCompatible)</span>
+<span class="nc" id="L43">            .thenComparing(ArtifactVersion::getIncrementalVersion, this::checkPatchCompatible)</span>
+<span class="nc" id="L44">            .thenComparing(ArtifactVersion::getQualifier, (a, e) -&gt; checkQualifierCompatible(Strings.nullToEmpty(a), Strings.nullToEmpty(e)));</span>
 
     @Override
-    public String getName()
-    {
-<span class="nc" id="L50">        return &quot;apr&quot;;</span>
+    public String getName() {
+<span class="nc" id="L48">        return &quot;apr&quot;;</span>
     }
 
     @Override
-    public final boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion)
-    {
-<span class="nc" id="L56">        final ArtifactVersion aprExpectedVersion = new DefaultArtifactVersion(checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;).getCanonical());</span>
-<span class="nc" id="L57">        final ArtifactVersion aprResolvedVersion = new DefaultArtifactVersion(checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;).getCanonical());</span>
+    public final boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion) {
+<span class="nc" id="L53">        final ArtifactVersion aprExpectedVersion = new DefaultArtifactVersion(checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;).getCanonical());</span>
+<span class="nc" id="L54">        final ArtifactVersion aprResolvedVersion = new DefaultArtifactVersion(checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;).getCanonical());</span>
 
         // Expected version must be before or equal the resolved version.
         //
@@ -64,37 +61,33 @@ import static com.google.common.base.Preconditions.checkNotNull;
         //  0 means more testing.
         //  1 means compatible.
         //
-<span class="nc bnc" id="L67" title="All 2 branches missed.">        return COMPARATOR.compare(aprExpectedVersion, aprResolvedVersion) &gt;= 0; // more testing or compatible wins here.</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return comparator.compare(aprExpectedVersion, aprResolvedVersion) &gt;= 0; // more testing or compatible wins here.</span>
     }
 
-    protected int checkMajorCompatible(int expectedMajor, int resolvedMajor)
-    {
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (expectedMajor != resolvedMajor) {</span>
-<span class="nc" id="L73">            return -1; // incompatible if majors differ.</span>
+    protected int checkMajorCompatible(int expectedMajor, int resolvedMajor) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (expectedMajor != resolvedMajor) {</span>
+<span class="nc" id="L69">            return -1; // incompatible if majors differ.</span>
         }
-<span class="nc" id="L75">        return 0; // otherwise more testing.</span>
+<span class="nc" id="L71">        return 0; // otherwise more testing.</span>
     }
 
-    protected int checkMinorCompatible(int expectedMinor, int resolvedMinor)
-    {
-<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (resolvedMinor &lt; expectedMinor) {</span>
-<span class="nc" id="L81">            return -1; // smaller version is not forward compatible</span>
+    protected int checkMinorCompatible(int expectedMinor, int resolvedMinor) {
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (resolvedMinor &lt; expectedMinor) {</span>
+<span class="nc" id="L76">            return -1; // smaller version is not forward compatible</span>
         }
 
-<span class="nc" id="L84">        return 0; // otherwise more testing.</span>
+<span class="nc" id="L79">        return 0; // otherwise more testing.</span>
     }
 
-    protected int checkPatchCompatible(int expectedPatch, int resolvedPatch)
-    {
-<span class="nc" id="L89">        return 0; // all patches are compatible, check the qualifiers</span>
+    protected int checkPatchCompatible(int expectedPatch, int resolvedPatch) {
+<span class="nc" id="L83">        return 0; // all patches are compatible, check the qualifiers</span>
     }
 
-    protected int checkQualifierCompatible(String expectedQualifier, String resolvedQualifier)
-    {
-<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (!expectedQualifier.equals(resolvedQualifier)) {</span>
-<span class="nc" id="L95">            return -1; // if qualifiers don't match, things are not compatible (this makes things like 1.2.3-android and 1.2.3-jre not compatible!</span>
+    protected int checkQualifierCompatible(String expectedQualifier, String resolvedQualifier) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (!expectedQualifier.equals(resolvedQualifier)) {</span>
+<span class="nc" id="L88">            return -1; // if qualifiers don't match, things are not compatible (this makes things like 1.2.3-android and 1.2.3-jre not compatible!</span>
         }
-<span class="nc" id="L97">        return 0;</span>
+<span class="nc" id="L90">        return 0;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

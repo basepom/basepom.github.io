@@ -1,4 +1,3 @@
-module:org.basepom.mojo.dvc
 org.basepom.mojo.dvc
 org.basepom.mojo.dvc.dependency
 org.basepom.mojo.dvc.model

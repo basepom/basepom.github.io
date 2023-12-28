@@ -11,32 +11,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.graph.Exclusion;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public final class CheckExclusionsFilter
-        implements DependencyFilter
-{
+        implements DependencyFilter {
+
     private final List&lt;Exclusion&gt; exclusions;
 
-    public CheckExclusionsFilter(final Collection&lt;Exclusion&gt; exclusions)
-<span class="nc" id="L33">    {</span>
+<span class="nc" id="L33">    public CheckExclusionsFilter(final Collection&lt;Exclusion&gt; exclusions) {</span>
 <span class="nc" id="L34">        this.exclusions = ImmutableList.copyOf(checkNotNull(exclusions, &quot;exclusions is null&quot;));</span>
 <span class="nc" id="L35">    }</span>
 
     @Override
-    public boolean accept(final DependencyNode node, final List&lt;DependencyNode&gt; parents)
-    {
+    @SuppressWarnings(&quot;PMD.AvoidBranchingStatementAsLastInLoop&quot;)
+    public boolean accept(final DependencyNode node, final List&lt;DependencyNode&gt; parents) {
 <span class="nc" id="L40">        checkNotNull(node, &quot;node is null&quot;);</span>
 <span class="nc bnc" id="L41" title="All 2 branches missed.">        for (final Exclusion exclusion : exclusions) {</span>
             // drop wildcards.
@@ -51,4 +51,4 @@ public final class CheckExclusionsFilter
 <span class="nc" id="L51">        return true; // no exclusion found.</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

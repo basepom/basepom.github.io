@@ -11,37 +11,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.strategy;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.codehaus.plexus.component.annotations.Component;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Single Digit, may have a prefix. Assume that larger numbers are backwards compatible.
  * &lt;p&gt;
  * e.g. used for google guava.
  */
-@Component(role = Strategy.class, hint = &quot;single-digit&quot;)
-<span class="nc" id="L29">public class SingleDigitVersionStrategy</span>
-        implements Strategy
-{
+@Named(&quot;single-digit&quot;)
+@Singleton
+<span class="nc" id="L33">public class SingleDigitVersionStrategy</span>
+        implements Strategy {
+
     @Override
-    public String getName()
-    {
-<span class="nc" id="L35">        return &quot;single-digit&quot;;</span>
+    public String getName() {
+<span class="nc" id="L38">        return &quot;single-digit&quot;;</span>
     }
 
     @Override
-    public boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion)
-    {
-<span class="nc" id="L41">        final ArtifactVersion aprExpectedVersion = new DefaultArtifactVersion(checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;).getCanonical());</span>
-<span class="nc" id="L42">        final ArtifactVersion aprResolvedVersion = new DefaultArtifactVersion(checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;).getCanonical());</span>
+    public boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion) {
+<span class="nc" id="L43">        final ArtifactVersion aprExpectedVersion = new DefaultArtifactVersion(checkNotNull(expectedVersion, &quot;expectedVersion is null&quot;).getCanonical());</span>
+<span class="nc" id="L44">        final ArtifactVersion aprResolvedVersion = new DefaultArtifactVersion(checkNotNull(resolvedVersion, &quot;resolvedVersion is null&quot;).getCanonical());</span>
 
-<span class="nc bnc" id="L44" title="All 2 branches missed.">        return aprResolvedVersion.getMajorVersion() &gt;= aprExpectedVersion.getMajorVersion();</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        return aprResolvedVersion.getMajorVersion() &gt;= aprExpectedVersion.getMajorVersion();</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

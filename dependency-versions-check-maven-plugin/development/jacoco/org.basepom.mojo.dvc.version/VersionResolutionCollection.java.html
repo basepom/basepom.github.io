@@ -11,7 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.version;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static com.google.common.collect.ImmutableSetMultimap.toImmutableSetMultimap;
+
+import org.basepom.mojo.dvc.QualifiedName;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -19,37 +30,25 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.basepom.mojo.dvc.QualifiedName;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.google.common.collect.ImmutableSetMultimap.toImmutableSetMultimap;
 
 public final class VersionResolutionCollection
-        implements Comparable&lt;VersionResolutionCollection&gt;
-{
+        implements Comparable&lt;VersionResolutionCollection&gt; {
+
     private final ImmutableSortedSet&lt;VersionResolutionElement&gt; requestingDependencies;
     private final ComparableVersion expectedVersion;
 
-    private VersionResolutionCollection(Map.Entry&lt;ComparableVersion, Collection&lt;VersionResolutionElement&gt;&gt; entry)
-<span class="nc" id="L39">    {</span>
-<span class="nc" id="L40">        checkNotNull(entry, &quot;entry is null&quot;);</span>
-<span class="nc" id="L41">        this.expectedVersion = entry.getKey();</span>
-<span class="nc" id="L42">        this.requestingDependencies = ImmutableSortedSet.copyOf(entry.getValue());</span>
-<span class="nc" id="L43">    }</span>
+<span class="nc" id="L40">    private VersionResolutionCollection(Map.Entry&lt;ComparableVersion, Collection&lt;VersionResolutionElement&gt;&gt; entry) {</span>
+<span class="nc" id="L41">        checkNotNull(entry, &quot;entry is null&quot;);</span>
+<span class="nc" id="L42">        this.expectedVersion = entry.getKey();</span>
+<span class="nc" id="L43">        this.requestingDependencies = ImmutableSortedSet.copyOf(entry.getValue());</span>
+<span class="nc" id="L44">    }</span>
 
-    public ImmutableSortedSet&lt;VersionResolutionElement&gt; getRequestingDependencies()
-    {
+    public ImmutableSortedSet&lt;VersionResolutionElement&gt; getRequestingDependencies() {
 <span class="nc" id="L47">        return requestingDependencies;</span>
     }
 
-    public ComparableVersion getExpectedVersion()
-    {
-<span class="nc" id="L52">        return expectedVersion;</span>
+    public ComparableVersion getExpectedVersion() {
+<span class="nc" id="L51">        return expectedVersion;</span>
     }
 
     /**
@@ -58,89 +57,78 @@ public final class VersionResolutionCollection
      * @param version The version to match to this collection.
      * @return True if the selected version exactly matches the expected version.
      */
-    public boolean isMatchFor(ComparableVersion version)
-    {
-<span class="nc" id="L63">        checkNotNull(version, &quot;version is null&quot;);</span>
-<span class="nc" id="L64">        return expectedVersion.getCanonical().equals(version.getCanonical());</span>
+    public boolean isMatchFor(ComparableVersion version) {
+<span class="nc" id="L61">        checkNotNull(version, &quot;version is null&quot;);</span>
+<span class="nc" id="L62">        return expectedVersion.getCanonical().equals(version.getCanonical());</span>
     }
 
     @Override
-    public int compareTo(final VersionResolutionCollection other)
-    {
-<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (other == null) {</span>
-<span class="nc" id="L71">            return 1;</span>
-        }
-<span class="nc bnc" id="L73" title="All 4 branches missed.">        else if (other == this || equals(other)) {</span>
-<span class="nc" id="L74">            return 0;</span>
-        }
-        else {
+    public int compareTo(final VersionResolutionCollection other) {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (other == null) {</span>
+<span class="nc" id="L68">            return 1;</span>
+<span class="nc bnc" id="L69" title="All 4 branches missed.">        } else if (other == this || equals(other)) {</span>
+<span class="nc" id="L70">            return 0;</span>
+        } else {
             // order by expected version
-<span class="nc" id="L78">            return this.getExpectedVersion().compareTo(other.getExpectedVersion());</span>
+<span class="nc" id="L73">            return this.getExpectedVersion().compareTo(other.getExpectedVersion());</span>
         }
     }
 
-    public boolean hasConflict()
-    {
-<span class="nc" id="L84">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::hasConflict);</span>
+    public boolean hasConflict() {
+<span class="nc" id="L78">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::hasConflict);</span>
     }
 
-    public boolean hasDirectDependencies()
-    {
-<span class="nc" id="L89">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::isDirectDependency);</span>
+    public boolean hasDirectDependencies() {
+<span class="nc" id="L82">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::isDirectDependency);</span>
     }
 
-    public boolean hasManagedDependencies()
-    {
-<span class="nc" id="L94">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::isManagedDependency);</span>
+    public boolean hasManagedDependencies() {
+<span class="nc" id="L86">        return requestingDependencies.stream().anyMatch(VersionResolutionElement::isManagedDependency);</span>
     }
 
-    public static ImmutableSetMultimap&lt;QualifiedName, VersionResolutionCollection&gt; toResolutionMap(final SetMultimap&lt;QualifiedName, VersionResolution&gt; map)
-    {
-<span class="nc" id="L99">        final ImmutableSetMultimap.Builder&lt;QualifiedName, VersionResolutionCollection&gt; builder = ImmutableSetMultimap.builder();</span>
-<span class="nc" id="L100">        builder.orderKeysBy(QualifiedName::compareTo).orderValuesBy(VersionResolutionCollection::compareTo);</span>
+    public static ImmutableSetMultimap&lt;QualifiedName, VersionResolutionCollection&gt; toResolutionMap(final SetMultimap&lt;QualifiedName, VersionResolution&gt; map) {
+<span class="nc" id="L90">        final ImmutableSetMultimap.Builder&lt;QualifiedName, VersionResolutionCollection&gt; builder = ImmutableSetMultimap.builder();</span>
+<span class="nc" id="L91">        builder.orderKeysBy(QualifiedName::compareTo).orderValuesBy(VersionResolutionCollection::compareTo);</span>
 
-<span class="nc" id="L102">        Maps.transformValues(map.asMap(), v -&gt; {</span>
+<span class="nc" id="L93">        Maps.transformValues(map.asMap(), v -&gt; {</span>
             // fold into Map from version -&gt; set of all dependencies that want this version.
-<span class="nc" id="L104">            final ImmutableSetMultimap&lt;ComparableVersion, VersionResolutionElement&gt; versionMap = v.stream()</span>
-<span class="nc" id="L105">                    .collect(toImmutableSetMultimap(VersionResolution::getExpectedVersion, VersionResolution::getRequestingDependency));</span>
+<span class="nc" id="L95">            final ImmutableSetMultimap&lt;ComparableVersion, VersionResolutionElement&gt; versionMap = v.stream()</span>
+<span class="nc" id="L96">                    .collect(toImmutableSetMultimap(VersionResolution::getExpectedVersion, VersionResolution::getRequestingDependency));</span>
             // collect result into a set of VersionResolutionCollection objects.
-<span class="nc" id="L107">            return versionMap.asMap().entrySet().stream()</span>
-<span class="nc" id="L108">                    .map(VersionResolutionCollection::new)</span>
-<span class="nc" id="L109">                    .collect(toImmutableSet());</span>
+<span class="nc" id="L98">            return versionMap.asMap().entrySet().stream()</span>
+<span class="nc" id="L99">                    .map(VersionResolutionCollection::new)</span>
+<span class="nc" id="L100">                    .collect(toImmutableSet());</span>
             // stream the entries of QualifiedName, Set of version resolution collections
             // collect them into a Multimap from QualifiedName to version resolution collections.
-<span class="nc" id="L112">        }).forEach(builder::putAll);</span>
+<span class="nc" id="L103">        }).forEach(builder::putAll);</span>
 
-<span class="nc" id="L114">        return builder.build();</span>
+<span class="nc" id="L105">        return builder.build();</span>
     }
 
     @Override
-    public String toString()
-    {
-<span class="nc" id="L120">        return MoreObjects.toStringHelper(this)</span>
-<span class="nc" id="L121">                .add(&quot;requestingDependencies&quot;, requestingDependencies)</span>
-<span class="nc" id="L122">                .add(&quot;expectedVersion&quot;, expectedVersion)</span>
-<span class="nc" id="L123">                .toString();</span>
+    public String toString() {
+<span class="nc" id="L110">        return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L111">                .add(&quot;requestingDependencies&quot;, requestingDependencies)</span>
+<span class="nc" id="L112">                .add(&quot;expectedVersion&quot;, expectedVersion)</span>
+<span class="nc" id="L113">                .toString();</span>
     }
 
     @Override
-    public boolean equals(final Object o)
-    {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (this == o) {</span>
-<span class="nc" id="L130">            return true;</span>
+    public boolean equals(final Object o) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L119">            return true;</span>
         }
-<span class="nc bnc" id="L132" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
-<span class="nc" id="L133">            return false;</span>
+<span class="nc bnc" id="L121" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L122">            return false;</span>
         }
-<span class="nc" id="L135">        final VersionResolutionCollection that = (VersionResolutionCollection) o;</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        return requestingDependencies.equals(that.requestingDependencies) &amp;&amp;</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">                expectedVersion.equals(that.expectedVersion);</span>
+<span class="nc" id="L124">        final VersionResolutionCollection that = (VersionResolutionCollection) o;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        return requestingDependencies.equals(that.requestingDependencies)</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                &amp;&amp; expectedVersion.equals(that.expectedVersion);</span>
     }
 
     @Override
-    public int hashCode()
-    {
-<span class="nc" id="L143">        return Objects.hash(requestingDependencies, expectedVersion);</span>
+    public int hashCode() {
+<span class="nc" id="L131">        return Objects.hash(requestingDependencies, expectedVersion);</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

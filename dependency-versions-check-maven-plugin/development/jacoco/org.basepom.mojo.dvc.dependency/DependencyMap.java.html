@@ -11,34 +11,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.basepom.mojo.dvc.dependency;
 
-import com.google.common.collect.ImmutableMap;
-import org.basepom.mojo.dvc.QualifiedName;
-import org.eclipse.aether.graph.DependencyNode;
+package org.basepom.mojo.dvc.dependency;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class DependencyMap
-{
+import org.basepom.mojo.dvc.QualifiedName;
+
+import com.google.common.collect.ImmutableMap;
+import org.eclipse.aether.graph.DependencyNode;
+
+public final class DependencyMap {
+
     private final ImmutableMap&lt;QualifiedName, DependencyNode&gt; allDependencies;
     private final ImmutableMap&lt;QualifiedName, DependencyNode&gt; directDependencies;
 
     DependencyMap(final ImmutableMap&lt;QualifiedName, DependencyNode&gt; allDependencies,
-            final ImmutableMap&lt;QualifiedName, DependencyNode&gt; directDependencies)
-<span class="nc" id="L29">    {</span>
-<span class="nc" id="L30">        this.allDependencies = checkNotNull(allDependencies, &quot;allDependencies is null&quot;);</span>
-<span class="nc" id="L31">        this.directDependencies = checkNotNull(directDependencies, &quot;directDependencies is null&quot;);</span>
-<span class="nc" id="L32">    }</span>
+<span class="nc" id="L30">            final ImmutableMap&lt;QualifiedName, DependencyNode&gt; directDependencies) {</span>
+<span class="nc" id="L31">        this.allDependencies = checkNotNull(allDependencies, &quot;allDependencies is null&quot;);</span>
+<span class="nc" id="L32">        this.directDependencies = checkNotNull(directDependencies, &quot;directDependencies is null&quot;);</span>
+<span class="nc" id="L33">    }</span>
 
-    public ImmutableMap&lt;QualifiedName, DependencyNode&gt; getAllDependencies()
-    {
+    public ImmutableMap&lt;QualifiedName, DependencyNode&gt; getAllDependencies() {
 <span class="nc" id="L36">        return allDependencies;</span>
     }
 
-    public ImmutableMap&lt;QualifiedName, DependencyNode&gt; getDirectDependencies()
-    {
-<span class="nc" id="L41">        return directDependencies;</span>
+    public ImmutableMap&lt;QualifiedName, DependencyNode&gt; getDirectDependencies() {
+<span class="nc" id="L40">        return directDependencies;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

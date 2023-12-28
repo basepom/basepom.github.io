@@ -11,43 +11,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.strategy;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.function.Function.identity;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 /**
  * Default implementation for {@link StrategyProvider}.
  */
-@Component(role = StrategyProvider.class)
-<span class="nc" id="L32">public class DefaultStrategyProvider</span>
-        implements StrategyProvider
-{
-<span class="nc" id="L35">    @Requirement(role = Strategy.class)</span>
-<span class="nc" id="L36">    protected List&lt;Strategy&gt; resolverDefinitions = ImmutableList.of();</span>
+@Named(&quot;default&quot;)
+@Singleton
+<span class="nc" id="L35">public class DefaultStrategyProvider</span>
+        implements StrategyProvider {
+
+<span class="nc" id="L38">    @Inject</span>
+<span class="nc" id="L39">    protected List&lt;Strategy&gt; resolverDefinitions = ImmutableList.of();</span>
 
     @Override
-    public ImmutableMap&lt;String, Strategy&gt; getStrategies()
-    {
-<span class="nc" id="L41">        return resolverDefinitions.stream().collect(ImmutableMap.toImmutableMap(r -&gt; r.getName().toLowerCase(Locale.ENGLISH), identity()));</span>
+    public ImmutableMap&lt;String, Strategy&gt; getStrategies() {
+<span class="nc" id="L43">        return resolverDefinitions.stream().collect(ImmutableMap.toImmutableMap(r -&gt; r.getName().toLowerCase(Locale.ENGLISH), identity()));</span>
     }
 
-    public Strategy forName(final String name)
-    {
-<span class="nc" id="L46">        checkNotNull(name, &quot;name is null&quot;);</span>
+    @Override
+    public Strategy forName(final String name) {
+<span class="nc" id="L48">        checkNotNull(name, &quot;name is null&quot;);</span>
 
-<span class="nc" id="L48">        final Map&lt;String, Strategy&gt; strategies = getStrategies();</span>
-<span class="nc" id="L49">        return strategies.get(name.toLowerCase(Locale.ENGLISH));</span>
+<span class="nc" id="L50">        final Map&lt;String, Strategy&gt; strategies = getStrategies();</span>
+<span class="nc" id="L51">        return strategies.get(name.toLowerCase(Locale.ENGLISH));</span>
     }
 }
 
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

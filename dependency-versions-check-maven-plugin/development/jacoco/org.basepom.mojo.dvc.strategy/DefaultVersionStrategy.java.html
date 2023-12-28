@@ -11,32 +11,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.dvc.strategy;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.codehaus.plexus.component.annotations.Component;
 
 /**
- * This is the default versioning strategy used by previous versions of the plugin.
- * It assumes that all smaller versions are compatible when replaced with larger numbers and compares version
- * elements from left to right. E.g. 3.2.1 &amp;gt; 3.2 and 2.1.1 &amp;gt; 1.0. Usually works pretty ok.
+ * This is the default versioning strategy used by previous versions of the plugin. It assumes that all smaller versions are compatible when replaced with
+ * larger numbers and compares version elements from left to right. E.g. 3.2.1 &amp;gt; 3.2 and 2.1.1 &amp;gt; 1.0. Usually works pretty ok.
  */
-@Component(role = Strategy.class, hint = &quot;default&quot;)
-<span class="nc" id="L25">public class DefaultVersionStrategy</span>
-        implements Strategy
-{
+@Named(&quot;default&quot;)
+@Singleton
+<span class="nc" id="L28">public class DefaultVersionStrategy</span>
+        implements Strategy {
+
     @Override
-    public String getName()
-    {
-<span class="nc" id="L31">        return &quot;default&quot;;</span>
+    public String getName() {
+<span class="nc" id="L33">        return &quot;default&quot;;</span>
     }
 
     @Override
-    public final boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion)
-    {
+    public final boolean isCompatible(final ComparableVersion expectedVersion, final ComparableVersion resolvedVersion) {
         // this is the same as converting the versions to the DefaultArtifactVersion and then do compareTo, as this
         // uses ComparableVersion under the hood.
-<span class="nc bnc" id="L39" title="All 2 branches missed.">        return resolvedVersion.compareTo(expectedVersion) &gt;= 0;</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        return resolvedVersion.compareTo(expectedVersion) &gt;= 0;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
