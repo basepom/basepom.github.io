@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"org.basepom.mojo.repack"}];updateSearchResults();
+moduleSearchIndex = [];updateSearchResults();

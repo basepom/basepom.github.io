@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"org.basepom.mojo.repack","l":"org.basepom.mojo.repack"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.basepom.mojo.repack"}];updateSearchResults();
