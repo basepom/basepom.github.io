@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"org.basepom.mojo.propertyhelper"}];updateSearchResults();
+moduleSearchIndex = [];updateSearchResults();

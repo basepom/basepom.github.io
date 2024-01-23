@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.basepom.mojo.propertyhelper"},{"l":"org.basepom.mojo.propertyhelper.beans"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.basepom.mojo.propertyhelper"},{"l":"org.basepom.mojo.propertyhelper.definitions"},{"l":"org.basepom.mojo.propertyhelper.fields"},{"l":"org.basepom.mojo.propertyhelper.groups"}];updateSearchResults();
