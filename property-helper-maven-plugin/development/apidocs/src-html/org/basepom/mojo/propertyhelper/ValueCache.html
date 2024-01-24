@@ -70,7 +70,7 @@
 <span class="source-line-no">057</span><span id="line-57">        final String propertyNameInFile = definition.getPropertyNameInFile();</span>
 <span class="source-line-no">058</span><span id="line-58">        final boolean hasValue = values.containsKey(propertyNameInFile);</span>
 <span class="source-line-no">059</span><span id="line-59"></span>
-<span class="source-line-no">060</span><span id="line-60">        final boolean createProperty = checkIgnoreWarnFailCreateState(hasValue, definition.getOnMissingProperty(),</span>
+<span class="source-line-no">060</span><span id="line-60">        final boolean createProperty = checkIgnoreWarnFailCreateState(hasValue, definition.getOnMissingFileProperty(),</span>
 <span class="source-line-no">061</span><span id="line-61">            () -&gt; format("property '%s' has value '%s'", propertyNameInFile, values.get(propertyNameInFile)),</span>
 <span class="source-line-no">062</span><span id="line-62">            () -&gt; format("property '%s' has no value defined", propertyNameInFile));</span>
 <span class="source-line-no">063</span><span id="line-63"></span>

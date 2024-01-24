@@ -93,7 +93,7 @@
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>          check();
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>  
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>          <strong class="jxr_keyword">final</strong> <a name="ValueProvider" href="../../../../../org/basepom/mojo/propertyhelper/ValueProvider.html#ValueProvider">ValueProvider</a> macroValue = valueCache.getValueProvider(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>          <strong class="jxr_keyword">return</strong> MacroField.forTesting(<strong class="jxr_keyword">this</strong>, macroValue, context);
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="MacroField" href="../../../../../org/basepom/mojo/propertyhelper/fields/MacroField.html#MacroField">MacroField</a>(<strong class="jxr_keyword">this</strong>, macroValue, context);
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>      }
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>  
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>      @Override

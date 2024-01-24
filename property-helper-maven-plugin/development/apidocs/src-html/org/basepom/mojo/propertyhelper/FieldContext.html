@@ -38,28 +38,61 @@
 <span class="source-line-no">025</span><span id="line-25">import org.apache.maven.settings.Settings;</span>
 <span class="source-line-no">026</span><span id="line-26"></span>
 <span class="source-line-no">027</span><span id="line-27">public interface FieldContext {</span>
-<span class="source-line-no">028</span><span id="line-28">    FieldContext EMPTY_CONTEXT = new FieldContext() {};</span>
-<span class="source-line-no">029</span><span id="line-29"></span>
-<span class="source-line-no">030</span><span id="line-30">    default Map&lt;String, MacroType&gt; getMacros() {</span>
-<span class="source-line-no">031</span><span id="line-31">        return Collections.emptyMap();</span>
-<span class="source-line-no">032</span><span id="line-32">    }</span>
-<span class="source-line-no">033</span><span id="line-33"></span>
-<span class="source-line-no">034</span><span id="line-34">    default Properties getProperties() {</span>
-<span class="source-line-no">035</span><span id="line-35">        return new Properties();</span>
-<span class="source-line-no">036</span><span id="line-36">    }</span>
-<span class="source-line-no">037</span><span id="line-37"></span>
-<span class="source-line-no">038</span><span id="line-38">    default MavenProject getProject() {</span>
-<span class="source-line-no">039</span><span id="line-39">        throw new UnsupportedOperationException();</span>
-<span class="source-line-no">040</span><span id="line-40">    }</span>
+<span class="source-line-no">028</span><span id="line-28"></span>
+<span class="source-line-no">029</span><span id="line-29">    static FieldContext forTesting() {</span>
+<span class="source-line-no">030</span><span id="line-30">        return new FieldContext() {</span>
+<span class="source-line-no">031</span><span id="line-31"></span>
+<span class="source-line-no">032</span><span id="line-32">            @Override</span>
+<span class="source-line-no">033</span><span id="line-33">            public Map&lt;String, MacroType&gt; getMacros() {</span>
+<span class="source-line-no">034</span><span id="line-34">                return Collections.emptyMap();</span>
+<span class="source-line-no">035</span><span id="line-35">            }</span>
+<span class="source-line-no">036</span><span id="line-36"></span>
+<span class="source-line-no">037</span><span id="line-37">            @Override</span>
+<span class="source-line-no">038</span><span id="line-38">            public Properties getProperties() {</span>
+<span class="source-line-no">039</span><span id="line-39">                return new Properties();</span>
+<span class="source-line-no">040</span><span id="line-40">            }</span>
 <span class="source-line-no">041</span><span id="line-41"></span>
-<span class="source-line-no">042</span><span id="line-42">    default Settings getSettings() {</span>
-<span class="source-line-no">043</span><span id="line-43">        throw new UnsupportedOperationException();</span>
-<span class="source-line-no">044</span><span id="line-44">    }</span>
-<span class="source-line-no">045</span><span id="line-45"></span>
-<span class="source-line-no">046</span><span id="line-46">    default File getBasedir() {</span>
-<span class="source-line-no">047</span><span id="line-47">        throw new UnsupportedOperationException();</span>
-<span class="source-line-no">048</span><span id="line-48">    }</span>
-<span class="source-line-no">049</span><span id="line-49">}</span>
+<span class="source-line-no">042</span><span id="line-42">            @Override</span>
+<span class="source-line-no">043</span><span id="line-43">            public MavenProject getProject() {</span>
+<span class="source-line-no">044</span><span id="line-44">                return new MavenProject();</span>
+<span class="source-line-no">045</span><span id="line-45">            }</span>
+<span class="source-line-no">046</span><span id="line-46"></span>
+<span class="source-line-no">047</span><span id="line-47">            @Override</span>
+<span class="source-line-no">048</span><span id="line-48">            public Settings getSettings() {</span>
+<span class="source-line-no">049</span><span id="line-49">                return new Settings();</span>
+<span class="source-line-no">050</span><span id="line-50">            }</span>
+<span class="source-line-no">051</span><span id="line-51"></span>
+<span class="source-line-no">052</span><span id="line-52">            @Override</span>
+<span class="source-line-no">053</span><span id="line-53">            public File getBasedir() {</span>
+<span class="source-line-no">054</span><span id="line-54">                throw new UnsupportedOperationException();</span>
+<span class="source-line-no">055</span><span id="line-55">            }</span>
+<span class="source-line-no">056</span><span id="line-56"></span>
+<span class="source-line-no">057</span><span id="line-57">            @Override</span>
+<span class="source-line-no">058</span><span id="line-58">            public InterpolatorFactory getInterpolatorFactory() {</span>
+<span class="source-line-no">059</span><span id="line-59">                return InterpolatorFactory.forTesting();</span>
+<span class="source-line-no">060</span><span id="line-60">            }</span>
+<span class="source-line-no">061</span><span id="line-61"></span>
+<span class="source-line-no">062</span><span id="line-62">            @Override</span>
+<span class="source-line-no">063</span><span id="line-63">            public TransformerRegistry getTransformerRegistry() {</span>
+<span class="source-line-no">064</span><span id="line-64">                return TransformerRegistry.INSTANCE;</span>
+<span class="source-line-no">065</span><span id="line-65">            }</span>
+<span class="source-line-no">066</span><span id="line-66">        };</span>
+<span class="source-line-no">067</span><span id="line-67">    }</span>
+<span class="source-line-no">068</span><span id="line-68"></span>
+<span class="source-line-no">069</span><span id="line-69">    Map&lt;String, MacroType&gt; getMacros();</span>
+<span class="source-line-no">070</span><span id="line-70"></span>
+<span class="source-line-no">071</span><span id="line-71">    Properties getProperties();</span>
+<span class="source-line-no">072</span><span id="line-72"></span>
+<span class="source-line-no">073</span><span id="line-73">    MavenProject getProject();</span>
+<span class="source-line-no">074</span><span id="line-74"></span>
+<span class="source-line-no">075</span><span id="line-75">    Settings getSettings();</span>
+<span class="source-line-no">076</span><span id="line-76"></span>
+<span class="source-line-no">077</span><span id="line-77">    File getBasedir();</span>
+<span class="source-line-no">078</span><span id="line-78"></span>
+<span class="source-line-no">079</span><span id="line-79">    InterpolatorFactory getInterpolatorFactory();</span>
+<span class="source-line-no">080</span><span id="line-80"></span>
+<span class="source-line-no">081</span><span id="line-81">    TransformerRegistry getTransformerRegistry();</span>
+<span class="source-line-no">082</span><span id="line-82">}</span>
 
 
 
