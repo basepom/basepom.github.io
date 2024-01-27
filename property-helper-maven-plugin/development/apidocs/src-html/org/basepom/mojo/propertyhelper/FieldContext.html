@@ -37,62 +37,95 @@
 <span class="source-line-no">024</span><span id="line-24">import org.apache.maven.project.MavenProject;</span>
 <span class="source-line-no">025</span><span id="line-25">import org.apache.maven.settings.Settings;</span>
 <span class="source-line-no">026</span><span id="line-26"></span>
-<span class="source-line-no">027</span><span id="line-27">public interface FieldContext {</span>
-<span class="source-line-no">028</span><span id="line-28"></span>
-<span class="source-line-no">029</span><span id="line-29">    static FieldContext forTesting() {</span>
-<span class="source-line-no">030</span><span id="line-30">        return new FieldContext() {</span>
+<span class="source-line-no">027</span><span id="line-27">/**</span>
+<span class="source-line-no">028</span><span id="line-28"> * All accessible values from the Maven build system for a Field.</span>
+<span class="source-line-no">029</span><span id="line-29"> */</span>
+<span class="source-line-no">030</span><span id="line-30">public interface FieldContext {</span>
 <span class="source-line-no">031</span><span id="line-31"></span>
-<span class="source-line-no">032</span><span id="line-32">            @Override</span>
-<span class="source-line-no">033</span><span id="line-33">            public Map&lt;String, MacroType&gt; getMacros() {</span>
-<span class="source-line-no">034</span><span id="line-34">                return Collections.emptyMap();</span>
-<span class="source-line-no">035</span><span id="line-35">            }</span>
-<span class="source-line-no">036</span><span id="line-36"></span>
-<span class="source-line-no">037</span><span id="line-37">            @Override</span>
-<span class="source-line-no">038</span><span id="line-38">            public Properties getProperties() {</span>
-<span class="source-line-no">039</span><span id="line-39">                return new Properties();</span>
-<span class="source-line-no">040</span><span id="line-40">            }</span>
-<span class="source-line-no">041</span><span id="line-41"></span>
-<span class="source-line-no">042</span><span id="line-42">            @Override</span>
-<span class="source-line-no">043</span><span id="line-43">            public MavenProject getProject() {</span>
-<span class="source-line-no">044</span><span id="line-44">                return new MavenProject();</span>
-<span class="source-line-no">045</span><span id="line-45">            }</span>
-<span class="source-line-no">046</span><span id="line-46"></span>
-<span class="source-line-no">047</span><span id="line-47">            @Override</span>
-<span class="source-line-no">048</span><span id="line-48">            public Settings getSettings() {</span>
-<span class="source-line-no">049</span><span id="line-49">                return new Settings();</span>
-<span class="source-line-no">050</span><span id="line-50">            }</span>
-<span class="source-line-no">051</span><span id="line-51"></span>
-<span class="source-line-no">052</span><span id="line-52">            @Override</span>
-<span class="source-line-no">053</span><span id="line-53">            public File getBasedir() {</span>
-<span class="source-line-no">054</span><span id="line-54">                throw new UnsupportedOperationException();</span>
-<span class="source-line-no">055</span><span id="line-55">            }</span>
-<span class="source-line-no">056</span><span id="line-56"></span>
-<span class="source-line-no">057</span><span id="line-57">            @Override</span>
-<span class="source-line-no">058</span><span id="line-58">            public InterpolatorFactory getInterpolatorFactory() {</span>
-<span class="source-line-no">059</span><span id="line-59">                return InterpolatorFactory.forTesting();</span>
-<span class="source-line-no">060</span><span id="line-60">            }</span>
-<span class="source-line-no">061</span><span id="line-61"></span>
-<span class="source-line-no">062</span><span id="line-62">            @Override</span>
-<span class="source-line-no">063</span><span id="line-63">            public TransformerRegistry getTransformerRegistry() {</span>
-<span class="source-line-no">064</span><span id="line-64">                return TransformerRegistry.INSTANCE;</span>
-<span class="source-line-no">065</span><span id="line-65">            }</span>
-<span class="source-line-no">066</span><span id="line-66">        };</span>
-<span class="source-line-no">067</span><span id="line-67">    }</span>
-<span class="source-line-no">068</span><span id="line-68"></span>
-<span class="source-line-no">069</span><span id="line-69">    Map&lt;String, MacroType&gt; getMacros();</span>
-<span class="source-line-no">070</span><span id="line-70"></span>
-<span class="source-line-no">071</span><span id="line-71">    Properties getProperties();</span>
+<span class="source-line-no">032</span><span id="line-32">    /** Returns a fixed instance for testing. Do not use outside test code. */</span>
+<span class="source-line-no">033</span><span id="line-33">    static FieldContext forTesting() {</span>
+<span class="source-line-no">034</span><span id="line-34">        return new FieldContext() {</span>
+<span class="source-line-no">035</span><span id="line-35"></span>
+<span class="source-line-no">036</span><span id="line-36">            @Override</span>
+<span class="source-line-no">037</span><span id="line-37">            public Map&lt;String, MacroType&gt; getMacros() {</span>
+<span class="source-line-no">038</span><span id="line-38">                return Collections.emptyMap();</span>
+<span class="source-line-no">039</span><span id="line-39">            }</span>
+<span class="source-line-no">040</span><span id="line-40"></span>
+<span class="source-line-no">041</span><span id="line-41">            @Override</span>
+<span class="source-line-no">042</span><span id="line-42">            public Properties getProjectProperties() {</span>
+<span class="source-line-no">043</span><span id="line-43">                return new Properties();</span>
+<span class="source-line-no">044</span><span id="line-44">            }</span>
+<span class="source-line-no">045</span><span id="line-45"></span>
+<span class="source-line-no">046</span><span id="line-46">            @Override</span>
+<span class="source-line-no">047</span><span id="line-47">            public MavenProject getProject() {</span>
+<span class="source-line-no">048</span><span id="line-48">                return new MavenProject();</span>
+<span class="source-line-no">049</span><span id="line-49">            }</span>
+<span class="source-line-no">050</span><span id="line-50"></span>
+<span class="source-line-no">051</span><span id="line-51">            @Override</span>
+<span class="source-line-no">052</span><span id="line-52">            public Settings getSettings() {</span>
+<span class="source-line-no">053</span><span id="line-53">                return new Settings();</span>
+<span class="source-line-no">054</span><span id="line-54">            }</span>
+<span class="source-line-no">055</span><span id="line-55"></span>
+<span class="source-line-no">056</span><span id="line-56">            @Override</span>
+<span class="source-line-no">057</span><span id="line-57">            public File getBasedir() {</span>
+<span class="source-line-no">058</span><span id="line-58">                throw new UnsupportedOperationException();</span>
+<span class="source-line-no">059</span><span id="line-59">            }</span>
+<span class="source-line-no">060</span><span id="line-60"></span>
+<span class="source-line-no">061</span><span id="line-61">            @Override</span>
+<span class="source-line-no">062</span><span id="line-62">            public InterpolatorFactory getInterpolatorFactory() {</span>
+<span class="source-line-no">063</span><span id="line-63">                return InterpolatorFactory.forTesting();</span>
+<span class="source-line-no">064</span><span id="line-64">            }</span>
+<span class="source-line-no">065</span><span id="line-65"></span>
+<span class="source-line-no">066</span><span id="line-66">            @Override</span>
+<span class="source-line-no">067</span><span id="line-67">            public TransformerRegistry getTransformerRegistry() {</span>
+<span class="source-line-no">068</span><span id="line-68">                return TransformerRegistry.INSTANCE;</span>
+<span class="source-line-no">069</span><span id="line-69">            }</span>
+<span class="source-line-no">070</span><span id="line-70">        };</span>
+<span class="source-line-no">071</span><span id="line-71">    }</span>
 <span class="source-line-no">072</span><span id="line-72"></span>
-<span class="source-line-no">073</span><span id="line-73">    MavenProject getProject();</span>
-<span class="source-line-no">074</span><span id="line-74"></span>
-<span class="source-line-no">075</span><span id="line-75">    Settings getSettings();</span>
-<span class="source-line-no">076</span><span id="line-76"></span>
-<span class="source-line-no">077</span><span id="line-77">    File getBasedir();</span>
+<span class="source-line-no">073</span><span id="line-73">    /**</span>
+<span class="source-line-no">074</span><span id="line-74">     * Returns a map with all known macros. Key value is the macro hint as given by the plexus component annotation.</span>
+<span class="source-line-no">075</span><span id="line-75">     * @return A map with all known macros.</span>
+<span class="source-line-no">076</span><span id="line-76">     */</span>
+<span class="source-line-no">077</span><span id="line-77">    Map&lt;String, MacroType&gt; getMacros();</span>
 <span class="source-line-no">078</span><span id="line-78"></span>
-<span class="source-line-no">079</span><span id="line-79">    InterpolatorFactory getInterpolatorFactory();</span>
-<span class="source-line-no">080</span><span id="line-80"></span>
-<span class="source-line-no">081</span><span id="line-81">    TransformerRegistry getTransformerRegistry();</span>
-<span class="source-line-no">082</span><span id="line-82">}</span>
+<span class="source-line-no">079</span><span id="line-79">    /**</span>
+<span class="source-line-no">080</span><span id="line-80">     * Return the maven project properties.</span>
+<span class="source-line-no">081</span><span id="line-81">     * @return A properties object for the project properties.</span>
+<span class="source-line-no">082</span><span id="line-82">     */</span>
+<span class="source-line-no">083</span><span id="line-83">    Properties getProjectProperties();</span>
+<span class="source-line-no">084</span><span id="line-84"></span>
+<span class="source-line-no">085</span><span id="line-85">    /**</span>
+<span class="source-line-no">086</span><span id="line-86">     * Returns a reference to the {@link MavenProject}.</span>
+<span class="source-line-no">087</span><span id="line-87">     * @return A {@link MavenProject} object</span>
+<span class="source-line-no">088</span><span id="line-88">     */</span>
+<span class="source-line-no">089</span><span id="line-89">    MavenProject getProject();</span>
+<span class="source-line-no">090</span><span id="line-90"></span>
+<span class="source-line-no">091</span><span id="line-91">    /**</span>
+<span class="source-line-no">092</span><span id="line-92">     * Returns the current maven {@link Settings} object</span>
+<span class="source-line-no">093</span><span id="line-93">     * @return A {@link Settings} object</span>
+<span class="source-line-no">094</span><span id="line-94">     */</span>
+<span class="source-line-no">095</span><span id="line-95">    Settings getSettings();</span>
+<span class="source-line-no">096</span><span id="line-96"></span>
+<span class="source-line-no">097</span><span id="line-97">    /**</span>
+<span class="source-line-no">098</span><span id="line-98">     * Returns the base dir for this maven build execution.</span>
+<span class="source-line-no">099</span><span id="line-99">     *</span>
+<span class="source-line-no">100</span><span id="line-100">     * @return A {@link File} object.</span>
+<span class="source-line-no">101</span><span id="line-101">     */</span>
+<span class="source-line-no">102</span><span id="line-102">    File getBasedir();</span>
+<span class="source-line-no">103</span><span id="line-103"></span>
+<span class="source-line-no">104</span><span id="line-104">    /**</span>
+<span class="source-line-no">105</span><span id="line-105">     * Returns the {@link InterpolatorFactory} that can interpolate "late resolution" properties.</span>
+<span class="source-line-no">106</span><span id="line-106">     * @return An {@link InterpolatorFactory} reference.</span>
+<span class="source-line-no">107</span><span id="line-107">     */</span>
+<span class="source-line-no">108</span><span id="line-108">    InterpolatorFactory getInterpolatorFactory();</span>
+<span class="source-line-no">109</span><span id="line-109"></span>
+<span class="source-line-no">110</span><span id="line-110">    /**</span>
+<span class="source-line-no">111</span><span id="line-111">     * Returns a reference to the {@link TransformerRegistry}.</span>
+<span class="source-line-no">112</span><span id="line-112">     * @return A {@link TransformerRegistry} object.</span>
+<span class="source-line-no">113</span><span id="line-113">     */</span>
+<span class="source-line-no">114</span><span id="line-114">    TransformerRegistry getTransformerRegistry();</span>
+<span class="source-line-no">115</span><span id="line-115">}</span>
 
 
 

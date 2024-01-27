@@ -59,7 +59,7 @@
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">public</strong> String getPropertyValue(<strong class="jxr_keyword">final</strong> <a name="PropertyDefinition" href="../../../../../org/basepom/mojo/propertyhelper/definitions/PropertyDefinition.html#PropertyDefinition">PropertyDefinition</a> propertyDefinition, <strong class="jxr_keyword">final</strong> Map&lt;String, String&gt; propElements) {
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>          <strong class="jxr_keyword">return</strong> Optional.ofNullable(propertyDefinition.getValue())
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>              .map(context.getInterpolatorFactory().interpolate(propertyDefinition.getName(), propertyGroupDefinition.getOnMissingProperty(), propElements))
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>              .map(context.getInterpolatorFactory().interpolate(propertyDefinition.getName(), propertyGroupDefinition.getOnMissingField(), propElements))
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>              .map(context.getTransformerRegistry().applyTransformers(propertyDefinition.getTransformers()))
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>              .orElse(<span class="jxr_string">""</span>);
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>      }

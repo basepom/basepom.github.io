@@ -64,7 +64,7 @@
 <span class="source-line-no">051</span><span id="line-51">    public String getPropertyValue(final PropertyDefinition propertyDefinition, final Map&lt;String, String&gt; propElements) {</span>
 <span class="source-line-no">052</span><span id="line-52"></span>
 <span class="source-line-no">053</span><span id="line-53">        return Optional.ofNullable(propertyDefinition.getValue())</span>
-<span class="source-line-no">054</span><span id="line-54">            .map(context.getInterpolatorFactory().interpolate(propertyDefinition.getName(), propertyGroupDefinition.getOnMissingProperty(), propElements))</span>
+<span class="source-line-no">054</span><span id="line-54">            .map(context.getInterpolatorFactory().interpolate(propertyDefinition.getName(), propertyGroupDefinition.getOnMissingField(), propElements))</span>
 <span class="source-line-no">055</span><span id="line-55">            .map(context.getTransformerRegistry().applyTransformers(propertyDefinition.getTransformers()))</span>
 <span class="source-line-no">056</span><span id="line-56">            .orElse("");</span>
 <span class="source-line-no">057</span><span id="line-57">    }</span>

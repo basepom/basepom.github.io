@@ -88,54 +88,58 @@
 <span class="source-line-no">075</span><span id="line-75">    }</span>
 <span class="source-line-no">076</span><span id="line-76"></span>
 <span class="source-line-no">077</span><span id="line-77">    @Override</span>
-<span class="source-line-no">078</span><span id="line-78">    public Function&lt;ZonedDateTime, String&gt; getFormat() {</span>
+<span class="source-line-no">078</span><span id="line-78">    public Function&lt;ZonedDateTime, String&gt; getPreFormat() {</span>
 <span class="source-line-no">079</span><span id="line-79">        DateTimeFormatter dateTimeFormatter = getFormatter().orElseGet(this::getFallbackFormatter);</span>
-<span class="source-line-no">080</span><span id="line-80"></span>
-<span class="source-line-no">081</span><span id="line-81">        return dateTimeFormatter::format;</span>
-<span class="source-line-no">082</span><span id="line-82">    }</span>
-<span class="source-line-no">083</span><span id="line-83"></span>
-<span class="source-line-no">084</span><span id="line-84">    public Function&lt;String, ZonedDateTime&gt; getParser() {</span>
-<span class="source-line-no">085</span><span id="line-85">        return value -&gt; getFormatter().map(f -&gt; {</span>
-<span class="source-line-no">086</span><span id="line-86">            try {</span>
-<span class="source-line-no">087</span><span id="line-87">                return ZonedDateTime.parse(value, f);</span>
-<span class="source-line-no">088</span><span id="line-88">            } catch (DateTimeParseException e) {</span>
-<span class="source-line-no">089</span><span id="line-89">                return null;</span>
-<span class="source-line-no">090</span><span id="line-90">            }</span>
-<span class="source-line-no">091</span><span id="line-91">        }).orElseGet(() -&gt; parseLong(value).map(getLongParser())</span>
-<span class="source-line-no">092</span><span id="line-92">            .orElseGet(() -&gt; ZonedDateTime.parse(value, getFallbackFormatter())));</span>
-<span class="source-line-no">093</span><span id="line-93">    }</span>
-<span class="source-line-no">094</span><span id="line-94"></span>
-<span class="source-line-no">095</span><span id="line-95">    private Optional&lt;Long&gt; parseLong(String value) {</span>
-<span class="source-line-no">096</span><span id="line-96">        try {</span>
-<span class="source-line-no">097</span><span id="line-97">            return Optional.of(Long.parseLong(value));</span>
-<span class="source-line-no">098</span><span id="line-98">        } catch (NumberFormatException e) {</span>
-<span class="source-line-no">099</span><span id="line-99">            return Optional.empty();</span>
-<span class="source-line-no">100</span><span id="line-100">        }</span>
-<span class="source-line-no">101</span><span id="line-101">    }</span>
-<span class="source-line-no">102</span><span id="line-102"></span>
-<span class="source-line-no">103</span><span id="line-103">    public Function&lt;Long, ZonedDateTime&gt; getLongParser() {</span>
-<span class="source-line-no">104</span><span id="line-104">        return longValue -&gt; ZonedDateTime.ofInstant(Instant.ofEpochMilli(longValue), getTimezone());</span>
+<span class="source-line-no">080</span><span id="line-80">        return v -&gt; v == null ? "" : dateTimeFormatter.format(v);</span>
+<span class="source-line-no">081</span><span id="line-81">    }</span>
+<span class="source-line-no">082</span><span id="line-82"></span>
+<span class="source-line-no">083</span><span id="line-83">    @Override</span>
+<span class="source-line-no">084</span><span id="line-84">    public Function&lt;String, String&gt; getPostFormat() {</span>
+<span class="source-line-no">085</span><span id="line-85">        return Function.identity();</span>
+<span class="source-line-no">086</span><span id="line-86">    }</span>
+<span class="source-line-no">087</span><span id="line-87"></span>
+<span class="source-line-no">088</span><span id="line-88">    public Function&lt;String, ZonedDateTime&gt; getParser() {</span>
+<span class="source-line-no">089</span><span id="line-89">        return value -&gt; getFormatter().map(f -&gt; {</span>
+<span class="source-line-no">090</span><span id="line-90">            try {</span>
+<span class="source-line-no">091</span><span id="line-91">                return ZonedDateTime.parse(value, f);</span>
+<span class="source-line-no">092</span><span id="line-92">            } catch (DateTimeParseException e) {</span>
+<span class="source-line-no">093</span><span id="line-93">                return null;</span>
+<span class="source-line-no">094</span><span id="line-94">            }</span>
+<span class="source-line-no">095</span><span id="line-95">        }).orElseGet(() -&gt; parseLong(value).map(getLongParser())</span>
+<span class="source-line-no">096</span><span id="line-96">            .orElseGet(() -&gt; ZonedDateTime.parse(value, getFallbackFormatter())));</span>
+<span class="source-line-no">097</span><span id="line-97">    }</span>
+<span class="source-line-no">098</span><span id="line-98"></span>
+<span class="source-line-no">099</span><span id="line-99">    private Optional&lt;Long&gt; parseLong(String value) {</span>
+<span class="source-line-no">100</span><span id="line-100">        try {</span>
+<span class="source-line-no">101</span><span id="line-101">            return Optional.of(Long.parseLong(value));</span>
+<span class="source-line-no">102</span><span id="line-102">        } catch (NumberFormatException e) {</span>
+<span class="source-line-no">103</span><span id="line-103">            return Optional.empty();</span>
+<span class="source-line-no">104</span><span id="line-104">        }</span>
 <span class="source-line-no">105</span><span id="line-105">    }</span>
 <span class="source-line-no">106</span><span id="line-106"></span>
-<span class="source-line-no">107</span><span id="line-107">    public Optional&lt;DateTimeFormatter&gt; getFormatter() {</span>
-<span class="source-line-no">108</span><span id="line-108">        return Optional.ofNullable(format)</span>
-<span class="source-line-no">109</span><span id="line-109">            .map(DateTimeFormatter::ofPattern)</span>
-<span class="source-line-no">110</span><span id="line-110">            .map(formatter -&gt; formatter.withZone(getTimezone()));</span>
-<span class="source-line-no">111</span><span id="line-111">    }</span>
-<span class="source-line-no">112</span><span id="line-112"></span>
-<span class="source-line-no">113</span><span id="line-113">    public DateTimeFormatter getFallbackFormatter() {</span>
-<span class="source-line-no">114</span><span id="line-114">        return DateTimeFormatter.ISO_DATE_TIME.withZone(getTimezone());</span>
+<span class="source-line-no">107</span><span id="line-107">    public Function&lt;Long, ZonedDateTime&gt; getLongParser() {</span>
+<span class="source-line-no">108</span><span id="line-108">        return longValue -&gt; ZonedDateTime.ofInstant(Instant.ofEpochMilli(longValue), getTimezone());</span>
+<span class="source-line-no">109</span><span id="line-109">    }</span>
+<span class="source-line-no">110</span><span id="line-110"></span>
+<span class="source-line-no">111</span><span id="line-111">    public Optional&lt;DateTimeFormatter&gt; getFormatter() {</span>
+<span class="source-line-no">112</span><span id="line-112">        return Optional.ofNullable(format)</span>
+<span class="source-line-no">113</span><span id="line-113">            .map(DateTimeFormatter::ofPattern)</span>
+<span class="source-line-no">114</span><span id="line-114">            .map(formatter -&gt; formatter.withZone(getTimezone()));</span>
 <span class="source-line-no">115</span><span id="line-115">    }</span>
 <span class="source-line-no">116</span><span id="line-116"></span>
-<span class="source-line-no">117</span><span id="line-117">    @Override</span>
-<span class="source-line-no">118</span><span id="line-118">    public String toString() {</span>
-<span class="source-line-no">119</span><span id="line-119">        return new StringJoiner(", ", DateDefinition.class.getSimpleName() + "[", "]")</span>
-<span class="source-line-no">120</span><span id="line-120">            .add("timezone='" + timezone + "'")</span>
-<span class="source-line-no">121</span><span id="line-121">            .add("value=" + value)</span>
-<span class="source-line-no">122</span><span id="line-122">            .add(super.toString())</span>
-<span class="source-line-no">123</span><span id="line-123">            .toString();</span>
-<span class="source-line-no">124</span><span id="line-124">    }</span>
-<span class="source-line-no">125</span><span id="line-125">}</span>
+<span class="source-line-no">117</span><span id="line-117">    public DateTimeFormatter getFallbackFormatter() {</span>
+<span class="source-line-no">118</span><span id="line-118">        return DateTimeFormatter.ISO_DATE_TIME.withZone(getTimezone());</span>
+<span class="source-line-no">119</span><span id="line-119">    }</span>
+<span class="source-line-no">120</span><span id="line-120"></span>
+<span class="source-line-no">121</span><span id="line-121">    @Override</span>
+<span class="source-line-no">122</span><span id="line-122">    public String toString() {</span>
+<span class="source-line-no">123</span><span id="line-123">        return new StringJoiner(", ", DateDefinition.class.getSimpleName() + "[", "]")</span>
+<span class="source-line-no">124</span><span id="line-124">            .add("timezone='" + timezone + "'")</span>
+<span class="source-line-no">125</span><span id="line-125">            .add("value=" + value)</span>
+<span class="source-line-no">126</span><span id="line-126">            .add(super.toString())</span>
+<span class="source-line-no">127</span><span id="line-127">            .toString();</span>
+<span class="source-line-no">128</span><span id="line-128">    }</span>
+<span class="source-line-no">129</span><span id="line-129">}</span>
 
 
 

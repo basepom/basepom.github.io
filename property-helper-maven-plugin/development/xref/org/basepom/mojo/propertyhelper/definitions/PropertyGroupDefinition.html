@@ -63,10 +63,10 @@
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>      <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  <em class="jxr_javadoccomment">     * Action if any property from that group could not be defined. Field injected by Maven.</em>
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">private</strong> <a name="IgnoreWarnFail" href="../../../../../org/basepom/mojo/propertyhelper/IgnoreWarnFail.html#IgnoreWarnFail">IgnoreWarnFail</a> onMissingProperty = IgnoreWarnFail.FAIL;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">private</strong> <a name="IgnoreWarnFail" href="../../../../../org/basepom/mojo/propertyhelper/IgnoreWarnFail.html#IgnoreWarnFail">IgnoreWarnFail</a> onMissingField = IgnoreWarnFail.FAIL;
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>  
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">public</strong> <a name="PropertyGroupDefinition" href="../../../../../org/basepom/mojo/propertyhelper/definitions/PropertyGroupDefinition.html#PropertyGroupDefinition">PropertyGroupDefinition</a> setOnMissingProperty(String onMissingProperty) {
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>          <strong class="jxr_keyword">this</strong>.onMissingProperty = IgnoreWarnFail.forString(onMissingProperty);
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">public</strong> <a name="PropertyGroupDefinition" href="../../../../../org/basepom/mojo/propertyhelper/definitions/PropertyGroupDefinition.html#PropertyGroupDefinition">PropertyGroupDefinition</a> setOnMissingField(String onMissingField) {
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>          <strong class="jxr_keyword">this</strong>.onMissingField = IgnoreWarnFail.forString(onMissingField);
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>      }
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  
@@ -108,8 +108,8 @@
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>         <strong class="jxr_keyword">return</strong> onDuplicateProperty;
 <a class="jxr_linenumber" name="L101" href="#L101">101</a>     }
 <a class="jxr_linenumber" name="L102" href="#L102">102</a> 
-<a class="jxr_linenumber" name="L103" href="#L103">103</a>     <strong class="jxr_keyword">public</strong> <a name="IgnoreWarnFail" href="../../../../../org/basepom/mojo/propertyhelper/IgnoreWarnFail.html#IgnoreWarnFail">IgnoreWarnFail</a> getOnMissingProperty() {
-<a class="jxr_linenumber" name="L104" href="#L104">104</a>         <strong class="jxr_keyword">return</strong> onMissingProperty;
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>     <strong class="jxr_keyword">public</strong> <a name="IgnoreWarnFail" href="../../../../../org/basepom/mojo/propertyhelper/IgnoreWarnFail.html#IgnoreWarnFail">IgnoreWarnFail</a> getOnMissingField() {
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>         <strong class="jxr_keyword">return</strong> onMissingField;
 <a class="jxr_linenumber" name="L105" href="#L105">105</a>     }
 <a class="jxr_linenumber" name="L106" href="#L106">106</a> 
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>     <strong class="jxr_keyword">public</strong> Set&lt;PropertyDefinition&gt; getPropertyDefinitions() {

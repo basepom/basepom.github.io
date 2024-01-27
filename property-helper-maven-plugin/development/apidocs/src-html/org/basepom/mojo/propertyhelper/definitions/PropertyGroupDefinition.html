@@ -68,10 +68,10 @@
 <span class="source-line-no">055</span><span id="line-55">    /**</span>
 <span class="source-line-no">056</span><span id="line-56">     * Action if any property from that group could not be defined. Field injected by Maven.</span>
 <span class="source-line-no">057</span><span id="line-57">     */</span>
-<span class="source-line-no">058</span><span id="line-58">    private IgnoreWarnFail onMissingProperty = IgnoreWarnFail.FAIL;</span>
+<span class="source-line-no">058</span><span id="line-58">    private IgnoreWarnFail onMissingField = IgnoreWarnFail.FAIL;</span>
 <span class="source-line-no">059</span><span id="line-59"></span>
-<span class="source-line-no">060</span><span id="line-60">    public PropertyGroupDefinition setOnMissingProperty(String onMissingProperty) {</span>
-<span class="source-line-no">061</span><span id="line-61">        this.onMissingProperty = IgnoreWarnFail.forString(onMissingProperty);</span>
+<span class="source-line-no">060</span><span id="line-60">    public PropertyGroupDefinition setOnMissingField(String onMissingField) {</span>
+<span class="source-line-no">061</span><span id="line-61">        this.onMissingField = IgnoreWarnFail.forString(onMissingField);</span>
 <span class="source-line-no">062</span><span id="line-62">        return this;</span>
 <span class="source-line-no">063</span><span id="line-63">    }</span>
 <span class="source-line-no">064</span><span id="line-64"></span>
@@ -113,8 +113,8 @@
 <span class="source-line-no">100</span><span id="line-100">        return onDuplicateProperty;</span>
 <span class="source-line-no">101</span><span id="line-101">    }</span>
 <span class="source-line-no">102</span><span id="line-102"></span>
-<span class="source-line-no">103</span><span id="line-103">    public IgnoreWarnFail getOnMissingProperty() {</span>
-<span class="source-line-no">104</span><span id="line-104">        return onMissingProperty;</span>
+<span class="source-line-no">103</span><span id="line-103">    public IgnoreWarnFail getOnMissingField() {</span>
+<span class="source-line-no">104</span><span id="line-104">        return onMissingField;</span>
 <span class="source-line-no">105</span><span id="line-105">    }</span>
 <span class="source-line-no">106</span><span id="line-106"></span>
 <span class="source-line-no">107</span><span id="line-107">    public Set&lt;PropertyDefinition&gt; getPropertyDefinitions() {</span>

@@ -25,9 +25,9 @@
 <a class="jxr_linenumber" name="L17" href="#L17">17</a>  
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.basepom.mojo.propertyhelper.definitions.FieldDefinition;
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.util.Optional;
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.util.Optional;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.ImmutableMap;
 <a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.apache.maven.plugin.MojoExecutionException;
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  
 <a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment">/**</em>
@@ -59,19 +59,21 @@
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">protected</strong> String formatResult(T value) {
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>          <strong class="jxr_keyword">return</strong> Optional.ofNullable(value)
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>              .map(fieldDefinition.formatResult())
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>              .map(interpolatorFactory.interpolate(getFieldName(), fieldDefinition.getOnMissingProperty(), Map.of()))
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>              .map(transformerRegistry.applyTransformers(fieldDefinition.getTransformers()))
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>              .orElse(<span class="jxr_string">""</span>);
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>      }
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>  
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">     * True if the value of this element should be exposed as a maven property.</em>
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isExposeAsProperty() {
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>          <strong class="jxr_keyword">return</strong> fieldDefinition.isExport();
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>      }
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  }
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>              .map(fieldDefinition.getPreFormat())
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>              .map(interpolatorFactory.interpolate(getFieldName(), fieldDefinition.getOnMissingProperty(), ImmutableMap.of()))
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>              .map(fieldDefinition.getPostFormat())
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>              .map(fieldDefinition.getRegexp())
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>              .map(transformerRegistry.applyTransformers(fieldDefinition.getTransformers()))
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>              .orElse(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>      }
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  <em class="jxr_javadoccomment">     * True if the value of this element should be exposed as a maven property.</em>
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isExposeAsProperty() {
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          <strong class="jxr_keyword">return</strong> fieldDefinition.isExport();
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>      }
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2014&#x2013;2024 <a href="https://github.com/basepom">The basepom project</a>. All rights reserved.</div>
