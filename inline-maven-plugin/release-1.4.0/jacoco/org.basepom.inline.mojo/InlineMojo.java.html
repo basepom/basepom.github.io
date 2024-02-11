@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InlineMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">inline-maven-plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.inline.mojo</a> &gt; <span class="el_source">InlineMojo.java</span></div><h1>InlineMojo.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.inline.mojo;
+
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
+import org.basepom.inline.transformer.ClassPath;
+import org.basepom.inline.transformer.ClassPathResource;
+import org.basepom.inline.transformer.ClassPathTag;
+import org.basepom.inline.transformer.JarTransformer;
+import org.basepom.inline.transformer.TransformerException;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
+import javax.xml.stream.XMLStreamException;
+
+import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
+import org.apache.maven.archiver.MavenArchiver;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.jdom2.JDOMException;
+
+/**
+ * Inlines one or more dependencies of the project, relocated the classes and writes a new artifact.
+ */
+@Mojo(name = &quot;inline&quot;, defaultPhase = LifecyclePhase.PACKAGE,
+        requiresProject = true, threadSafe = true,
+        requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
+        requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
+<span class="nc" id="L86">public final class InlineMojo extends AbstractMojo {</span>
+
+<span class="nc" id="L88">    private static final PluginLog LOG = new PluginLog(InlineMojo.class);</span>
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    private static final Predicate&lt;Dependency&gt; EXCLUDE_SYSTEM_SCOPE = dependency -&gt; !JavaScopes.SYSTEM.equals(dependency.getScope());</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    private static final Predicate&lt;Dependency&gt; EXCLUDE_PROVIDED_SCOPE = dependency -&gt; !JavaScopes.PROVIDED.equals(dependency.getScope());</span>
+
+
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true, required = true)
+    private MavenProject project;
+
+    @Parameter(defaultValue = &quot;${session}&quot;, readonly = true, required = true)
+    private MavenSession mavenSession;
+
+    @Parameter(defaultValue = &quot;${reactorProjects}&quot;, readonly = true, required = true)
+    private List&lt;MavenProject&gt; reactorProjects;
+
+    @Component
+    private ProjectBuilder mavenProjectBuilder;
+
+    @Component
+    private ProjectDependenciesResolver projectDependenciesResolver;
+
+    @Component
+    private RepositorySystem repositorySystem;
+
+    @Component
+    private MavenProjectHelper projectHelper;
+
+    /**
+     * The destination directory for the inlined artifact.
+     */
+    @Parameter(defaultValue = &quot;${project.build.directory}&quot;)
+    private File outputDirectory;
+
+    /**
+     * Timestamp for reproducible output archive entries, either formatted as ISO 8601
+     * &lt;code&gt;yyyy-MM-dd'T'HH:mm:ssXXX&lt;/code&gt; or as an int representing seconds since the epoch (like
+     * &lt;a href=&quot;https://reproducible-builds.org/docs/source-date-epoch/&quot;&gt;SOURCE_DATE_EPOCH&lt;/a&gt;).
+     */
+    @Parameter(defaultValue = &quot;${project.build.outputTimestamp}&quot;)
+    private String outputTimestamp;
+
+    /**
+     * The POM file to use.
+     */
+    @Parameter(property = &quot;inline.pomFile&quot;, defaultValue = &quot;${project.file}&quot;)
+    private File pomFile;
+
+    /**
+     * Direct dependencies to inline. Each dependency here must be listed in the project POM. Any transitive dependency is added to the final jar, unless it is
+     * in {@code RUNTIME} scope. {@code RUNTIME} dependencies become a runtime dependency of the resulting final jar &lt;b&gt;unless&lt;/b&gt; they are listed here. In that
+     * case, they are inlined in the final jar as well.
+     */
+<span class="nc" id="L140">    @Parameter</span>
+<span class="nc" id="L141">    private List&lt;InlineDependency&gt; inlineDependencies = ImmutableList.of();</span>
+
+    // called by maven
+    public void setInlineDependencies(List&lt;InlineDependency&gt; inlineDependencies) {
+<span class="nc" id="L145">        this.inlineDependencies = ImmutableList.copyOf(inlineDependencies);</span>
+<span class="nc" id="L146">    }</span>
+
+    /**
+     * Include dependencies. A dependency is given as &lt;tt&gt;groupId:artifactId&lt;/tt&gt;. The wildcard character '*' is supported for group id and artifact id.
+     * &lt;p&gt;
+     * Includes and excludes operate on the list of potential dependencies to inline. They can not be used to add additional dependencies that are not listed in
+     * the &amp;lt;inlineDependency&amp;gt; elements.
+     */
+<span class="nc" id="L154">    @Parameter</span>
+<span class="nc" id="L155">    private List&lt;ArtifactIdentifier&gt; includes = ImmutableList.of();</span>
+
+    // called by maven
+    public void setIncludes(List&lt;String&gt; includes) {
+<span class="nc" id="L159">        this.includes = includes.stream().map(ArtifactIdentifier::new).collect(Collectors.toList());</span>
+<span class="nc" id="L160">    }</span>
+
+    /**
+     * Exclude dependencies from inclusion. A dependency is given as &lt;tt&gt;groupId:artifactId&lt;/tt&gt;. Any transitive dependency that has been pulled in can be
+     * excluded here. The wildcard character '*' is supported for group id and artifact id.
+     * &lt;p&gt;
+     * Includes and excludes operate on the list of potential dependencies to inline. They can not be used to add additional dependencies that are not listed in
+     * the &amp;lt;inlineDependency&amp;gt; elements.
+     */
+<span class="nc" id="L169">    @Parameter</span>
+<span class="nc" id="L170">    private List&lt;ArtifactIdentifier&gt; excludes = ImmutableList.of();</span>
+
+    // called by maven
+    public void setExcludes(List&lt;String&gt; excludes) {
+<span class="nc" id="L174">        this.excludes = excludes.stream().map(ArtifactIdentifier::new).collect(Collectors.toList());</span>
+<span class="nc" id="L175">    }</span>
+
+    /**
+     * Adds external jar processors. These must be on the dependency path for the plugin. See the &quot;Additional Processors&quot; documentation.
+     */
+<span class="nc" id="L180">    @Parameter</span>
+<span class="nc" id="L181">    private List&lt;String&gt; additionalProcessors = ImmutableList.of();</span>
+
+    // called by maven
+    public void setAdditionalProcessors(List&lt;String&gt; processors) {
+<span class="nc" id="L185">        this.additionalProcessors = ImmutableList.copyOf(processors);</span>
+<span class="nc" id="L186">    }</span>
+
+    /**
+     * Hide inlined classes from IDE autocompletion.
+     */
+    @Parameter(defaultValue = &quot;true&quot;, property = &quot;inline.hide-classes&quot;)
+    private boolean hideClasses;
+
+    /**
+     * Skip the execution.
+     */
+    @Parameter(defaultValue = &quot;false&quot;, property = &quot;inline.skip&quot;)
+    private boolean skip;
+
+    /**
+     * Silence all non-output and non-error messages.
+     */
+    @Parameter(defaultValue = &quot;false&quot;, property = &quot;inline.quiet&quot;)
+    private boolean quiet;
+
+    /**
+     * Defines the package prefix for all relocated classes. This prefix must be a valid package name. All relocated classes are put under this prefix.
+     */
+    @Parameter(required = true, property = &quot;inline.prefix&quot;)
+    private String prefix;
+
+    /**
+     * Fail if an inline dependency is defined but the corresponding dependency is not actually found.
+     */
+    @Parameter(defaultValue = &quot;true&quot;, property = &quot;inline.failOnNoMatch&quot;)
+    private boolean failOnNoMatch;
+
+    /**
+     * Fail if any duplicate exists after processing the contents.
+     */
+    @Parameter(defaultValue = &quot;true&quot;, property = &quot;inline.failOnDuplicate&quot;)
+    private boolean failOnDuplicate;
+
+    /**
+     * The path to the output file for the inlined artifact. When this parameter is set, the created archive will neither replace the project's main artifact
+     * nor will it be attached. Hence, this parameter causes the parameters {@link #inlinedArtifactAttached}, {@link #inlinedClassifierName} to be ignored when
+     * used.
+     */
+    @Parameter
+    private File outputJarFile;
+
+    /**
+     * The path to the output file for the new POM file. When this parameter is set, the created pom file will not replace the project's pom file.
+     */
+    @Parameter
+    private File outputPomFile;
+
+
+    /**
+     * If true, attach the inlined artifact, if false replace the original artifact.
+     */
+    @Parameter(defaultValue = &quot;false&quot;, property = &quot;inline.attachArtifact&quot;)
+    private boolean inlinedArtifactAttached;
+
+    /**
+     * If true, replace the POM file with a new version that has all inlined dependencies removed. It is possible to write a POM file that works to build the
+     * jar with inlined dependencies and then use the same POM file for the resulting artifact (by having all dependencies marked as &lt;tt&gt;provided&lt;/tt&gt; and
+     * ensure that those dependencies do not have additional, transitive dependencies. This tends to be error prone and it is recommended to have the plugin
+     * rewrite the POM file.
+     */
+    @Parameter(defaultValue = &quot;true&quot;, property = &quot;inline.replacePomFile&quot;)
+    private boolean replacePomFile;
+
+    /**
+     * The name of the classifier used in case the inlined artifact is attached.
+     */
+    @Parameter(defaultValue = &quot;inlined&quot;)
+    private String inlinedClassifierName;
+
+
+    @Override
+    public void execute() throws MojoExecutionException {
+
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (this.skip) {</span>
+<span class="nc" id="L265">            LOG.report(quiet, &quot;skipping plugin execution&quot;);</span>
+<span class="nc" id="L266">            return;</span>
+        }
+
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (&quot;pom&quot;.equals(project.getPackaging())) {</span>
+<span class="nc" id="L270">            LOG.report(quiet, &quot;ignoring POM project&quot;);</span>
+<span class="nc" id="L271">            return;</span>
+        }
+
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (project.getArtifact().getFile() == null) {</span>
+<span class="nc" id="L275">            throw new MojoExecutionException(&quot;No project artifact found!&quot;);</span>
+        }
+
+<span class="nc" id="L278">        Instant timestamp = MavenArchiver.parseBuildOutputTimestamp(outputTimestamp).orElseGet(Instant::now);</span>
+
+        try {
+<span class="nc" id="L281">            ImmutableSetMultimap.Builder&lt;InlineDependency, Dependency&gt; dependencyBuilder = ImmutableSetMultimap.builder();</span>
+<span class="nc" id="L282">            ImmutableSet.Builder&lt;Dependency&gt; pomDependenciesToAdd = ImmutableSet.builder();</span>
+
+<span class="nc" id="L284">            computeDependencyMap(dependencyBuilder, pomDependenciesToAdd);</span>
+
+<span class="nc" id="L286">            ImmutableSetMultimap&lt;InlineDependency, Dependency&gt; dependencyMap = dependencyBuilder.build();</span>
+
+<span class="nc" id="L288">            rewriteJarFile(timestamp.toEpochMilli(), dependencyMap);</span>
+<span class="nc" id="L289">            rewritePomFile(pomDependenciesToAdd.build(), ImmutableSet.copyOf(dependencyMap.values()));</span>
+
+<span class="nc" id="L291">        } catch (UncheckedIOException e) {</span>
+<span class="nc" id="L292">            throw new MojoExecutionException(e.getCause());</span>
+<span class="nc" id="L293">        } catch (TransformerException | IOException | DependencyResolutionException | ProjectBuildingException | XMLStreamException | JDOMException e) {</span>
+<span class="nc" id="L294">            throw new MojoExecutionException(e);</span>
+<span class="nc" id="L295">        }</span>
+<span class="nc" id="L296">    }</span>
+
+    private void computeDependencyMap(
+            ImmutableSetMultimap.Builder&lt;InlineDependency, Dependency&gt; dependencyMapBuilder,
+            ImmutableSet.Builder&lt;Dependency&gt; pomBuilder)
+            throws DependencyResolutionException, ProjectBuildingException {
+
+<span class="nc" id="L303">        DependencyBuilder dependencyBuilder = new DependencyBuilder(project, mavenSession, mavenProjectBuilder, projectDependenciesResolver, reactorProjects);</span>
+
+<span class="nc" id="L305">        ImmutableSet&lt;ArtifactIdentifier&gt; directArtifacts = project.getDependencyArtifacts().stream()</span>
+<span class="nc" id="L306">                .map(ArtifactIdentifier::new)</span>
+<span class="nc" id="L307">                .collect(ImmutableSet.toImmutableSet());</span>
+
+<span class="nc" id="L309">        ImmutableList&lt;Dependency&gt; directDependencies = dependencyBuilder.mapProject(project,</span>
+<span class="nc" id="L310">                (node, parents) -&gt; directArtifacts.contains(new ArtifactIdentifier(node)));</span>
+
+        // build the full set of dependencies with all scopes and everything.
+<span class="nc" id="L313">        ImmutableList&lt;Dependency&gt; projectDependencies = dependencyBuilder.mapProject(project,</span>
+<span class="nc" id="L314">                ScopeLimitingFilter.computeDependencyScope(ScopeLimitingFilter.COMPILE_PLUS_RUNTIME));</span>
+
+<span class="nc" id="L316">        Map&lt;String, Dependency&gt; idMap = projectDependencies.stream()</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">                .filter(dependency -&gt; dependency.getArtifact() != null)</span>
+<span class="nc" id="L318">                .collect(ImmutableMap.toImmutableMap(InlineMojo::getId, Functions.identity()));</span>
+
+<span class="nc" id="L320">        BiConsumer&lt;InlineDependency, Dependency&gt; dependencyConsumer = (inlineDependency, dependency) -&gt; {</span>
+<span class="nc" id="L321">            LOG.debug(&quot;%s matches %s for inlining.&quot;, inlineDependency, dependency);</span>
+<span class="nc" id="L322">            dependencyMapBuilder.put(inlineDependency, dependency);</span>
+<span class="nc" id="L323">        };</span>
+
+<span class="nc" id="L325">        ImmutableSet.Builder&lt;Dependency&gt; directExcludes = ImmutableSet.builder();</span>
+
+        // first find all the direct dependencies. Add anything that is not hit to the additional exclude list
+
+<span class="nc" id="L329">        ImmutableSortedSet.Builder&lt;String&gt; directLogBuilder = ImmutableSortedSet.naturalOrder();</span>
+
+<span class="nc" id="L331">        directDependencies.stream()</span>
+                // remove anything that does not match the filter set.
+                // optionals also need to be matched by the inline dependency below
+<span class="nc" id="L334">                .filter(createFilterSet(true))</span>
+<span class="nc" id="L335">                .forEach(dependency -&gt; {</span>
+<span class="nc" id="L336">                    Optional&lt;InlineDependency&gt; inlineDependency = findInlineDependencyMatch(dependency);</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">                    if (inlineDependency.isPresent()) {</span>
+<span class="nc" id="L338">                        dependencyConsumer.accept(inlineDependency.get(), dependency);</span>
+<span class="nc" id="L339">                        directLogBuilder.add(dependency.toString());</span>
+                    } else {
+<span class="nc" id="L341">                        directExcludes.add(dependency);</span>
+                    }
+<span class="nc" id="L343">                });</span>
+
+<span class="nc" id="L345">        ImmutableSortedSet&lt;String&gt; directLog = directLogBuilder.build();</span>
+
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (!quiet) {</span>
+<span class="nc" id="L348">            LOG.info(&quot;Inlined dependencies&quot;);</span>
+<span class="nc" id="L349">            LOG.info(&quot;====================&quot;);</span>
+
+<span class="nc bnc" id="L351" title="All 2 branches missed.">            for (String dependency : directLog) {</span>
+<span class="nc" id="L352">                LOG.info(&quot;    %s&quot;, dependency);</span>
+<span class="nc" id="L353">            }</span>
+<span class="nc" id="L354">            LOG.info(&quot;&quot;);</span>
+        }
+
+<span class="nc" id="L357">        Set&lt;ArtifactIdentifier&gt; excludes = directExcludes.build().stream()</span>
+<span class="nc" id="L358">                .map(ArtifactIdentifier::new)</span>
+<span class="nc" id="L359">                .collect(Collectors.toUnmodifiableSet());</span>
+
+<span class="nc" id="L361">        this.excludes = ImmutableList.copyOf(Iterables.concat(this.excludes, excludes));</span>
+
+<span class="nc" id="L363">        LOG.debug(&quot;Excludes after creating includes: %s&quot;, this.excludes);</span>
+
+<span class="nc" id="L365">        var directDependencyMap = dependencyMapBuilder.build().asMap();</span>
+
+<span class="nc" id="L367">        ImmutableSortedSet.Builder&lt;String&gt; transitiveLogBuilder = ImmutableSortedSet.naturalOrder();</span>
+
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        for (var dependencyEntry : directDependencyMap.entrySet()) {</span>
+<span class="nc" id="L370">            InlineDependency inlineDependency = dependencyEntry.getKey();</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">            for (Dependency projectDependency : dependencyEntry.getValue()) {</span>
+
+                Consumer&lt;Dependency&gt; consumer;
+<span class="nc bnc" id="L374" title="All 2 branches missed.">                if (inlineDependency.isInlineTransitive()) {</span>
+                    // transitive deps are added to the jar
+<span class="nc" id="L376">                    consumer = dependency -&gt; {</span>
+<span class="nc" id="L377">                        Optional&lt;InlineDependency&gt; explicitMatch = findInlineDependencyMatch(dependency);</span>
+
+                        // If the dependency is not a runtime dependency, it is included in the inline jar
+                        // Runtime dependencies are only included if they are explicitly listed as an
+                        // included dependency. Otherwise, they are added as a runtime dep to the inline jar.
+<span class="nc bnc" id="L382" title="All 4 branches missed.">                        if (!JavaScopes.RUNTIME.equals(dependency.getScope()) || explicitMatch.isPresent()) {</span>
+<span class="nc" id="L383">                            dependencyConsumer.accept(inlineDependency, dependency);</span>
+<span class="nc" id="L384">                            transitiveLogBuilder.add(dependency.toString());</span>
+                        } else {
+<span class="nc" id="L386">                            pomBuilder.add(dependency);</span>
+                        }
+<span class="nc" id="L388">                    };</span>
+                } else {
+                    // non-transitive deps need to be written into the POM.
+<span class="nc" id="L391">                    consumer = pomBuilder::add;</span>
+                }
+
+<span class="nc" id="L394">                dependencyBuilder.mapDependency(projectDependency, ScopeLimitingFilter.computeTransitiveScope(projectDependency.getScope()))</span>
+<span class="nc" id="L395">                        .stream()</span>
+                        // replace deps in the transitive set with deps in the root set if present (will
+                        // override the scope here with the root scope)
+<span class="nc" id="L398">                        .map(dependency -&gt; idMap.getOrDefault(getId(dependency), dependency))</span>
+                        // remove system and provided dependencies, keep optionals if allowed
+<span class="nc" id="L400">                        .filter(createFilterSet(inlineDependency.isInlineOptionals()))</span>
+                        // make sure that the inline dependency actually pulls the dep in.
+<span class="nc" id="L402">                        .filter(this::isDependencyIncluded)</span>
+<span class="nc" id="L403">                        .forEach(consumer);</span>
+<span class="nc" id="L404">            }</span>
+<span class="nc" id="L405">        }</span>
+
+<span class="nc bnc" id="L407" title="All 2 branches missed.">        if (!quiet) {</span>
+<span class="nc" id="L408">            LOG.info(&quot;&quot;);</span>
+<span class="nc" id="L409">            LOG.info(&quot;Transitive dependencies&quot;);</span>
+<span class="nc" id="L410">            LOG.info(&quot;=======================&quot;);</span>
+<span class="nc bnc" id="L411" title="All 2 branches missed.">            for (String dependency : Sets.difference(transitiveLogBuilder.build(), directLog)) {</span>
+<span class="nc" id="L412">                LOG.info(&quot;    %s&quot;, dependency);</span>
+<span class="nc" id="L413">            }</span>
+<span class="nc" id="L414">            LOG.info(&quot;&quot;);</span>
+        }
+<span class="nc" id="L416">    }</span>
+
+    private Optional&lt;InlineDependency&gt; findInlineDependencyMatch(Dependency dependency) {
+<span class="nc bnc" id="L419" title="All 2 branches missed.">        for (InlineDependency inlineDependency : inlineDependencies) {</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">            if (inlineDependency.matchDependency(dependency)) {</span>
+<span class="nc" id="L421">                return Optional.of(inlineDependency);</span>
+            }
+<span class="nc" id="L423">        }</span>
+<span class="nc" id="L424">        return Optional.empty();</span>
+    }
+
+    private static String getId(Dependency dependency) {
+<span class="nc" id="L428">        Artifact artifact = dependency.getArtifact();</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        checkState(artifact != null, &quot;Artifact for dependency %s is null!&quot;, dependency);</span>
+
+<span class="nc" id="L431">        return Joiner.on(':').join(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier());</span>
+    }
+
+    private Predicate&lt;Dependency&gt; createFilterSet(boolean includeOptional) {
+
+        // filter system scope dependencies. Those are never inlined.
+<span class="nc" id="L437">        Predicate&lt;Dependency&gt; predicate = EXCLUDE_SYSTEM_SCOPE;</span>
+<span class="nc" id="L438">        predicate = predicate.and(EXCLUDE_PROVIDED_SCOPE);</span>
+
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        if (!includeOptional) {</span>
+<span class="nc" id="L441">            predicate = predicate.and(Predicate.not(Dependency::isOptional));</span>
+        }
+<span class="nc" id="L443">        return predicate;</span>
+    }
+
+    public boolean isDependencyIncluded(Dependency dependency) {
+
+<span class="nc" id="L448">        boolean included = this.includes.stream()</span>
+<span class="nc" id="L449">                .map(artifactIdentifier -&gt; artifactIdentifier.matchDependency(dependency))</span>
+<span class="nc" id="L450">                .findFirst()</span>
+<span class="nc" id="L451">                .orElse(this.includes.isEmpty());</span>
+
+<span class="nc" id="L453">        boolean excluded = this.excludes.stream()</span>
+<span class="nc" id="L454">                .map(artifactIdentifier -&gt; artifactIdentifier.matchDependency(dependency))</span>
+<span class="nc" id="L455">                .findFirst()</span>
+<span class="nc" id="L456">                .orElse(false);</span>
+
+<span class="nc bnc" id="L458" title="All 4 branches missed.">        return included &amp;&amp; !excluded;</span>
+    }
+
+
+    private void rewriteJarFile(long timestamp, ImmutableSetMultimap&lt;InlineDependency, Dependency&gt; dependencies) throws TransformerException, IOException {
+<span class="nc bnc" id="L463" title="All 2 branches missed.">        File outputJar = (this.outputJarFile != null) ? outputJarFile : inlinedArtifactFileWithClassifier();</span>
+
+<span class="nc" id="L465">        doJarTransformation(outputJar, timestamp, dependencies);</span>
+
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        if (this.outputJarFile == null) {</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            if (this.inlinedArtifactAttached) {</span>
+<span class="nc" id="L469">                LOG.info(&quot;Attaching inlined artifact.&quot;);</span>
+<span class="nc" id="L470">                projectHelper.attachArtifact(project, project.getArtifact().getType(), inlinedClassifierName, outputJar);</span>
+            } else {
+<span class="nc" id="L472">                LOG.info(&quot;Replacing original artifact with inlined artifact.&quot;);</span>
+<span class="nc" id="L473">                File originalArtifact = project.getArtifact().getFile();</span>
+
+<span class="nc bnc" id="L475" title="All 2 branches missed.">                if (originalArtifact != null) {</span>
+<span class="nc" id="L476">                    File backupFile = new File(originalArtifact.getParentFile(), &quot;original-&quot; + originalArtifact.getName());</span>
+<span class="nc" id="L477">                    Files.move(originalArtifact.toPath(), backupFile.toPath(), ATOMIC_MOVE, REPLACE_EXISTING);</span>
+<span class="nc" id="L478">                    Files.move(outputJar.toPath(), originalArtifact.toPath(), ATOMIC_MOVE, REPLACE_EXISTING);</span>
+                }
+            }
+        }
+<span class="nc" id="L482">    }</span>
+
+    private void rewritePomFile(Set&lt;Dependency&gt; dependenciesToAdd, Set&lt;Dependency&gt; dependenciesToRemove) throws IOException, XMLStreamException, JDOMException {
+        String pomContents;
+
+<span class="nc" id="L487">        try (BufferedReader reader = Files.newBufferedReader(project.getFile().toPath(), StandardCharsets.UTF_8)) {</span>
+<span class="nc" id="L488">            pomContents = CharStreams.toString(reader);</span>
+        }
+
+<span class="nc" id="L491">        PomUtil pomUtil = new PomUtil(pomContents);</span>
+<span class="nc" id="L492">        dependenciesToRemove.forEach(pomUtil::removeDependency);</span>
+<span class="nc" id="L493">        dependenciesToAdd.forEach(pomUtil::addDependency);</span>
+
+        // some rewriters (maven flatten plugin) rewrites the new pom name as a hidden file.
+<span class="nc" id="L496">        String pomName = this.pomFile.getName();</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">        pomName = &quot;new-&quot; + (pomName.startsWith(&quot;.&quot;) ? pomName.substring(1) : pomName);</span>
+
+<span class="nc bnc" id="L499" title="All 2 branches missed.">        File newPomFile = this.outputPomFile != null ? outputPomFile : new File(this.outputDirectory, pomName);</span>
+<span class="nc" id="L500">        try (BufferedWriter writer = Files.newBufferedWriter(newPomFile.toPath(), StandardCharsets.UTF_8)) {</span>
+<span class="nc" id="L501">            pomUtil.writePom(writer);</span>
+        }
+
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        if (this.replacePomFile) {</span>
+<span class="nc" id="L505">            project.setPomFile(newPomFile);</span>
+        }
+<span class="nc" id="L507">    }</span>
+
+    private void doJarTransformation(File outputJar, long timestamp, ImmutableSetMultimap&lt;InlineDependency, Dependency&gt; dependencies)
+            throws TransformerException, IOException {
+
+<span class="nc" id="L512">        try (JarOutputStream jarOutputStream = new JarOutputStream(Files.newOutputStream(outputJar.toPath()))) {</span>
+<span class="nc" id="L513">            Consumer&lt;ClassPathResource&gt; jarConsumer = getJarWriter(jarOutputStream);</span>
+<span class="nc" id="L514">            JarTransformer transformer = new JarTransformer(jarConsumer, timestamp, true, ImmutableSet.copyOf(additionalProcessors));</span>
+
+            // Build the class path
+<span class="nc" id="L517">            ClassPath classPath = new ClassPath(project.getBasedir(), timestamp);</span>
+            // maintain the manifest file for the main artifact
+<span class="nc" id="L519">            var artifact = project.getArtifact();</span>
+<span class="nc" id="L520">            classPath.addFile(artifact.getFile(), artifact.getGroupId(), artifact.getArtifactId(), ClassPathTag.ROOT_JAR);</span>
+
+<span class="nc" id="L522">            dependencies.forEach(</span>
+                    (inlineDependency, dependency) -&gt; {
+<span class="nc" id="L524">                        var dependencyArtifact = dependency.getArtifact();</span>
+<span class="nc bnc" id="L525" title="All 2 branches missed.">                        checkState(dependencyArtifact.getFile() != null, &quot;Could not locate artifact file for %s&quot;, dependencyArtifact);</span>
+<span class="nc" id="L526">                        classPath.addFile(dependencyArtifact.getFile(), prefix, dependencyArtifact.getGroupId(), dependencyArtifact.getArtifactId(),</span>
+                                hideClasses);
+<span class="nc" id="L528">                    });</span>
+
+<span class="nc" id="L530">            transformer.transform(classPath);</span>
+        }
+<span class="nc" id="L532">    }</span>
+
+    private Consumer&lt;ClassPathResource&gt; getJarWriter(JarOutputStream jarOutputStream) {
+<span class="nc" id="L535">        return classPathResource -&gt; {</span>
+            try {
+<span class="nc" id="L537">                String name = classPathResource.getName();</span>
+<span class="nc" id="L538">                LOG.debug(format(&quot;Writing '%s' to jar&quot;, name));</span>
+<span class="nc" id="L539">                JarEntry outputEntry = new JarEntry(name);</span>
+<span class="nc" id="L540">                outputEntry.setTime(classPathResource.getLastModifiedTime());</span>
+<span class="nc" id="L541">                outputEntry.setCompressedSize(-1);</span>
+<span class="nc" id="L542">                jarOutputStream.putNextEntry(outputEntry);</span>
+<span class="nc" id="L543">                jarOutputStream.write(classPathResource.getContent());</span>
+<span class="nc" id="L544">            } catch (IOException e) {</span>
+<span class="nc" id="L545">                throw new UncheckedIOException(e);</span>
+<span class="nc" id="L546">            }</span>
+<span class="nc" id="L547">        };</span>
+    }
+
+    private File inlinedArtifactFileWithClassifier() {
+<span class="nc" id="L551">        final var artifact = project.getArtifact();</span>
+<span class="nc" id="L552">        String inlineName = String.format(&quot;%s-%s-%s.%s&quot;,</span>
+<span class="nc" id="L553">                project.getArtifactId(),</span>
+<span class="nc" id="L554">                artifact.getVersion(),</span>
+                this.inlinedClassifierName,
+<span class="nc" id="L556">                artifact.getArtifactHandler().getExtension());</span>
+
+<span class="nc" id="L558">        return new File(this.outputDirectory, inlineName);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
