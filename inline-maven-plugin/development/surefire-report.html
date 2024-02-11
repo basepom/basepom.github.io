@@ -52,6 +52,7 @@
       <li><a href="xref-test/index.html" title="Test Source Xref"><span class="none"></span>Test Source Xref</a></li>
       <li><a href="pmd.html" title="PMD"><span class="none"></span>PMD</a></li>
       <li><a href="spotbugs.html" title="SpotBugs"><span class="none"></span>SpotBugs</a></li>
+      <li><a href="jacoco/index.html" title="JaCoCo"><span class="none"></span>JaCoCo</a></li>
       <li><a href="apidocs/index.html" title="Javadoc"><span class="none"></span>Javadoc</a></li>
       <li><a href="testapidocs/index.html" title="Test Javadoc"><span class="none"></span>Test Javadoc</a></li>
       <li><a href="plugin-info.html" title="Plugin Documentation"><span class="none"></span>Plugin Documentation</a></li>
@@ -86,7 +87,8 @@ function toggleDisplay(elementId) {
  }
  }</script><section>
 <h1>Surefire Report</h1></section><section><a id="Summary"></a>
-<h1>Summary</h1><br />
+<h1>Summary</h1>
+<p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><br />
 <table class="table table-striped">
 <tr class="a">
 <th>Tests</th>
@@ -96,13 +98,69 @@ function toggleDisplay(elementId) {
 <th>Success Rate</th>
 <th>Time</th></tr>
 <tr class="b">
-<td style="text-align: left;">0</td>
+<td style="text-align: left;">3</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>0%</td>
-<td>0 s</td></tr></table><br />
-<p>Note: failures are anticipated and checked for with assertions while errors are unanticipated.</p><br /></section>
+<td>100%</td>
+<td>0.137 s</td></tr></table><br />
+<p>Note: failures are anticipated and checked for with assertions while errors are unanticipated.</p><br /></section><section><a id="Package_List"></a>
+<h1>Package List</h1>
+<p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><br />
+<table class="table table-striped">
+<tr class="a">
+<th>Package</th>
+<th>Tests</th>
+<th>Errors</th>
+<th>Failures</th>
+<th>Skipped</th>
+<th>Success Rate</th>
+<th>Time</th></tr>
+<tr class="b">
+<td style="text-align: left;"><a href="#org.basepom.inline.mojo">org.basepom.inline.mojo</a></td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>100%</td>
+<td>0.137 s</td></tr></table><br />
+<p>Note: package statistics are not computed recursively, they only sum up all of its testsuites numbers.</p><section><a id="org.basepom.inline.mojo"></a>
+<h2>org.basepom.inline.mojo</h2>
+<table class="table table-striped">
+<tr class="a">
+<th>-</th>
+<th>Class</th>
+<th>Tests</th>
+<th>Errors</th>
+<th>Failures</th>
+<th>Skipped</th>
+<th>Success Rate</th>
+<th>Time</th></tr>
+<tr class="b">
+<td style="text-align: left;"><a href="#org.basepom.inline.mojo.TestPomUtil"><img src="images/icon_success_sml.gif" /></a></td>
+<td><a href="#org.basepom.inline.mojo.TestPomUtil">TestPomUtil</a></td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>100%</td>
+<td>0.137 s</td></tr></table></section><br /></section><section><a id="Test_Cases"></a>
+<h1>Test Cases</h1>
+<p>[<a href="#Summary">Summary</a>] [<a href="#Package_List">Package List</a>] [<a href="#Test_Cases">Test Cases</a>]</p><section><a id="org.basepom.inline.mojo.TestPomUtil"></a>
+<h2>TestPomUtil</h2>
+<table class="table table-striped">
+<tr class="a">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.inline.mojo.TestPomUtil.testRemoveWithClassifier"></a>testRemoveWithClassifier</td>
+<td>0.100 s</td></tr>
+<tr class="b">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.inline.mojo.TestPomUtil.testRoundTrip"></a>testRoundTrip</td>
+<td>0.014 s</td></tr>
+<tr class="a">
+<td style="text-align: left;"><img src="images/icon_success_sml.gif" /></td>
+<td><a id="TC_org.basepom.inline.mojo.TestPomUtil.testRemove"></a>testRemove</td>
+<td>0.006 s</td></tr></table></section><br /></section>
         </main>
       </div>
     </div>
