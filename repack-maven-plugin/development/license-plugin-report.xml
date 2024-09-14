@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1726348699615">
+<licensePluginReport goal="CHECK" timestamp="1726349086111">
     <module artifactId="repack-maven-plugin" groupId="org.basepom.maven" version="1.0.3-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
