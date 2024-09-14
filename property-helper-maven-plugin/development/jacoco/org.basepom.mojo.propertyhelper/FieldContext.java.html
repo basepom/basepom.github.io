@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldContext.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">FieldContext.java</span></div><h1>FieldContext.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import org.basepom.mojo.propertyhelper.macros.MacroType;
+
+import java.io.File;
+import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+
+/**
+ * All accessible values from the Maven build system for a Field.
+ */
+public interface FieldContext {
+
+    /** Returns a fixed instance for testing. Do not use outside test code. */
+    static FieldContext forTesting() {
+<span class="fc" id="L36">        return forTesting(new SecureRandom());</span>
+    }
+
+    /** Returns a fixed instance for testing. The Random instance can be set to simulate reproducible builds. */
+    static FieldContext forTesting(Random random) {
+<span class="fc" id="L41">        return new FieldContext() {</span>
+
+            @Override
+            public Map&lt;String, MacroType&gt; getMacros() {
+<span class="nc" id="L45">                return Collections.emptyMap();</span>
+            }
+
+            @Override
+            public Properties getProjectProperties() {
+<span class="nc" id="L50">                return new Properties();</span>
+            }
+
+            @Override
+            public MavenProject getProject() {
+<span class="nc" id="L55">                return new MavenProject();</span>
+            }
+
+            @Override
+            public Settings getSettings() {
+<span class="nc" id="L60">                return new Settings();</span>
+            }
+
+            @Override
+            public File getBasedir() {
+<span class="nc" id="L65">                throw new UnsupportedOperationException();</span>
+            }
+
+            @Override
+            public InterpolatorFactory getInterpolatorFactory() {
+<span class="fc" id="L70">                return InterpolatorFactory.forTesting();</span>
+            }
+
+            @Override
+            public TransformerRegistry getTransformerRegistry() {
+<span class="fc" id="L75">                return TransformerRegistry.INSTANCE;</span>
+            }
+
+            @Override
+            public Random getRandom() {
+<span class="fc" id="L80">                return random;</span>
+            }
+        };
+    }
+
+    /**
+     * Returns a map with all known macros. Key value is the macro hint as given by the plexus component annotation.
+     * @return A map with all known macros.
+     */
+    Map&lt;String, MacroType&gt; getMacros();
+
+    /**
+     * Return the maven project properties.
+     * @return A properties object for the project properties.
+     */
+    Properties getProjectProperties();
+
+    /**
+     * Returns a reference to the {@link MavenProject}.
+     * @return A {@link MavenProject} object
+     */
+    MavenProject getProject();
+
+    /**
+     * Returns the current maven {@link Settings} object
+     * @return A {@link Settings} object
+     */
+    Settings getSettings();
+
+    /**
+     * Returns the base dir for this maven build execution.
+     *
+     * @return A {@link File} object.
+     */
+    File getBasedir();
+
+    /**
+     * Returns the {@link InterpolatorFactory} that can interpolate &quot;late resolution&quot; properties.
+     * @return An {@link InterpolatorFactory} reference.
+     */
+    InterpolatorFactory getInterpolatorFactory();
+
+    /**
+     * Returns a reference to the {@link TransformerRegistry}.
+     * @return A {@link TransformerRegistry} object.
+     */
+    TransformerRegistry getTransformerRegistry();
+
+    /**
+     * Returns a {@link java.security.SecureRandom} instance for generating random values.
+     */
+    Random getRandom();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

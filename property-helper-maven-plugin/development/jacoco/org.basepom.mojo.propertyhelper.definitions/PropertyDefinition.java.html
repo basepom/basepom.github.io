@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertyDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.definitions</a> &gt; <span class="el_source">PropertyDefinition.java</span></div><h1>PropertyDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.definitions;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+
+public class PropertyDefinition {
+
+    /**
+     * Name. Field injected by maven.
+     */
+<span class="pc" id="L31">    String name = null;</span>
+
+    /**
+     * Value. Field injected by maven.
+     */
+<span class="pc" id="L36">    String value = null;</span>
+
+    /**
+     * Transformers. Field injected by maven.
+     */
+<span class="pc" id="L41">    private List&lt;String&gt; transformers = List.of();</span>
+
+    // called by maven
+    public void setTransformers(String transformers) {
+<span class="nc" id="L45">        this.transformers = Splitter.on(&quot;,&quot;)</span>
+<span class="nc" id="L46">            .omitEmptyStrings()</span>
+<span class="nc" id="L47">            .trimResults()</span>
+<span class="nc" id="L48">            .splitToList(transformers);</span>
+<span class="nc" id="L49">    }</span>
+
+    @VisibleForTesting
+<span class="fc" id="L52">    PropertyDefinition(final String name, final String value) {</span>
+<span class="fc" id="L53">        this.name = checkNotNull(name, &quot;name is null&quot;);</span>
+<span class="fc" id="L54">        this.value = checkNotNull(value, &quot;value is null&quot;);</span>
+<span class="fc" id="L55">    }</span>
+
+<span class="nc" id="L57">    public PropertyDefinition() {</span>
+<span class="nc" id="L58">    }</span>
+
+    public void check() {
+<span class="fc" id="L61">        checkNotNull(name, &quot;property name is null&quot;);</span>
+<span class="fc" id="L62">        checkNotNull(value, &quot;property value is null&quot;);</span>
+<span class="fc" id="L63">    }</span>
+
+    public String getName() {
+<span class="fc" id="L66">        return name;</span>
+    }
+
+    public String getValue() {
+<span class="fc" id="L70">        return value;</span>
+    }
+
+    public List&lt;String&gt; getTransformers() {
+<span class="fc" id="L74">        return transformers;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L80">            return true;</span>
+        }
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L83">            return false;</span>
+        }
+<span class="nc" id="L85">        PropertyDefinition that = (PropertyDefinition) o;</span>
+<span class="nc bnc" id="L86" title="All 6 branches missed.">        return Objects.equals(name, that.name) &amp;&amp; Objects.equals(value, that.value) &amp;&amp; Objects.equals(transformers,</span>
+            that.transformers);
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L92">        return new StringJoiner(&quot;, &quot;, PropertyDefinition.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L93">            .add(&quot;name='&quot; + name + &quot;'&quot;)</span>
+<span class="nc" id="L94">            .add(&quot;value='&quot; + value + &quot;'&quot;)</span>
+<span class="nc" id="L95">            .add(&quot;transformers='&quot; + transformers + &quot;'&quot;)</span>
+<span class="nc" id="L96">            .toString();</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L101">        return Objects.hash(name, value, transformers);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

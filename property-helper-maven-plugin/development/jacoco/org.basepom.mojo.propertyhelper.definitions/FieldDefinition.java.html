@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.definitions</a> &gt; <span class="el_source">FieldDefinition.java</span></div><h1>FieldDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.definitions;
+
+import static com.google.common.base.Preconditions.checkState;
+
+import org.basepom.mojo.propertyhelper.Field;
+import org.basepom.mojo.propertyhelper.FieldContext;
+import org.basepom.mojo.propertyhelper.IgnoreWarnFail;
+import org.basepom.mojo.propertyhelper.IgnoreWarnFailCreate;
+import org.basepom.mojo.propertyhelper.ValueCache;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+
+/**
+ * Common properties for a field.
+ */
+public abstract class FieldDefinition&lt;T&gt; {
+
+<span class="fc" id="L43">    protected FieldDefinition() {</span>
+<span class="fc" id="L44">    }</span>
+
+    @VisibleForTesting
+<span class="fc" id="L47">    protected FieldDefinition(String id) {</span>
+<span class="fc" id="L48">        this.id = id;</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Name of the build property to define. Field injected by Maven.
+     */
+<span class="fc" id="L54">    String id = null;</span>
+
+    /**
+     * &lt;code&gt;True&lt;/code&gt; skips the parsing of this definition. Field injected by Maven.
+     */
+<span class="fc" id="L59">    boolean skip = false;</span>
+
+    /**
+     * Whether to export this number directly. Field injected by Maven.
+     */
+<span class="fc" id="L64">    boolean export = false;</span>
+
+    /**
+     * Name of the property from the properties file. Field injected by Maven.
+     */
+<span class="fc" id="L69">    String propertyNameInFile = null;</span>
+
+    /**
+     * Name of the properties file to persist the count. Field injected by Maven.
+     */
+<span class="fc" id="L74">    File propertyFile = null;</span>
+
+    /**
+     * What to do when the property is missing from the file.
+     */
+<span class="fc" id="L79">    private IgnoreWarnFailCreate onMissingFile = IgnoreWarnFailCreate.FAIL;</span>
+
+    public void setOnMissingFile(String onMissingFile) {
+<span class="fc" id="L82">        this.onMissingFile = IgnoreWarnFailCreate.forString(onMissingFile);</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * What to do when the property is missing from the file.
+     */
+<span class="fc" id="L88">    private IgnoreWarnFailCreate onMissingFileProperty = IgnoreWarnFailCreate.FAIL;</span>
+
+    public void setOnMissingFileProperty(String onMissingFileProperty) {
+<span class="fc" id="L91">        this.onMissingFileProperty = IgnoreWarnFailCreate.forString(onMissingFileProperty);</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * What to do when a referenced property can not be resolved.
+     */
+<span class="fc" id="L97">    private IgnoreWarnFail onMissingProperty = IgnoreWarnFail.FAIL;</span>
+
+    public void setOnMissingProperty(String onMissingProperty) {
+<span class="nc" id="L100">        this.onMissingProperty = IgnoreWarnFail.forString(onMissingProperty);</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * The initial value for this field. Field injected by Maven.
+     */
+<span class="fc" id="L106">    String initialValue = null;</span>
+
+    /**
+     * Regular expression matcher. Field injected by Maven.
+     */
+<span class="fc" id="L111">    private Pattern regexp = null;</span>
+
+    public void setRegexp(String regexp) {
+<span class="nc" id="L114">        checkState(regexp.startsWith(&quot;^&quot;), &quot;regular expression must start with '^'!&quot;);</span>
+<span class="nc" id="L115">        checkState(regexp.endsWith(&quot;$&quot;), &quot;regular expression must end with '$'!&quot;);</span>
+
+<span class="nc" id="L117">        this.regexp = Pattern.compile(regexp);</span>
+<span class="nc" id="L118">    }</span>
+
+    /**
+     * Format for this element. Field injected by Maven.
+     */
+<span class="fc" id="L123">    String format = null;</span>
+
+    /**
+     * Comma separated list of String transformers.
+     */
+<span class="fc" id="L128">    private List&lt;String&gt; transformers = List.of();</span>
+
+    public void setTransformers(String transformers) {
+<span class="nc" id="L131">        this.transformers = Splitter.on(&quot;,&quot;)</span>
+<span class="nc" id="L132">            .omitEmptyStrings()</span>
+<span class="nc" id="L133">            .trimResults()</span>
+<span class="nc" id="L134">            .splitToList(transformers);</span>
+<span class="nc" id="L135">    }</span>
+
+    public abstract &lt;U extends Field&lt;?, ?&gt;&gt; U createField(FieldContext context, ValueCache valueCache) throws IOException;
+
+    public String getId() {
+<span class="fc" id="L140">        return id;</span>
+    }
+
+    public boolean isSkip() {
+<span class="fc" id="L144">        return skip;</span>
+    }
+
+    public List&lt;String&gt; getTransformers() {
+<span class="fc" id="L148">        return transformers;</span>
+    }
+
+    public Optional&lt;String&gt; getInitialValue() {
+<span class="fc" id="L152">        return Optional.ofNullable(initialValue);</span>
+    }
+
+    public boolean isExport() {
+<span class="fc" id="L156">        return export;</span>
+    }
+
+    public String getPropertyNameInFile() {
+<span class="fc" id="L160">        return Objects.requireNonNullElse(propertyNameInFile, id);</span>
+    }
+
+    public Optional&lt;File&gt; getPropertyFile() {
+<span class="fc" id="L164">        return Optional.ofNullable(propertyFile);</span>
+    }
+
+    public IgnoreWarnFailCreate getOnMissingFile() {
+<span class="fc" id="L168">        return onMissingFile;</span>
+    }
+
+    public IgnoreWarnFailCreate getOnMissingFileProperty() {
+<span class="fc" id="L172">        return onMissingFileProperty;</span>
+    }
+
+    public IgnoreWarnFail getOnMissingProperty() {
+<span class="fc" id="L176">        return onMissingProperty;</span>
+    }
+
+    public Function&lt;String, String&gt; getRegexp() {
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">        return regexp == null ? Function.identity() : v -&gt; {</span>
+<span class="nc" id="L181">            Matcher matcher = regexp.matcher(v);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">            return matcher.matches() ? matcher.group(1) : &quot;&quot;;</span>
+        };
+    }
+
+    public Function&lt;T, String&gt; getPreFormat() {
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        return v -&gt; v == null ? &quot;&quot; : String.valueOf(v);</span>
+    }
+
+    public Function&lt;String, String&gt; getPostFormat() {
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        return format == null ? String::valueOf : v -&gt; String.format(format, v);</span>
+    }
+
+    public void check() {
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        checkState(id != null, &quot;the id element must not be empty!&quot;);</span>
+
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">        if (propertyNameInFile != null) {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            checkState(propertyFile != null, &quot;can not define &lt;propertyNameInFile&gt; without defining &lt;propertyFile&gt;!&quot;);</span>
+        }
+<span class="fc" id="L200">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L204">        return new StringJoiner(&quot;, &quot;, FieldDefinition.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L205">            .add(&quot;id='&quot; + id + &quot;'&quot;)</span>
+<span class="nc" id="L206">            .add(&quot;skip=&quot; + skip)</span>
+<span class="nc" id="L207">            .add(&quot;export=&quot; + export)</span>
+<span class="nc" id="L208">            .add(&quot;propertyNameInFile='&quot; + propertyNameInFile + &quot;'&quot;)</span>
+<span class="nc" id="L209">            .add(&quot;propertyFile=&quot; + propertyFile)</span>
+<span class="nc" id="L210">            .add(&quot;onMissingFile=&quot; + onMissingFile)</span>
+<span class="nc" id="L211">            .add(&quot;onMissingFileProperty=&quot; + onMissingFileProperty)</span>
+<span class="nc" id="L212">            .add(&quot;onMissingProperty=&quot; + onMissingProperty)</span>
+<span class="nc" id="L213">            .add(&quot;initialValue='&quot; + initialValue + &quot;'&quot;)</span>
+<span class="nc" id="L214">            .add(&quot;format='&quot; + format + &quot;'&quot;)</span>
+<span class="nc" id="L215">            .add(&quot;transformers=&quot; + transformers)</span>
+<span class="nc" id="L216">            .toString();</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L222">            return true;</span>
+        }
+<span class="nc bnc" id="L224" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L225">            return false;</span>
+        }
+<span class="nc" id="L227">        FieldDefinition&lt;?&gt; that = (FieldDefinition&lt;?&gt;) o;</span>
+<span class="nc bnc" id="L228" title="All 8 branches missed.">        return skip == that.skip &amp;&amp; export == that.export &amp;&amp; Objects.equals(id, that.id) &amp;&amp; Objects.equals(propertyNameInFile,</span>
+<span class="nc bnc" id="L229" title="All 8 branches missed.">            that.propertyNameInFile) &amp;&amp; Objects.equals(propertyFile, that.propertyFile) &amp;&amp; onMissingFile == that.onMissingFile</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            &amp;&amp; onMissingFileProperty == that.onMissingFileProperty &amp;&amp; onMissingProperty == that.onMissingProperty &amp;&amp; Objects.equals(initialValue,</span>
+<span class="nc bnc" id="L231" title="All 4 branches missed.">            that.initialValue) &amp;&amp; Objects.equals(format, that.format) &amp;&amp; Objects.equals(transformers, that.transformers);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L236">        return Objects.hash(id, skip, export, propertyNameInFile, propertyFile, onMissingFile, onMissingFileProperty, onMissingProperty, initialValue, format,</span>
+            transformers);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

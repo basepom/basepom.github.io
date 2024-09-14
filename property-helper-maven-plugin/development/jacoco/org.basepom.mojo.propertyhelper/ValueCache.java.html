@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueCache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">ValueCache.java</span></div><h1>ValueCache.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static org.basepom.mojo.propertyhelper.IgnoreWarnFailCreate.checkIgnoreWarnFailCreateState;
+
+import org.basepom.mojo.propertyhelper.ValueProvider.MapBackedValueAdapter;
+import org.basepom.mojo.propertyhelper.definitions.FieldDefinition;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.StringJoiner;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.Maps;
+import com.google.common.flogger.FluentLogger;
+
+<span class="fc" id="L42">public final class ValueCache {</span>
+
+<span class="fc" id="L44">    private static final FluentLogger LOG = FluentLogger.forEnclosingClass();</span>
+
+<span class="fc" id="L46">    private final Map&lt;String, String&gt; ephemeralValues = Maps.newHashMap();</span>
+
+    /**
+     * Cache for values files loaded from disk
+     */
+<span class="fc" id="L51">    private final Map&lt;File, ValueCacheEntry&gt; valueFiles = Maps.newHashMap();</span>
+
+    @VisibleForTesting
+    public ValueProvider findCurrentValueProvider(final Map&lt;String, String&gt; values, final FieldDefinition&lt;?&gt; definition) {
+<span class="fc" id="L55">        checkNotNull(values, &quot;values is null&quot;);</span>
+
+<span class="fc" id="L57">        final String propertyNameInFile = definition.getPropertyNameInFile();</span>
+<span class="fc" id="L58">        final boolean hasValue = values.containsKey(propertyNameInFile);</span>
+
+<span class="fc" id="L60">        final boolean createProperty = checkIgnoreWarnFailCreateState(hasValue, definition.getOnMissingFileProperty(),</span>
+<span class="fc" id="L61">            () -&gt; format(&quot;property '%s' has value '%s'&quot;, propertyNameInFile, values.get(propertyNameInFile)),</span>
+<span class="fc" id="L62">            () -&gt; format(&quot;property '%s' has no value defined&quot;, propertyNameInFile));</span>
+
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (hasValue) {</span>
+<span class="fc" id="L65">            return new MapBackedValueAdapter(values, propertyNameInFile);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        } else if (createProperty) {</span>
+<span class="fc" id="L67">            Optional&lt;String&gt; initialValue = definition.getInitialValue();</span>
+<span class="fc" id="L68">            initialValue.ifPresent(value -&gt; values.put(propertyNameInFile, value));</span>
+
+<span class="fc" id="L70">            return new MapBackedValueAdapter(values, propertyNameInFile);</span>
+        } else {
+<span class="fc" id="L72">            return ValueProvider.NULL_PROVIDER;</span>
+        }
+    }
+
+    public ValueProvider getValueProvider(final FieldDefinition&lt;?&gt; definition) throws IOException {
+<span class="fc" id="L77">        final Optional&lt;Map&lt;String, String&gt;&gt; values = getValues(definition);</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (values.isEmpty()) {</span>
+<span class="fc" id="L79">            final String name = definition.getId();</span>
+<span class="fc" id="L80">            final Optional&lt;String&gt; initialValue = definition.getInitialValue();</span>
+<span class="fc" id="L81">            initialValue.ifPresent(s -&gt; ephemeralValues.put(name, s));</span>
+
+<span class="fc" id="L83">            return new MapBackedValueAdapter(ephemeralValues, name);</span>
+        } else {
+<span class="fc" id="L85">            return findCurrentValueProvider(values.get(), definition);</span>
+        }
+    }
+
+    @VisibleForTesting
+    Optional&lt;Map&lt;String, String&gt;&gt; getValues(final FieldDefinition&lt;?&gt; definition) throws IOException {
+<span class="fc" id="L91">        final Optional&lt;File&gt; definitionFile = definition.getPropertyFile();</span>
+
+        // Ephemeral, so return null.
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (definitionFile.isEmpty()) {</span>
+<span class="fc" id="L95">            return Optional.empty();</span>
+        }
+
+        ValueCacheEntry cacheEntry;
+<span class="fc" id="L99">        final File canonicalFile = definitionFile.get().getCanonicalFile();</span>
+<span class="fc" id="L100">        final String canonicalPath = definitionFile.get().getCanonicalPath();</span>
+
+        // Throws an exception if the file must exist and does not.
+<span class="fc" id="L103">        final boolean createFile = checkIgnoreWarnFailCreateState(canonicalFile.exists(), definition.getOnMissingFile(),</span>
+<span class="fc" id="L104">            () -&gt; format(&quot;property file '%s' exists&quot;, canonicalPath),</span>
+<span class="fc" id="L105">            () -&gt; format(&quot;property file '%s' does not exist!&quot;, canonicalPath));</span>
+
+<span class="fc" id="L107">        cacheEntry = valueFiles.get(canonicalFile);</span>
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (cacheEntry != null) {</span>
+            // If there is a cache hit, something either has loaded the file
+            // or another property has already put in a creation order.
+            // Make sure that if this number has a creation order it is obeyed.
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">            if (createFile) {</span>
+<span class="nc" id="L114">                cacheEntry.doCreate();</span>
+            }
+        } else {
+            // Try loading or creating properties.
+<span class="fc" id="L118">            final Properties props = new Properties();</span>
+
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            if (!canonicalFile.exists()) {</span>
+<span class="nc" id="L121">                cacheEntry = new ValueCacheEntry(props, false, createFile); // does not exist</span>
+<span class="nc" id="L122">                valueFiles.put(canonicalFile, cacheEntry);</span>
+            } else {
+<span class="pc bpc" id="L124" title="2 of 4 branches missed.">                if (canonicalFile.isFile() &amp;&amp; canonicalFile.canRead()) {</span>
+<span class="fc" id="L125">                    try (InputStream stream = Files.newInputStream(canonicalFile.toPath())) {</span>
+<span class="fc" id="L126">                        props.load(stream);</span>
+<span class="fc" id="L127">                        cacheEntry = new ValueCacheEntry(props, true, createFile);</span>
+<span class="fc" id="L128">                        valueFiles.put(canonicalFile, cacheEntry);</span>
+                    }
+                } else {
+<span class="nc" id="L131">                    throw new IllegalStateException(</span>
+<span class="nc" id="L132">                        format(&quot;Can not load %s, not a file!&quot;, definitionFile.get().getCanonicalPath()));</span>
+                }
+            }
+        }
+
+<span class="fc" id="L137">        return Optional.of(cacheEntry.getValues());</span>
+    }
+
+    public void persist()
+        throws IOException {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        for (final Entry&lt;File, ValueCacheEntry&gt; entries : valueFiles.entrySet()) {</span>
+<span class="nc" id="L143">            final ValueCacheEntry entry = entries.getValue();</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (!entry.isDirty()) {</span>
+<span class="nc" id="L145">                continue;</span>
+            }
+<span class="nc" id="L147">            final File file = entries.getKey();</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">            if (entry.isExists() || entry.isCreate()) {</span>
+<span class="nc" id="L149">                checkNotNull(file, &quot;no file defined, can not persist!&quot;);</span>
+<span class="nc" id="L150">                final File oldFile = new File(file.getCanonicalPath() + &quot;.bak&quot;);</span>
+
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                if (entry.isExists()) {</span>
+<span class="nc" id="L153">                    checkState(file.exists(), &quot;'%s' should exist!&quot;, file.getCanonicalPath());</span>
+                    // unlink an old file if necessary
+<span class="nc bnc" id="L155" title="All 2 branches missed.">                    if (oldFile.exists()) {</span>
+<span class="nc" id="L156">                        checkState(oldFile.delete(), &quot;Could not delete '%s'&quot;, file.getCanonicalPath());</span>
+                    }
+                }
+
+<span class="nc" id="L160">                final File folder = file.getParentFile();</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                if (!folder.exists()) {</span>
+<span class="nc" id="L162">                    checkState(folder.mkdirs(), &quot;Could not create folder '%s'&quot;, folder.getCanonicalPath());</span>
+                }
+
+<span class="nc" id="L165">                final File newFile = new File(file.getCanonicalPath() + &quot;.new&quot;);</span>
+<span class="nc" id="L166">                try (OutputStream stream = Files.newOutputStream(newFile.toPath())) {</span>
+<span class="nc" id="L167">                    entry.store(stream, &quot;created by property-helper-maven-plugin&quot;);</span>
+                }
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                if (file.exists()) {</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                    if (!file.renameTo(oldFile)) {</span>
+<span class="nc" id="L172">                        LOG.atWarning().log(&quot;Could not rename '%s' to '%s'!&quot;, file, oldFile);</span>
+                    }
+                }
+
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (!file.exists()) {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                    if (!newFile.renameTo(file)) {</span>
+<span class="nc" id="L178">                        LOG.atWarning().log(&quot;Could not rename '%s' to '%s'!&quot;, newFile, file);</span>
+                    }
+                }
+            }
+<span class="nc" id="L182">        }</span>
+<span class="nc" id="L183">    }</span>
+
+    public static class ValueCacheEntry {
+
+<span class="fc" id="L187">        private final Map&lt;String, String&gt; values = Maps.newHashMap();</span>
+
+        private final boolean exists;
+
+        private boolean create;
+
+<span class="fc" id="L193">        private boolean dirty = false;</span>
+
+        ValueCacheEntry(final Properties props,
+            final boolean exists,
+<span class="fc" id="L197">            final boolean create) {</span>
+<span class="fc" id="L198">            checkNotNull(props, &quot;props is null&quot;);</span>
+
+<span class="fc" id="L200">            values.putAll(Maps.fromProperties(props));</span>
+
+<span class="fc" id="L202">            this.exists = exists;</span>
+<span class="fc" id="L203">            this.create = create;</span>
+<span class="fc" id="L204">        }</span>
+
+        public void store(final OutputStream out, final String comment)
+            throws IOException {
+<span class="nc" id="L208">            final Properties p = new Properties();</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">            for (Entry&lt;String, String&gt; entry : values.entrySet()) {</span>
+<span class="nc" id="L210">                p.setProperty(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L211">            }</span>
+<span class="nc" id="L212">            p.store(out, comment);</span>
+<span class="nc" id="L213">        }</span>
+
+        public boolean isDirty() {
+<span class="nc" id="L216">            return dirty;</span>
+        }
+
+        public void dirty() {
+<span class="fc" id="L220">            this.dirty = true;</span>
+<span class="fc" id="L221">        }</span>
+
+        public Map&lt;String, String&gt; getValues() {
+<span class="fc" id="L224">            return new ForwardingMap&lt;&gt;() {</span>
+                @Override
+                protected Map&lt;String, String&gt; delegate() {
+<span class="fc" id="L227">                    return values;</span>
+                }
+
+                @Override
+                public String remove(Object object) {
+<span class="nc" id="L232">                    dirty();</span>
+<span class="nc" id="L233">                    return super.remove(object);</span>
+                }
+
+                @Override
+                public void clear() {
+<span class="nc" id="L238">                    dirty();</span>
+<span class="nc" id="L239">                    super.clear();</span>
+<span class="nc" id="L240">                }</span>
+
+                @Override
+                public String put(String key, String value) {
+<span class="fc" id="L244">                    final String oldValue = super.put(key, value);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">                    if (!Objects.equals(value, oldValue)) {</span>
+<span class="fc" id="L246">                        dirty();</span>
+                    }
+<span class="fc" id="L248">                    return oldValue;</span>
+                }
+
+                @Override
+                public void putAll(Map&lt;? extends String, ? extends String&gt; map) {
+<span class="nc" id="L253">                    dirty();</span>
+<span class="nc" id="L254">                    super.putAll(map);</span>
+<span class="nc" id="L255">                }</span>
+            };
+        }
+
+        public boolean isExists() {
+<span class="nc" id="L260">            return exists;</span>
+        }
+
+        public boolean isCreate() {
+<span class="nc" id="L264">            return create;</span>
+        }
+
+        public void doCreate() {
+<span class="nc" id="L268">            this.create = true;</span>
+<span class="nc" id="L269">            dirty();</span>
+<span class="nc" id="L270">        }</span>
+
+        @Override
+        public String toString() {
+<span class="nc" id="L274">            return new StringJoiner(&quot;, &quot;, ValueCacheEntry.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L275">                .add(&quot;values=&quot; + values)</span>
+<span class="nc" id="L276">                .add(&quot;exists=&quot; + exists)</span>
+<span class="nc" id="L277">                .add(&quot;create=&quot; + create)</span>
+<span class="nc" id="L278">                .add(&quot;dirty=&quot; + dirty)</span>
+<span class="nc" id="L279">                .toString();</span>
+        }
+
+        @Override
+        public boolean equals(Object o) {
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (this == o) {</span>
+<span class="nc" id="L285">                return true;</span>
+            }
+<span class="nc bnc" id="L287" title="All 4 branches missed.">            if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L288">                return false;</span>
+            }
+<span class="nc" id="L290">            ValueCacheEntry that = (ValueCacheEntry) o;</span>
+<span class="nc bnc" id="L291" title="All 6 branches missed.">            return exists == that.exists &amp;&amp; create == that.create &amp;&amp; dirty == that.dirty</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                &amp;&amp; Objects.equals(values, that.values);</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L297">            return Objects.hash(values, exists, create, dirty);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

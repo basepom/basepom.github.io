@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringField.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.fields</a> &gt; <span class="el_source">StringField.java</span></div><h1>StringField.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.fields;
+
+import static java.lang.String.format;
+import static org.basepom.mojo.propertyhelper.IgnoreWarnFail.checkIgnoreWarnFailState;
+
+import org.basepom.mojo.propertyhelper.Field;
+import org.basepom.mojo.propertyhelper.FieldContext;
+import org.basepom.mojo.propertyhelper.ValueProvider;
+import org.basepom.mojo.propertyhelper.definitions.StringDefinition;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
+public final class StringField extends Field&lt;String, StringDefinition&gt; {
+
+    private final ValueProvider valueProvider;
+
+    @VisibleForTesting
+    public static StringField forTesting(StringDefinition stringDefinition, ValueProvider valueProvider) {
+<span class="fc" id="L39">        return new StringField(stringDefinition, valueProvider, FieldContext.forTesting());</span>
+    }
+
+    public StringField(final StringDefinition stringDefinition, final ValueProvider valueProvider,
+        FieldContext fieldContext) {
+<span class="fc" id="L44">        super(stringDefinition, fieldContext);</span>
+
+<span class="fc" id="L46">        this.valueProvider = valueProvider;</span>
+<span class="fc" id="L47">    }</span>
+
+    @Override
+    public String getFieldName() {
+        // This is not the property name (because many definitions can map onto one prop)
+        // but the actual id.
+<span class="fc" id="L53">        return fieldDefinition.getId();</span>
+    }
+
+    @Override
+    public String getValue() {
+<span class="fc" id="L58">        final List&lt;String&gt; values = Lists.newArrayList();</span>
+
+<span class="fc" id="L60">        final Optional&lt;String&gt; propValue = valueProvider.getValue();</span>
+<span class="fc" id="L61">        final List&lt;String&gt; definedValues = fieldDefinition.getValues();</span>
+
+        // Only add the value from the provider if it is not null.
+<span class="fc" id="L64">        propValue.ifPresent(values::add);</span>
+
+<span class="fc" id="L66">        values.addAll(definedValues);</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc" id="L69">            var stringResult = Strings.nullToEmpty(value);</span>
+<span class="fc bfc" id="L70" title="All 4 branches covered.">            if (fieldDefinition.isBlankIsValid() || !stringResult.isBlank()) {</span>
+<span class="fc" id="L71">                return formatResult(value);</span>
+            }
+<span class="fc" id="L73">        }</span>
+
+<span class="fc" id="L75">        checkIgnoreWarnFailState(false, fieldDefinition.getOnMissingValue(),</span>
+<span class="nc" id="L76">            () -&gt; &quot;&quot;,</span>
+<span class="fc" id="L77">            () -&gt; format(&quot;No value for string field %s found, using an empty value!&quot;, getFieldName()));</span>
+
+<span class="fc" id="L79">        return &quot;&quot;;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L84">        return new StringJoiner(&quot;, &quot;, StringField.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L85">            .add(&quot;stringDefinition=&quot; + fieldDefinition)</span>
+<span class="nc" id="L86">            .add(&quot;valueProvider=&quot; + valueProvider)</span>
+<span class="nc" id="L87">            .toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
