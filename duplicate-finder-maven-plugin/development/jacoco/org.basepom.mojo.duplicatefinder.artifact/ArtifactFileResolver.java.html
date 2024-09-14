@@ -11,7 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder.artifact;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getOutputDirectory;
+import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOutputDirectory;
+import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArtifact;
+
+import org.basepom.mojo.duplicatefinder.ClasspathElement;
+import org.basepom.mojo.duplicatefinder.ClasspathElement.ClasspathArtifact;
+import org.basepom.mojo.duplicatefinder.ClasspathElement.ClasspathLocalFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,25 +47,13 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.project.MavenProject;
-import org.basepom.mojo.duplicatefinder.ClasspathElement;
-import org.basepom.mojo.duplicatefinder.ClasspathElement.ClasspathArtifact;
-import org.basepom.mojo.duplicatefinder.ClasspathElement.ClasspathLocalFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.lang.String.format;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getOutputDirectory;
-import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.getTestOutputDirectory;
-import static org.basepom.mojo.duplicatefinder.artifact.ArtifactHelper.isTestArtifact;
 
 /**
  * Resolves artifact references from the project into local and repository files and folders.
  * &lt;p&gt;
- * Only manages the dependencies because the main project can have multiple (two) folders
- * for the project. This is not supported by this resolver.
+ * Only manages the dependencies because the main project can have multiple (two) folders for the project. This is not supported by this resolver.
  */
 @SuppressFBWarnings(&quot;NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE&quot;)
 public class ArtifactFileResolver {
@@ -105,136 +105,137 @@ public class ArtifactFileResolver {
             // In that case, the dependency will show up as a referenced project but not in the artifacts list from the project.
             // Fix up straight from the referenced project.
 <span class="nc bnc" id="L107" title="All 2 branches missed.">            if (repoArtifacts.isEmpty()) {</span>
-<span class="nc" id="L108">                LOG.debug(format(&quot;Found project reference to %s but no repo reference, probably used in a plugin dependency.&quot;, referencedProject.getArtifact()));</span>
+<span class="nc" id="L108">                LOG.debug(</span>
+<span class="nc" id="L109">                        format(&quot;Found project reference to %s but no repo reference, probably used in a plugin dependency.&quot;, referencedProject.getArtifact()));</span>
             }
 
-<span class="nc bnc" id="L111" title="All 2 branches missed.">            for (final Artifact artifact : repoArtifacts) {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for (final Artifact artifact : repoArtifacts) {</span>
 
-<span class="nc bnc" id="L113" title="All 2 branches missed.">                final File outputDir = isTestArtifact(artifact) ? getTestOutputDirectory(referencedProject) : getOutputDirectory(referencedProject);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                final File outputDir = isTestArtifact(artifact) ? getTestOutputDirectory(referencedProject) : getOutputDirectory(referencedProject);</span>
 
-<span class="nc bnc" id="L115" title="All 2 branches missed.">                if (outputDir.exists()) {</span>
-<span class="nc" id="L116">                    localFileArtifactCacheBuilder.put(outputDir, artifact);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">                if (outputDir.exists()) {</span>
+<span class="nc" id="L117">                    localFileArtifactCacheBuilder.put(outputDir, artifact);</span>
                 }
-<span class="nc" id="L118">            }</span>
-<span class="nc" id="L119">        }</span>
+<span class="nc" id="L119">            }</span>
+<span class="nc" id="L120">        }</span>
 
-<span class="nc" id="L121">        this.localFileArtifactCache = localFileArtifactCacheBuilder.build();</span>
+<span class="nc" id="L122">        this.localFileArtifactCache = localFileArtifactCacheBuilder.build();</span>
 
         // Flip the File -&gt; Artifact multimap. This also acts as a sanity check because no artifact
         // must be present more than one and the Map.Builder will choke if a key is around more than
         // once.
-<span class="nc" id="L126">        ImmutableMap.Builder&lt;Artifact, File&gt; localArtifactFileCacheBuilder = ImmutableMap.builder();</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (Map.Entry&lt;File, Artifact&gt; entry : localFileArtifactCache.entries()) {</span>
-<span class="nc" id="L128">            localArtifactFileCacheBuilder.put(entry.getValue(), entry.getKey());</span>
-<span class="nc" id="L129">        }</span>
+<span class="nc" id="L127">        ImmutableMap.Builder&lt;Artifact, File&gt; localArtifactFileCacheBuilder = ImmutableMap.builder();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        for (Map.Entry&lt;File, Artifact&gt; entry : localFileArtifactCache.entries()) {</span>
+<span class="nc" id="L129">            localArtifactFileCacheBuilder.put(entry.getValue(), entry.getKey());</span>
+<span class="nc" id="L130">        }</span>
 
-<span class="nc" id="L131">        this.localArtifactFileCache = localArtifactFileCacheBuilder.build();</span>
-<span class="nc" id="L132">    }</span>
+<span class="nc" id="L132">        this.localArtifactFileCache = localArtifactFileCacheBuilder.build();</span>
+<span class="nc" id="L133">    }</span>
 
     public ImmutableMultimap&lt;File, Artifact&gt; resolveArtifactsForScopes(final Set&lt;String&gt; scopes) {
-<span class="nc" id="L135">        checkNotNull(scopes, &quot;scopes is null&quot;);</span>
+<span class="nc" id="L136">        checkNotNull(scopes, &quot;scopes is null&quot;);</span>
 
-<span class="nc" id="L137">        final ImmutableMultimap.Builder&lt;File, Artifact&gt; inScopeBuilder = ImmutableMultimap.builder();</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">        for (final Artifact artifact : listArtifacts()) {</span>
-<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (artifact.getArtifactHandler().isAddedToClasspath()) {</span>
-<span class="nc bnc" id="L140" title="All 4 branches missed.">                if (scopes.isEmpty() || scopes.contains(artifact.getScope())) {</span>
-<span class="nc" id="L141">                    final File file = resolveFileForArtifact(artifact);</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">                    checkState(file != null, &quot;No file for artifact '%s' found!&quot;, artifact);</span>
-<span class="nc" id="L143">                    inScopeBuilder.put(file, artifact);</span>
+<span class="nc" id="L138">        final ImmutableMultimap.Builder&lt;File, Artifact&gt; inScopeBuilder = ImmutableMultimap.builder();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (final Artifact artifact : listArtifacts()) {</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">            if (artifact.getArtifactHandler().isAddedToClasspath()) {</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">                if (scopes.isEmpty() || scopes.contains(artifact.getScope())) {</span>
+<span class="nc" id="L142">                    final File file = resolveFileForArtifact(artifact);</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                    checkState(file != null, &quot;No file for artifact '%s' found!&quot;, artifact);</span>
+<span class="nc" id="L144">                    inScopeBuilder.put(file, artifact);</span>
                 }
             }
-<span class="nc" id="L146">        }</span>
+<span class="nc" id="L147">        }</span>
 
-<span class="nc" id="L148">        return inScopeBuilder.build();</span>
+<span class="nc" id="L149">        return inScopeBuilder.build();</span>
     }
 
     public ImmutableSortedSet&lt;ClasspathElement&gt; getClasspathElementsForElements(final Collection&lt;File&gt; elements) {
-<span class="nc" id="L152">        final ImmutableSortedSet.Builder&lt;ClasspathElement&gt; builder = ImmutableSortedSet.naturalOrder();</span>
+<span class="nc" id="L153">        final ImmutableSortedSet.Builder&lt;ClasspathElement&gt; builder = ImmutableSortedSet.naturalOrder();</span>
 
-<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (final File element : elements) {</span>
-<span class="nc" id="L155">            resolveClasspathElementsForFile(element, builder);</span>
-<span class="nc" id="L156">        }</span>
-<span class="nc" id="L157">        return builder.build();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        for (final File element : elements) {</span>
+<span class="nc" id="L156">            resolveClasspathElementsForFile(element, builder);</span>
+<span class="nc" id="L157">        }</span>
+<span class="nc" id="L158">        return builder.build();</span>
     }
 
     private void resolveClasspathElementsForFile(final File file, ImmutableSet.Builder&lt;ClasspathElement&gt; builder) {
-<span class="nc" id="L161">        checkNotNull(file, &quot;file is null&quot;);</span>
+<span class="nc" id="L162">        checkNotNull(file, &quot;file is null&quot;);</span>
 
-<span class="nc bnc" id="L163" title="All 4 branches missed.">        if (preferLocal &amp;&amp; localFileArtifactCache.containsKey(file)) {</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">            for (Artifact artifact : localFileArtifactCache.get(file)) {</span>
-<span class="nc" id="L165">                builder.add(new ClasspathArtifact(artifact));</span>
-<span class="nc" id="L166">            }</span>
-<span class="nc" id="L167">            return;</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        if (preferLocal &amp;&amp; localFileArtifactCache.containsKey(file)) {</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            for (Artifact artifact : localFileArtifactCache.get(file)) {</span>
+<span class="nc" id="L166">                builder.add(new ClasspathArtifact(artifact));</span>
+<span class="nc" id="L167">            }</span>
+<span class="nc" id="L168">            return;</span>
         }
 
-<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (repoFileCache.containsKey(file)) {</span>
-<span class="nc bnc" id="L171" title="All 2 branches missed.">            for (Artifact artifact : repoFileCache.get(file)) {</span>
-<span class="nc" id="L172">                builder.add(new ClasspathArtifact(artifact));</span>
-<span class="nc" id="L173">            }</span>
-<span class="nc" id="L174">            return;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (repoFileCache.containsKey(file)) {</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            for (Artifact artifact : repoFileCache.get(file)) {</span>
+<span class="nc" id="L173">                builder.add(new ClasspathArtifact(artifact));</span>
+<span class="nc" id="L174">            }</span>
+<span class="nc" id="L175">            return;</span>
         }
 
-<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (localFileArtifactCache.containsKey(file)) {</span>
-<span class="nc bnc" id="L178" title="All 2 branches missed.">            for (Artifact artifact : localFileArtifactCache.get(file)) {</span>
-<span class="nc" id="L179">                builder.add(new ClasspathArtifact(artifact));</span>
-<span class="nc" id="L180">            }</span>
-<span class="nc" id="L181">            return;</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (localFileArtifactCache.containsKey(file)) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">            for (Artifact artifact : localFileArtifactCache.get(file)) {</span>
+<span class="nc" id="L180">                builder.add(new ClasspathArtifact(artifact));</span>
+<span class="nc" id="L181">            }</span>
+<span class="nc" id="L182">            return;</span>
         }
 
-<span class="nc" id="L184">        builder.add(new ClasspathLocalFolder(file));</span>
-<span class="nc" id="L185">    }</span>
+<span class="nc" id="L185">        builder.add(new ClasspathLocalFolder(file));</span>
+<span class="nc" id="L186">    }</span>
 
     private File resolveFileForArtifact(final Artifact artifact) {
-<span class="nc" id="L188">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
+<span class="nc" id="L189">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
 
-<span class="nc bnc" id="L190" title="All 4 branches missed.">        if (preferLocal &amp;&amp; localArtifactFileCache.containsKey(artifact)) {</span>
-<span class="nc" id="L191">            return localArtifactFileCache.get(artifact);</span>
+<span class="nc bnc" id="L191" title="All 4 branches missed.">        if (preferLocal &amp;&amp; localArtifactFileCache.containsKey(artifact)) {</span>
+<span class="nc" id="L192">            return localArtifactFileCache.get(artifact);</span>
         }
 
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (repoArtifactCache.containsKey(artifact)) {</span>
-<span class="nc" id="L195">            return repoArtifactCache.get(artifact);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (repoArtifactCache.containsKey(artifact)) {</span>
+<span class="nc" id="L196">            return repoArtifactCache.get(artifact);</span>
         }
 
-<span class="nc" id="L198">        return localArtifactFileCache.get(artifact);</span>
+<span class="nc" id="L199">        return localArtifactFileCache.get(artifact);</span>
     }
 
     @VisibleForTesting
     static DefaultArtifact canonicalizeArtifact(final Artifact artifact) {
         final VersionRange versionRange =
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                artifact.getVersionRange() == null ? VersionRange.createFromVersion(artifact.getVersion()) : artifact.getVersionRange();</span>
-<span class="fc" id="L205">        String type = MoreObjects.firstNonNull(artifact.getType(), &quot;jar&quot;);</span>
-<span class="fc" id="L206">        String classifier = artifact.getClassifier();</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">                artifact.getVersionRange() == null ? VersionRange.createFromVersion(artifact.getVersion()) : artifact.getVersionRange();</span>
+<span class="fc" id="L206">        String type = MoreObjects.firstNonNull(artifact.getType(), &quot;jar&quot;);</span>
+<span class="fc" id="L207">        String classifier = artifact.getClassifier();</span>
 
-<span class="fc bfc" id="L208" title="All 6 branches covered.">        if (&quot;test-jar&quot;.equals(type) &amp;&amp; (classifier == null || &quot;tests&quot;.equals(classifier))) {</span>
-<span class="fc" id="L209">            type = &quot;jar&quot;;</span>
-<span class="fc" id="L210">            classifier = &quot;tests&quot;;</span>
+<span class="fc bfc" id="L209" title="All 6 branches covered.">        if (&quot;test-jar&quot;.equals(type) &amp;&amp; (classifier == null || &quot;tests&quot;.equals(classifier))) {</span>
+<span class="fc" id="L210">            type = &quot;jar&quot;;</span>
+<span class="fc" id="L211">            classifier = &quot;tests&quot;;</span>
         }
 
-<span class="fc" id="L213">        return new DefaultArtifact(artifact.getGroupId(),</span>
-<span class="fc" id="L214">                artifact.getArtifactId(),</span>
+<span class="fc" id="L214">        return new DefaultArtifact(artifact.getGroupId(),</span>
+<span class="fc" id="L215">                artifact.getArtifactId(),</span>
                 versionRange,
-<span class="fc" id="L216">                artifact.getScope(),</span>
+<span class="fc" id="L217">                artifact.getScope(),</span>
                 type,
                 classifier,
-<span class="fc" id="L219">                artifact.getArtifactHandler(),</span>
-<span class="fc" id="L220">                artifact.isOptional());</span>
+<span class="fc" id="L220">                artifact.getArtifactHandler(),</span>
+<span class="fc" id="L221">                artifact.isOptional());</span>
     }
 
     private Set&lt;Artifact&gt; listArtifacts() {
-<span class="nc" id="L224">        return ImmutableSet.&lt;Artifact&gt;builder().addAll(localArtifactFileCache.keySet()).addAll(repoArtifactCache.keySet()).build();</span>
+<span class="nc" id="L225">        return ImmutableSet.&lt;Artifact&gt;builder().addAll(localArtifactFileCache.keySet()).addAll(repoArtifactCache.keySet()).build();</span>
     }
 
     private static Set&lt;Artifact&gt; findRepoArtifacts(final MavenProject project, final Map&lt;Artifact, File&gt; repoArtifactCache) {
-<span class="nc" id="L228">        final ImmutableSet.Builder&lt;Artifact&gt; builder = ImmutableSet.builder();</span>
+<span class="nc" id="L229">        final ImmutableSet.Builder&lt;Artifact&gt; builder = ImmutableSet.builder();</span>
 
-<span class="nc bnc" id="L230" title="All 2 branches missed.">        for (final Artifact artifact : repoArtifactCache.keySet()) {</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">            if (Objects.equals(project.getArtifact().getGroupId(), artifact.getGroupId())</span>
-<span class="nc bnc" id="L232" title="All 2 branches missed.">                    &amp;&amp; Objects.equals(project.getArtifact().getArtifactId(), artifact.getArtifactId())</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">                    &amp;&amp; Objects.equals(project.getArtifact().getBaseVersion(), artifact.getBaseVersion())) {</span>
-<span class="nc" id="L234">                builder.add(artifact);</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        for (final Artifact artifact : repoArtifactCache.keySet()) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">            if (Objects.equals(project.getArtifact().getGroupId(), artifact.getGroupId())</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">                    &amp;&amp; Objects.equals(project.getArtifact().getArtifactId(), artifact.getArtifactId())</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                    &amp;&amp; Objects.equals(project.getArtifact().getBaseVersion(), artifact.getBaseVersion())) {</span>
+<span class="nc" id="L235">                builder.add(artifact);</span>
             }
-<span class="nc" id="L236">        }</span>
-<span class="nc" id="L237">        return builder.build();</span>
+<span class="nc" id="L237">        }</span>
+<span class="nc" id="L238">        return builder.build();</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

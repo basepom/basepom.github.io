@@ -11,13 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder.artifact;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
+import java.util.Optional;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -26,8 +29,6 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class MavenCoordinates {
 
@@ -38,169 +39,169 @@ public class MavenCoordinates {
     private final String type;
     private final Optional&lt;String&gt; classifier;
 
-<span class="fc" id="L41">    public MavenCoordinates(final Dependency dependency) throws InvalidVersionSpecificationException {</span>
-<span class="fc" id="L42">        checkNotNull(dependency, &quot;dependency is null&quot;);</span>
+<span class="fc" id="L42">    public MavenCoordinates(final Dependency dependency) throws InvalidVersionSpecificationException {</span>
+<span class="fc" id="L43">        checkNotNull(dependency, &quot;dependency is null&quot;);</span>
 
-<span class="fc" id="L44">        this.artifactId = checkNotNull(dependency.getArtifactId(), &quot;artifactId for dependency '%s' is null&quot;, dependency);</span>
-<span class="fc" id="L45">        this.groupId = checkNotNull(dependency.getGroupId(), &quot;groupId for dependency '%s' is null&quot;, dependency);</span>
+<span class="fc" id="L45">        this.artifactId = checkNotNull(dependency.getArtifactId(), &quot;artifactId for dependency '%s' is null&quot;, dependency);</span>
+<span class="fc" id="L46">        this.groupId = checkNotNull(dependency.getGroupId(), &quot;groupId for dependency '%s' is null&quot;, dependency);</span>
 
-<span class="fc" id="L47">        final String version = dependency.getVersion();</span>
-<span class="fc" id="L48">        this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
+<span class="fc" id="L48">        final String version = dependency.getVersion();</span>
+<span class="fc" id="L49">        this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
 
-<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (this.version.isPresent()) {</span>
-<span class="fc" id="L51">            this.versionRange = Optional.of(VersionRange.createFromVersionSpec(version));</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        if (this.version.isPresent()) {</span>
+<span class="fc" id="L52">            this.versionRange = Optional.of(VersionRange.createFromVersionSpec(version));</span>
         } else {
-<span class="fc" id="L53">            this.versionRange = Optional.empty();</span>
+<span class="fc" id="L54">            this.versionRange = Optional.empty();</span>
         }
 
-<span class="fc" id="L56">        final String type = dependency.getType();</span>
-<span class="fc" id="L57">        final String classifier = dependency.getClassifier();</span>
-<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (&quot;test-jar&quot;.equals(type)) {</span>
-<span class="nc" id="L59">            this.classifier = Optional.of(MoreObjects.firstNonNull(classifier, &quot;tests&quot;));</span>
-<span class="nc" id="L60">            this.type = &quot;jar&quot;;</span>
+<span class="fc" id="L57">        final String type = dependency.getType();</span>
+<span class="fc" id="L58">        final String classifier = dependency.getClassifier();</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (&quot;test-jar&quot;.equals(type)) {</span>
+<span class="nc" id="L60">            this.classifier = Optional.of(MoreObjects.firstNonNull(classifier, &quot;tests&quot;));</span>
+<span class="nc" id="L61">            this.type = &quot;jar&quot;;</span>
         } else {
-<span class="fc" id="L62">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
-<span class="fc" id="L63">            this.classifier = Optional.ofNullable(classifier);</span>
+<span class="fc" id="L63">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
+<span class="fc" id="L64">            this.classifier = Optional.ofNullable(classifier);</span>
         }
-<span class="fc" id="L65">    }</span>
+<span class="fc" id="L66">    }</span>
 
-<span class="fc" id="L67">    public MavenCoordinates(final Artifact artifact) throws OverConstrainedVersionException {</span>
-<span class="fc" id="L68">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
+<span class="fc" id="L68">    public MavenCoordinates(final Artifact artifact) throws OverConstrainedVersionException {</span>
+<span class="fc" id="L69">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
 
-<span class="fc" id="L70">        this.artifactId = checkNotNull(artifact.getArtifactId(), &quot;artifactId for artifact '%s' is null&quot;, artifact);</span>
-<span class="fc" id="L71">        this.groupId = checkNotNull(artifact.getGroupId(), &quot;groupId for artifact '%s' is null&quot;, artifact);</span>
-<span class="fc" id="L72">        this.versionRange = Optional.ofNullable(artifact.getVersionRange());</span>
+<span class="fc" id="L71">        this.artifactId = checkNotNull(artifact.getArtifactId(), &quot;artifactId for artifact '%s' is null&quot;, artifact);</span>
+<span class="fc" id="L72">        this.groupId = checkNotNull(artifact.getGroupId(), &quot;groupId for artifact '%s' is null&quot;, artifact);</span>
+<span class="fc" id="L73">        this.versionRange = Optional.ofNullable(artifact.getVersionRange());</span>
 
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (this.versionRange.isPresent()) {</span>
-<span class="fc" id="L75">            this.version = Optional.ofNullable(artifact.getSelectedVersion());</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if (this.versionRange.isPresent()) {</span>
+<span class="fc" id="L76">            this.version = Optional.ofNullable(artifact.getSelectedVersion());</span>
         } else {
-<span class="nc" id="L77">            final String version = artifact.getBaseVersion();</span>
-<span class="nc" id="L78">            this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
+<span class="nc" id="L78">            final String version = artifact.getBaseVersion();</span>
+<span class="nc" id="L79">            this.version = Optional.ofNullable(version).map(DefaultArtifactVersion::new);</span>
         }
 
-<span class="fc" id="L81">        final String type = artifact.getType();</span>
-<span class="fc" id="L82">        final String classifier = artifact.getClassifier();</span>
-<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (&quot;test-jar&quot;.equals(type)) {</span>
-<span class="fc" id="L84">            this.classifier = Optional.of(MoreObjects.firstNonNull(classifier, &quot;tests&quot;));</span>
-<span class="fc" id="L85">            this.type = &quot;jar&quot;;</span>
+<span class="fc" id="L82">        final String type = artifact.getType();</span>
+<span class="fc" id="L83">        final String classifier = artifact.getClassifier();</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (&quot;test-jar&quot;.equals(type)) {</span>
+<span class="fc" id="L85">            this.classifier = Optional.of(MoreObjects.firstNonNull(classifier, &quot;tests&quot;));</span>
+<span class="fc" id="L86">            this.type = &quot;jar&quot;;</span>
         } else {
-<span class="fc" id="L87">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
-<span class="fc" id="L88">            this.classifier = Optional.ofNullable(classifier);</span>
+<span class="fc" id="L88">            this.type = MoreObjects.firstNonNull(type, &quot;jar&quot;);</span>
+<span class="fc" id="L89">            this.classifier = Optional.ofNullable(classifier);</span>
         }
-<span class="fc" id="L90">    }</span>
+<span class="fc" id="L91">    }</span>
 
     public String getArtifactId() {
-<span class="fc" id="L93">        return artifactId;</span>
+<span class="fc" id="L94">        return artifactId;</span>
     }
 
     public String getGroupId() {
-<span class="fc" id="L97">        return groupId;</span>
+<span class="fc" id="L98">        return groupId;</span>
     }
 
     public Optional&lt;? extends ArtifactVersion&gt; getVersion() {
-<span class="fc" id="L101">        return version;</span>
+<span class="fc" id="L102">        return version;</span>
     }
 
     public Optional&lt;VersionRange&gt; getVersionRange() {
-<span class="fc" id="L105">        return versionRange;</span>
+<span class="fc" id="L106">        return versionRange;</span>
     }
 
     public String getType() {
-<span class="fc" id="L109">        return type;</span>
+<span class="fc" id="L110">        return type;</span>
     }
 
     public Optional&lt;String&gt; getClassifier() {
-<span class="fc" id="L113">        return classifier;</span>
+<span class="fc" id="L114">        return classifier;</span>
     }
 
     public boolean matches(final Artifact artifact) throws OverConstrainedVersionException {
-<span class="nc" id="L117">        return matches(new MavenCoordinates(artifact));</span>
+<span class="nc" id="L118">        return matches(new MavenCoordinates(artifact));</span>
     }
 
     public boolean matches(final MavenCoordinates other) {
-<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (!(Objects.equals(getGroupId(), other.getGroupId())</span>
-<span class="fc bfc" id="L122" title="All 2 branches covered.">                &amp;&amp; Objects.equals(getArtifactId(), other.getArtifactId())</span>
-<span class="fc bfc" id="L123" title="All 2 branches covered.">                &amp;&amp; Objects.equals(getType(), other.getType()))) {</span>
-<span class="fc" id="L124">            return false;</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (!(Objects.equals(getGroupId(), other.getGroupId())</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">                &amp;&amp; Objects.equals(getArtifactId(), other.getArtifactId())</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                &amp;&amp; Objects.equals(getType(), other.getType()))) {</span>
+<span class="fc" id="L125">            return false;</span>
         }
 
         // If a classifier is present, try to match the other classifier,
         // otherwise, if no classifier is present, it matches all classifiers from the other MavenCoordinates.
-<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (getClassifier().isPresent()) {</span>
-<span class="fc bfc" id="L130" title="All 2 branches covered.">            if (!Objects.equals(getClassifier().get(), other.getClassifier().orElse(null))) {</span>
-<span class="fc" id="L131">                return false;</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (getClassifier().isPresent()) {</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (!Objects.equals(getClassifier().get(), other.getClassifier().orElse(null))) {</span>
+<span class="fc" id="L132">                return false;</span>
             }
         }
 
         // no version range and no version present, so any other version matches
-<span class="pc bpc" id="L136" title="1 of 4 branches missed.">        if (!getVersionRange().isPresent() &amp;&amp; !getVersion().isPresent()) {</span>
-<span class="fc" id="L137">            return true;</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">        if (!getVersionRange().isPresent() &amp;&amp; !getVersion().isPresent()) {</span>
+<span class="fc" id="L138">            return true;</span>
         }
 
         // starting here, either a version or a version range is present
 
         // other has no version. So there can be no match
-<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (!other.getVersion().isPresent()) {</span>
-<span class="fc" id="L144">            return false;</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        if (!other.getVersion().isPresent()) {</span>
+<span class="fc" id="L145">            return false;</span>
         }
 
         // version range local and version in other
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (getVersionRange().isPresent()) {</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (getVersionRange().isPresent()) {</span>
             // is there a recommended version?
-<span class="fc" id="L150">            final ArtifactVersion recommendedVersion = getVersionRange().get().getRecommendedVersion();</span>
-<span class="fc bfc" id="L151" title="All 2 branches covered.">            if (recommendedVersion != null) {</span>
+<span class="fc" id="L151">            final ArtifactVersion recommendedVersion = getVersionRange().get().getRecommendedVersion();</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">            if (recommendedVersion != null) {</span>
                 // Yes, then it must be matched.
-<span class="fc" id="L153">                return Objects.equals(recommendedVersion, other.getVersion().orElse(null));</span>
+<span class="fc" id="L154">                return Objects.equals(recommendedVersion, other.getVersion().orElse(null));</span>
             }
 
             // No, see if the other version is in the range
-<span class="fc bfc" id="L157" title="All 2 branches covered.">            if (getVersionRange().get().containsVersion(other.getVersion().get())) {</span>
-<span class="fc" id="L158">                return true;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">            if (getVersionRange().get().containsVersion(other.getVersion().get())) {</span>
+<span class="fc" id="L159">                return true;</span>
             }
         }
 
         // exact version match.
-<span class="fc" id="L163">        return Objects.equals(getVersion().orElse(null), other.getVersion().orElse(null));</span>
+<span class="fc" id="L164">        return Objects.equals(getVersion().orElse(null), other.getVersion().orElse(null));</span>
     }
 
     @Override
     public int hashCode() {
-<span class="nc" id="L168">        return Objects.hash(groupId, artifactId, classifier, type);</span>
+<span class="nc" id="L169">        return Objects.hash(groupId, artifactId, classifier, type);</span>
     }
 
     @Override
     public boolean equals(final Object other) {
-<span class="nc bnc" id="L173" title="All 4 branches missed.">        if (other == null || other.getClass() != this.getClass()) {</span>
-<span class="nc" id="L174">            return false;</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">        if (other == null || other.getClass() != this.getClass()) {</span>
+<span class="nc" id="L175">            return false;</span>
         }
-<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (other == this) {</span>
-<span class="nc" id="L177">            return true;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (other == this) {</span>
+<span class="nc" id="L178">            return true;</span>
         }
 
-<span class="nc" id="L180">        MavenCoordinates that = (MavenCoordinates) other;</span>
+<span class="nc" id="L181">        MavenCoordinates that = (MavenCoordinates) other;</span>
 
-<span class="nc bnc" id="L182" title="All 2 branches missed.">        return Objects.equals(this.groupId, that.groupId)</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.artifactId, that.artifactId)</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.classifier, that.classifier)</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.type, that.type);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        return Objects.equals(this.groupId, that.groupId)</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.artifactId, that.artifactId)</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.classifier, that.classifier)</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                &amp;&amp; Objects.equals(this.type, that.type);</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L190">        final ImmutableList.Builder&lt;String&gt; builder = ImmutableList.builder();</span>
+<span class="nc" id="L191">        final ImmutableList.Builder&lt;String&gt; builder = ImmutableList.builder();</span>
 
-<span class="nc" id="L192">        builder.add(getGroupId());</span>
-<span class="nc" id="L193">        builder.add(getArtifactId());</span>
+<span class="nc" id="L193">        builder.add(getGroupId());</span>
+<span class="nc" id="L194">        builder.add(getArtifactId());</span>
 
-<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (getVersion().isPresent()) {</span>
-<span class="nc" id="L196">            builder.add(getVersion().get().toString());</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (getVersion().isPresent()) {</span>
+<span class="nc" id="L197">            builder.add(getVersion().get().toString());</span>
         } else {
-<span class="nc" id="L198">            builder.add(&quot;&lt;any&gt;&quot;);</span>
+<span class="nc" id="L199">            builder.add(&quot;&lt;any&gt;&quot;);</span>
         }
 
-<span class="nc" id="L201">        builder.add(getType());</span>
-<span class="nc" id="L202">        builder.add(getClassifier().orElse(&quot;&lt;any&gt;&quot;));</span>
-<span class="nc" id="L203">        return Joiner.on(':').join(builder.build());</span>
+<span class="nc" id="L202">        builder.add(getType());</span>
+<span class="nc" id="L203">        builder.add(getClassifier().orElse(&quot;&lt;any&gt;&quot;));</span>
+<span class="nc" id="L204">        return Joiner.on(':').join(builder.build());</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

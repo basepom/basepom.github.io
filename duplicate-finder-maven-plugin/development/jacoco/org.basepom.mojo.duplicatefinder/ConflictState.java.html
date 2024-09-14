@@ -11,44 +11,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder;
 
 import static com.google.common.base.Preconditions.checkState;
 
-<span class="nc" id="L18">public enum ConflictState {</span>
+<span class="nc" id="L19">public enum ConflictState {</span>
     // Conflict states in order from low to high.
-<span class="nc" id="L20">    NO_CONFLICT(&quot;no-conflict&quot;, &quot;&quot;),</span>
-<span class="nc" id="L21">    CONFLICT_CONTENT_EQUAL(&quot;content-equal&quot;, &quot;(but equal)&quot;),</span>
-<span class="nc" id="L22">    CONFLICT_CONTENT_DIFFERENT(&quot;content-different&quot;, &quot;and different&quot;);</span>
+<span class="nc" id="L21">    NO_CONFLICT(&quot;no-conflict&quot;, &quot;&quot;),</span>
+<span class="nc" id="L22">    CONFLICT_CONTENT_EQUAL(&quot;content-equal&quot;, &quot;(but equal)&quot;),</span>
+<span class="nc" id="L23">    CONFLICT_CONTENT_DIFFERENT(&quot;content-different&quot;, &quot;and different&quot;);</span>
 
     private final String value;
     private final String hint;
 
-<span class="nc" id="L27">    ConflictState(String value, String hint) {</span>
-<span class="nc" id="L28">        this.value = value;</span>
-<span class="nc" id="L29">        this.hint = hint;</span>
-<span class="nc" id="L30">    }</span>
+<span class="nc" id="L28">    ConflictState(String value, String hint) {</span>
+<span class="nc" id="L29">        this.value = value;</span>
+<span class="nc" id="L30">        this.hint = hint;</span>
+<span class="nc" id="L31">    }</span>
 
     public String getHint() {
-<span class="nc" id="L33">        return hint;</span>
+<span class="nc" id="L34">        return hint;</span>
     }
 
     public static ConflictState max(final ConflictState... states) {
-<span class="nc bnc" id="L37" title="All 2 branches missed.">        checkState(states.length &gt; 0, &quot;states is empty&quot;);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        checkState(states.length &gt; 0, &quot;states is empty&quot;);</span>
 
-<span class="nc" id="L39">        ConflictState result = states[0];</span>
-<span class="nc bnc" id="L40" title="All 2 branches missed.">        for (int i = 1; i &lt; states.length; i++) {</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">            if (states[i].ordinal() &gt; result.ordinal()) {</span>
-<span class="nc" id="L42">                result = states[i];</span>
+<span class="nc" id="L40">        ConflictState result = states[0];</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        for (int i = 1; i &lt; states.length; i++) {</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (states[i].ordinal() &gt; result.ordinal()) {</span>
+<span class="nc" id="L43">                result = states[i];</span>
             }
         }
 
-<span class="nc" id="L46">        return result;</span>
+<span class="nc" id="L47">        return result;</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L51">        return value;</span>
+<span class="nc" id="L52">        return value;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

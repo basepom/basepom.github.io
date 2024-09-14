@@ -11,7 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.EnumMap;
@@ -28,76 +31,74 @@ import com.google.common.collect.MultimapBuilder.SetMultimapBuilder;
 import com.google.common.collect.Multimaps;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 @SuppressFBWarnings(&quot;NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE&quot;)
 public class ResultCollector {
 
     private final EnumSet&lt;ConflictState&gt; printState;
     private final EnumSet&lt;ConflictState&gt; failState;
 
-<span class="nc" id="L39">    private final EnumMap&lt;ConflictType, EnumSet&lt;ConflictState&gt;&gt; seenResults = new EnumMap&lt;&gt;(ConflictType.class);</span>
+<span class="nc" id="L40">    private final EnumMap&lt;ConflictType, EnumSet&lt;ConflictState&gt;&gt; seenResults = new EnumMap&lt;&gt;(ConflictType.class);</span>
 
-<span class="nc" id="L41">    private final ListMultimap&lt;String, ConflictResult&gt; results = SetMultimapBuilder.linkedHashKeys()</span>
-<span class="nc" id="L42">            .arrayListValues()</span>
-<span class="nc" id="L43">            .build();</span>
+<span class="nc" id="L42">    private final ListMultimap&lt;String, ConflictResult&gt; results = SetMultimapBuilder.linkedHashKeys()</span>
+<span class="nc" id="L43">            .arrayListValues()</span>
+<span class="nc" id="L44">            .build();</span>
 
-<span class="nc" id="L45">    private ConflictState conflictState = ConflictState.NO_CONFLICT;</span>
+<span class="nc" id="L46">    private ConflictState conflictState = ConflictState.NO_CONFLICT;</span>
 
-<span class="nc" id="L47">    ResultCollector(final EnumSet&lt;ConflictState&gt; printState, final EnumSet&lt;ConflictState&gt; failState) {</span>
-<span class="nc" id="L48">        this.printState = printState;</span>
-<span class="nc" id="L49">        this.failState = failState;</span>
+<span class="nc" id="L48">    ResultCollector(final EnumSet&lt;ConflictState&gt; printState, final EnumSet&lt;ConflictState&gt; failState) {</span>
+<span class="nc" id="L49">        this.printState = printState;</span>
+<span class="nc" id="L50">        this.failState = failState;</span>
 
-<span class="nc bnc" id="L51" title="All 2 branches missed.">        for (ConflictType conflictType : ConflictType.values()) {</span>
-<span class="nc" id="L52">            seenResults.put(conflictType, EnumSet.noneOf(ConflictState.class));</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (ConflictType conflictType : ConflictType.values()) {</span>
+<span class="nc" id="L53">            seenResults.put(conflictType, EnumSet.noneOf(ConflictState.class));</span>
         }
-<span class="nc" id="L54">    }</span>
+<span class="nc" id="L55">    }</span>
 
     public ConflictState getConflictState() {
-<span class="nc" id="L57">        return conflictState;</span>
+<span class="nc" id="L58">        return conflictState;</span>
     }
 
     public boolean isFailed() {
-<span class="nc" id="L61">        return failState.contains(conflictState);</span>
+<span class="nc" id="L62">        return failState.contains(conflictState);</span>
     }
 
     public boolean hasConflictsFor(ConflictType type, ConflictState state) {
-<span class="nc" id="L65">        return seenResults.get(type).contains(state);</span>
+<span class="nc" id="L66">        return seenResults.get(type).contains(state);</span>
     }
 
     public void addConflict(ConflictType type, String name, SortedSet&lt;ClasspathElement&gt; conflictingClasspathElements, boolean excepted,
             final ConflictState state) {
-<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (!excepted) {</span>
-<span class="nc" id="L71">            this.conflictState = ConflictState.max(this.conflictState, state);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (!excepted) {</span>
+<span class="nc" id="L72">            this.conflictState = ConflictState.max(this.conflictState, state);</span>
 
             // Record the type of conflicts seen.
-<span class="nc" id="L74">            seenResults.get(type).add(state);</span>
+<span class="nc" id="L75">            seenResults.get(type).add(state);</span>
         }
 
-<span class="nc" id="L77">        ConflictResult conflictResult = new ConflictResult(type, name, conflictingClasspathElements, excepted, state);</span>
+<span class="nc" id="L78">        ConflictResult conflictResult = new ConflictResult(type, name, conflictingClasspathElements, excepted, state);</span>
 
-<span class="nc" id="L79">        results.put(conflictResult.getConflictName(), conflictResult);</span>
-<span class="nc" id="L80">    }</span>
+<span class="nc" id="L80">        results.put(conflictResult.getConflictName(), conflictResult);</span>
+<span class="nc" id="L81">    }</span>
 
     public Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getResults(final ConflictType type, final ConflictState state) {
-<span class="nc" id="L83">        Multimap&lt;String, ConflictResult&gt; result = Multimaps.filterValues(results, conflictResult -&gt; {</span>
-<span class="nc" id="L84">            checkNotNull(conflictResult, &quot;conflictResult is null&quot;);</span>
-<span class="nc bnc" id="L85" title="All 2 branches missed.">            return conflictResult.getConflictState() == state</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                    &amp;&amp; conflictResult.getType() == type</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">                    &amp;&amp; !conflictResult.isExcepted();</span>
+<span class="nc" id="L84">        Multimap&lt;String, ConflictResult&gt; result = Multimaps.filterValues(results, conflictResult -&gt; {</span>
+<span class="nc" id="L85">            checkNotNull(conflictResult, &quot;conflictResult is null&quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            return conflictResult.getConflictState() == state</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                    &amp;&amp; conflictResult.getType() == type</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                    &amp;&amp; !conflictResult.isExcepted();</span>
         });
 
-<span class="nc" id="L90">        return ImmutableMap.copyOf(result.asMap());</span>
+<span class="nc" id="L91">        return ImmutableMap.copyOf(result.asMap());</span>
     }
 
     Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getAllResults() {
-<span class="nc" id="L94">        return ImmutableMap.copyOf(results.asMap());</span>
+<span class="nc" id="L95">        return ImmutableMap.copyOf(results.asMap());</span>
     }
 
     private static String buildConflictName(final SortedSet&lt;ClasspathElement&gt; conflictArtifactNames) {
-<span class="nc" id="L98">        return Joiner.on(&quot;, &quot;).join(conflictArtifactNames.stream()</span>
-<span class="nc" id="L99">                .map(ClasspathElement.getNameFunction())</span>
-<span class="nc" id="L100">                .collect(Collectors.toList()));</span>
+<span class="nc" id="L99">        return Joiner.on(&quot;, &quot;).join(conflictArtifactNames.stream()</span>
+<span class="nc" id="L100">                .map(ClasspathElement.getNameFunction())</span>
+<span class="nc" id="L101">                .collect(Collectors.toList()));</span>
     }
 
     public class ConflictResult {
@@ -113,46 +114,46 @@ public class ResultCollector {
                 final String name,
                 final SortedSet&lt;ClasspathElement&gt; classpathElements,
                 final boolean excepted,
-<span class="nc" id="L116">                final ConflictState conflictState) {</span>
-<span class="nc" id="L117">            this.type = type;</span>
-<span class="nc" id="L118">            this.name = name;</span>
-<span class="nc" id="L119">            this.classpathElements = classpathElements;</span>
-<span class="nc" id="L120">            this.excepted = excepted;</span>
-<span class="nc" id="L121">            this.conflictState = conflictState;</span>
-<span class="nc" id="L122">            this.conflictName = ResultCollector.buildConflictName(classpathElements);</span>
-<span class="nc" id="L123">        }</span>
+<span class="nc" id="L117">                final ConflictState conflictState) {</span>
+<span class="nc" id="L118">            this.type = type;</span>
+<span class="nc" id="L119">            this.name = name;</span>
+<span class="nc" id="L120">            this.classpathElements = classpathElements;</span>
+<span class="nc" id="L121">            this.excepted = excepted;</span>
+<span class="nc" id="L122">            this.conflictState = conflictState;</span>
+<span class="nc" id="L123">            this.conflictName = ResultCollector.buildConflictName(classpathElements);</span>
+<span class="nc" id="L124">        }</span>
 
         public String getName() {
-<span class="nc" id="L126">            return name;</span>
+<span class="nc" id="L127">            return name;</span>
         }
 
         public ConflictType getType() {
-<span class="nc" id="L130">            return type;</span>
+<span class="nc" id="L131">            return type;</span>
         }
 
         public SortedSet&lt;ClasspathElement&gt; getClasspathElements() {
-<span class="nc" id="L134">            return classpathElements;</span>
+<span class="nc" id="L135">            return classpathElements;</span>
         }
 
         public boolean isExcepted() {
-<span class="nc" id="L138">            return excepted;</span>
+<span class="nc" id="L139">            return excepted;</span>
         }
 
         public boolean isPrinted() {
-<span class="nc bnc" id="L142" title="All 4 branches missed.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
         }
 
         public boolean isFailed() {
-<span class="nc bnc" id="L146" title="All 4 branches missed.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
+<span class="nc bnc" id="L147" title="All 4 branches missed.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
         }
 
         public ConflictState getConflictState() {
-<span class="nc" id="L150">            return conflictState;</span>
+<span class="nc" id="L151">            return conflictState;</span>
         }
 
         private String getConflictName() {
-<span class="nc" id="L154">            return conflictName;</span>
+<span class="nc" id="L155">            return conflictName;</span>
         }
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

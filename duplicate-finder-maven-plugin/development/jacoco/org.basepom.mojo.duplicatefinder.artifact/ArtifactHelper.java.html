@@ -11,35 +11,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder.artifact;
+
+import static com.google.common.base.Strings.nullToEmpty;
 
 import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
-import static com.google.common.base.Strings.nullToEmpty;
-
 public final class ArtifactHelper {
 
-<span class="nc" id="L25">    private ArtifactHelper() {</span>
-<span class="nc" id="L26">        throw new AssertionError(&quot;do not instantiate&quot;);</span>
+<span class="nc" id="L26">    private ArtifactHelper() {</span>
+<span class="nc" id="L27">        throw new AssertionError(&quot;do not instantiate&quot;);</span>
     }
 
     public static File getOutputDirectory(final MavenProject project) {
-<span class="nc" id="L30">        return new File(project.getBuild().getOutputDirectory());</span>
+<span class="nc" id="L31">        return new File(project.getBuild().getOutputDirectory());</span>
     }
 
     public static File getTestOutputDirectory(final MavenProject project) {
-<span class="nc" id="L34">        return new File(project.getBuild().getTestOutputDirectory());</span>
+<span class="nc" id="L35">        return new File(project.getBuild().getTestOutputDirectory());</span>
     }
 
     public static boolean isJarArtifact(final Artifact artifact) {
-<span class="nc bnc" id="L38" title="All 6 branches missed.">        return nullToEmpty(artifact.getType()).isEmpty() || &quot;jar&quot;.equals(artifact.getType()) || &quot;test-jar&quot;.equals(artifact.getType());</span>
+<span class="nc bnc" id="L39" title="All 6 branches missed.">        return nullToEmpty(artifact.getType()).isEmpty() || &quot;jar&quot;.equals(artifact.getType()) || &quot;test-jar&quot;.equals(artifact.getType());</span>
     }
 
     public static boolean isTestArtifact(final Artifact artifact) {
-<span class="nc bnc" id="L42" title="All 4 branches missed.">        return &quot;test-jar&quot;.equals(artifact.getType()) || &quot;tests&quot;.equals(artifact.getClassifier());</span>
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        return &quot;test-jar&quot;.equals(artifact.getType()) || &quot;tests&quot;.equals(artifact.getClassifier());</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

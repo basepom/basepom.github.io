@@ -11,7 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.basepom.mojo.duplicatefinder;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,188 +32,187 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.model.Dependency;
-import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Captures the &amp;lt;exceptions&amp;gt; section from the plugin configuration.
  */
-<span class="nc" id="L39">public class ConflictingDependency {</span>
-<span class="nc" id="L40">    private static final Logger LOG = LoggerFactory.getLogger(ConflictingDependency.class);</span>
+<span class="nc" id="L41">public class ConflictingDependency {</span>
 
-<span class="nc" id="L42">    private final Set&lt;MavenCoordinates&gt; conflictingDependencies = new LinkedHashSet&lt;&gt;();</span>
-<span class="nc" id="L43">    private final Set&lt;String&gt; classes = new HashSet&lt;&gt;();</span>
-<span class="nc" id="L44">    private final Set&lt;String&gt; packages = new HashSet&lt;&gt;();</span>
-<span class="nc" id="L45">    private final Set&lt;String&gt; resources = new HashSet&lt;&gt;();</span>
-<span class="nc" id="L46">    private Pattern[] matchingResources = new Pattern[0];</span>
-<span class="nc" id="L47">    private boolean currentProject = false;</span>
-<span class="nc" id="L48">    private boolean currentProjectIncluded = false;</span>
+<span class="nc" id="L43">    private static final Logger LOG = LoggerFactory.getLogger(ConflictingDependency.class);</span>
 
-    // Called by maven
-    public void setConflictingDependencies(final Dependency[] conflictingDependencies) throws InvalidVersionSpecificationException {
-<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (Dependency conflictingDependency : conflictingDependencies) {</span>
-<span class="nc" id="L53">            this.conflictingDependencies.add(new MavenCoordinates(conflictingDependency));</span>
-        }
-<span class="nc" id="L55">    }</span>
+<span class="nc" id="L45">    private final Set&lt;MavenCoordinates&gt; conflictingDependencies = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L46">    private final Set&lt;String&gt; classes = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L47">    private final Set&lt;String&gt; packages = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L48">    private final Set&lt;String&gt; resources = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L49">    private Pattern[] matchingResources = new Pattern[0];</span>
+<span class="nc" id="L50">    private boolean currentProject = false;</span>
+<span class="nc" id="L51">    private boolean currentProjectIncluded = false;</span>
 
     // Called by maven
-    public void setResourcePatterns(final String[] resourcePatterns) {
-<span class="nc" id="L59">        this.matchingResources = new Pattern[resourcePatterns.length];</span>
-<span class="nc bnc" id="L60" title="All 2 branches missed.">        for (int i = 0; i &lt; resourcePatterns.length; i++) {</span>
-<span class="nc" id="L61">            this.matchingResources[i] = Pattern.compile(resourcePatterns[i], Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);</span>
+    public void setConflictingDependencies(final Dependency... conflictingDependencies) throws InvalidVersionSpecificationException {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        for (Dependency conflictingDependency : conflictingDependencies) {</span>
+<span class="nc" id="L56">            this.conflictingDependencies.add(new MavenCoordinates(conflictingDependency));</span>
         }
-<span class="nc" id="L63">    }</span>
+<span class="nc" id="L58">    }</span>
+
+    // Called by maven
+    public void setResourcePatterns(final String... resourcePatterns) {
+<span class="nc" id="L62">        this.matchingResources = new Pattern[resourcePatterns.length];</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        for (int i = 0; i &lt; resourcePatterns.length; i++) {</span>
+<span class="nc" id="L64">            this.matchingResources[i] = Pattern.compile(resourcePatterns[i], Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);</span>
+        }
+<span class="nc" id="L66">    }</span>
 
     public String[] getClasses() {
-<span class="nc" id="L66">        return classes.toArray(new String[0]);</span>
+<span class="nc" id="L69">        return classes.toArray(new String[0]);</span>
     }
 
     // Called by maven
-    public void setClasses(final String[] classes) {
-<span class="nc" id="L71">        this.classes.addAll(Arrays.asList(classes));</span>
-<span class="nc" id="L72">    }</span>
+    public void setClasses(final String... classes) {
+<span class="nc" id="L74">        this.classes.addAll(Arrays.asList(classes));</span>
+<span class="nc" id="L75">    }</span>
 
     public String[] getPackages() {
-<span class="nc" id="L75">        return packages.toArray(new String[0]);</span>
+<span class="nc" id="L78">        return packages.toArray(new String[0]);</span>
     }
 
     // Called by maven
-    public void setPackages(final String[] packages) {
-<span class="nc" id="L80">        this.packages.addAll(Arrays.asList(packages));</span>
-<span class="nc" id="L81">    }</span>
+    public void setPackages(final String... packages) {
+<span class="nc" id="L83">        this.packages.addAll(Arrays.asList(packages));</span>
+<span class="nc" id="L84">    }</span>
 
     public String[] getResources() {
-<span class="nc" id="L84">        return resources.toArray(new String[0]);</span>
+<span class="nc" id="L87">        return resources.toArray(new String[0]);</span>
     }
 
     // Called by maven
-    public void setResources(final String[] resources) {
-<span class="nc" id="L89">        this.resources.addAll(Arrays.asList(resources));</span>
-<span class="nc" id="L90">    }</span>
+    public void setResources(final String... resources) {
+<span class="nc" id="L92">        this.resources.addAll(Arrays.asList(resources));</span>
+<span class="nc" id="L93">    }</span>
 
     // Called by maven
     public void setCurrentProject(final boolean currentProject) {
-<span class="nc" id="L94">        this.currentProject = currentProject;</span>
-<span class="nc" id="L95">    }</span>
+<span class="nc" id="L97">        this.currentProject = currentProject;</span>
+<span class="nc" id="L98">    }</span>
 
     boolean hasCurrentProject() {
-<span class="nc" id="L98">        return currentProject;</span>
+<span class="nc" id="L101">        return currentProject;</span>
     }
 
     // Called by maven
 
     @Deprecated
     public void setBootClasspath(final boolean bootClasspath) {
-<span class="nc" id="L105">        LOG.warn(&quot;&lt;bootClasspath&gt; attribute is deprecated and has no function!&quot;);</span>
-<span class="nc" id="L106">    }</span>
+<span class="nc" id="L108">        LOG.warn(&quot;&lt;bootClasspath&gt; attribute is deprecated and has no function!&quot;);</span>
+<span class="nc" id="L109">    }</span>
 
     boolean isCurrentProjectIncluded() {
-<span class="nc" id="L109">        return currentProjectIncluded;</span>
+<span class="nc" id="L112">        return currentProjectIncluded;</span>
     }
 
     void addProjectMavenCoordinates(final MavenCoordinates projectMavenCoordinates) {
-<span class="nc" id="L113">        this.currentProjectIncluded = conflictingDependencies.contains(projectMavenCoordinates);</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (this.currentProject) {</span>
+<span class="nc" id="L116">        this.currentProjectIncluded = conflictingDependencies.contains(projectMavenCoordinates);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (this.currentProject) {</span>
             // The exclusion should also look at the current project, add the project
             // coordinates to the list of exclusions.
-<span class="nc" id="L117">            conflictingDependencies.add(projectMavenCoordinates);</span>
+<span class="nc" id="L120">            conflictingDependencies.add(projectMavenCoordinates);</span>
         }
-<span class="nc" id="L119">    }</span>
+<span class="nc" id="L122">    }</span>
 
     List&lt;MavenCoordinates&gt; getDependencies() {
-<span class="nc" id="L122">        return ImmutableList.copyOf(conflictingDependencies);</span>
+<span class="nc" id="L125">        return ImmutableList.copyOf(conflictingDependencies);</span>
     }
 
+    @SuppressWarnings(&quot;PMD.MethodReturnsInternalArray&quot;)
     Pattern[] getResourcePatterns() {
-<span class="nc" id="L126">        return matchingResources;</span>
+<span class="nc" id="L130">        return matchingResources;</span>
     }
 
     public List&lt;String&gt; getDependencyNames() {
-<span class="nc" id="L130">        final List&lt;String&gt; result = new ArrayList&lt;&gt;(conflictingDependencies.size());</span>
+<span class="nc" id="L134">        final List&lt;String&gt; result = new ArrayList&lt;&gt;(conflictingDependencies.size());</span>
 
-<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (final MavenCoordinates conflictingDependency : conflictingDependencies) {</span>
-<span class="nc" id="L133">            result.add(conflictingDependency.toString());</span>
-<span class="nc" id="L134">        }</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        for (final MavenCoordinates conflictingDependency : conflictingDependencies) {</span>
+<span class="nc" id="L137">            result.add(conflictingDependency.toString());</span>
+<span class="nc" id="L138">        }</span>
 
-<span class="nc" id="L136">        Collections.sort(result);</span>
-<span class="nc" id="L137">        return result;</span>
+<span class="nc" id="L140">        Collections.sort(result);</span>
+<span class="nc" id="L141">        return result;</span>
     }
 
     public boolean isForArtifacts(final Set&lt;Artifact&gt; artifacts) throws OverConstrainedVersionException {
-<span class="nc" id="L141">        checkNotNull(artifacts, &quot;artifacts is null&quot;);</span>
+<span class="nc" id="L145">        checkNotNull(artifacts, &quot;artifacts is null&quot;);</span>
 
         // An exception can contain more than the actually matching
         // artifacts. In that case, we will check this exception if at least
         // the number of artifacts are present.
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (artifacts.size() &gt; conflictingDependencies.size()) {</span>
-<span class="nc" id="L147">            return false;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (artifacts.size() &gt; conflictingDependencies.size()) {</span>
+<span class="nc" id="L151">            return false;</span>
         }
 
         // Every artifact must be matched.
-<span class="nc" id="L151">        int numMatches = artifacts.size();</span>
+<span class="nc" id="L155">        int numMatches = artifacts.size();</span>
 
-<span class="nc bnc" id="L153" title="All 2 branches missed.">        for (final Artifact artifact : artifacts) {</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">            for (final MavenCoordinates conflictingDependency : conflictingDependencies) {</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">                if (conflictingDependency.matches(artifact)) {</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">                    if (--numMatches == 0) {</span>
-<span class="nc" id="L157">                        return true;</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        for (final Artifact artifact : artifacts) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            for (final MavenCoordinates conflictingDependency : conflictingDependencies) {</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                if (conflictingDependency.matches(artifact)) {</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                    if (--numMatches == 0) {</span>
+<span class="nc" id="L161">                        return true;</span>
                     } else {
                         break; // for (final MavenCoordinates...
                     }
                 }
-<span class="nc" id="L162">            }</span>
-<span class="nc" id="L163">        }</span>
-<span class="nc" id="L164">        return false;</span>
+<span class="nc" id="L166">            }</span>
+<span class="nc" id="L167">        }</span>
+<span class="nc" id="L168">        return false;</span>
     }
 
     boolean isWildcard() {
-<span class="nc bnc" id="L168" title="All 8 branches missed.">        return classes.isEmpty() &amp;&amp; packages.isEmpty() &amp;&amp; resources.isEmpty() &amp;&amp; matchingResources.length == 0;</span>
+<span class="nc bnc" id="L172" title="All 8 branches missed.">        return classes.isEmpty() &amp;&amp; packages.isEmpty() &amp;&amp; resources.isEmpty() &amp;&amp; matchingResources.length == 0;</span>
     }
 
     public boolean containsClass(final String className) {
-<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (isWildcard()) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (isWildcard()) {</span>
             // Nothing given --&gt; match everything.
-<span class="nc" id="L174">            return true;</span>
+<span class="nc" id="L178">            return true;</span>
         }
 
-<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (classes.contains(className)) {</span>
-<span class="nc" id="L178">            return true;</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        if (classes.contains(className)) {</span>
+<span class="nc" id="L182">            return true;</span>
         } else {
-<span class="nc bnc" id="L180" title="All 2 branches missed.">            for (final String packageName : packages) {</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">                final String pkgName = packageName.endsWith(&quot;.&quot;) ? packageName : packageName + &quot;.&quot;;</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">                if (className.startsWith(pkgName)) {</span>
-<span class="nc" id="L183">                    return true;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            for (final String packageName : packages) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                final String pkgName = packageName.endsWith(&quot;.&quot;) ? packageName : packageName + &quot;.&quot;;</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                if (className.startsWith(pkgName)) {</span>
+<span class="nc" id="L187">                    return true;</span>
                 }
-<span class="nc" id="L185">            }</span>
-<span class="nc" id="L186">            return false;</span>
+<span class="nc" id="L189">            }</span>
+<span class="nc" id="L190">            return false;</span>
         }
     }
 
     public boolean containsResource(final String resource) {
-<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (isWildcard()) {</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (isWildcard()) {</span>
             // Nothing given --&gt; match everything
-<span class="nc" id="L193">            return true;</span>
+<span class="nc" id="L197">            return true;</span>
         }
 
-<span class="nc bnc" id="L196" title="All 4 branches missed.">        final String resourceAsRelative = resource.startsWith(&quot;/&quot;) || resource.startsWith(&quot;\\&quot;) ? resource.substring(1) : resource;</span>
+<span class="nc bnc" id="L200" title="All 4 branches missed.">        final String resourceAsRelative = resource.startsWith(&quot;/&quot;) || resource.startsWith(&quot;\\&quot;) ? resource.substring(1) : resource;</span>
 
-<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (resources.contains(resourceAsRelative) ||</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">                resources.contains(&quot;/&quot; + resourceAsRelative) ||</span>
-<span class="nc bnc" id="L200" title="All 2 branches missed.">                resources.contains(&quot;\\&quot; + resourceAsRelative)) {</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (resources.contains(resourceAsRelative)</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                || resources.contains(&quot;/&quot; + resourceAsRelative)</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                || resources.contains(&quot;\\&quot; + resourceAsRelative)) {</span>
 
-<span class="nc" id="L202">            return true;</span>
+<span class="nc" id="L206">            return true;</span>
         }
 
-<span class="nc bnc" id="L205" title="All 2 branches missed.">        for (Pattern matchingResource : matchingResources) {</span>
-<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (matchingResource.matcher(resourceAsRelative).matches()) {</span>
-<span class="nc" id="L207">                return true;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        for (Pattern matchingResource : matchingResources) {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (matchingResource.matcher(resourceAsRelative).matches()) {</span>
+<span class="nc" id="L211">                return true;</span>
             }
         }
 
-<span class="nc" id="L211">        return false;</span>
+<span class="nc" id="L215">        return false;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
