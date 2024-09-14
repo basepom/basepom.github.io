@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchArtifactPredicate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">duplicate-finder-maven-plugin Maven Mojo</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.duplicatefinder.classpath</a> &gt; <span class="el_source">MatchArtifactPredicate.java</span></div><h1>MatchArtifactPredicate.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.duplicatefinder.classpath;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
+import org.basepom.mojo.duplicatefinder.artifact.MavenCoordinates;
+
+import java.util.Collection;
+import java.util.List;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class MatchArtifactPredicate implements Predicate&lt;Artifact&gt; {
+
+<span class="fc" id="L34">    private static final Logger LOG = LoggerFactory.getLogger(MatchArtifactPredicate.class);</span>
+
+    private final List&lt;MavenCoordinates&gt; mavenCoordinates;
+
+<span class="fc" id="L38">    MatchArtifactPredicate(final Collection&lt;MavenCoordinates&gt; dependencies) {</span>
+<span class="fc" id="L39">        this.mavenCoordinates = ImmutableList.copyOf(checkNotNull(dependencies, &quot;dependencies is null&quot;));</span>
+<span class="fc" id="L40">    }</span>
+
+    @Override
+    public boolean apply(final Artifact artifact) {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (artifact != null) {</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">            for (final MavenCoordinates mavenCoordinate : mavenCoordinates) {</span>
+                try {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                    if (mavenCoordinate.matches(artifact)) {</span>
+<span class="fc" id="L48">                        LOG.debug(format(&quot;Ignoring artifact '%s' (matches %s)&quot;, artifact, mavenCoordinate));</span>
+<span class="fc" id="L49">                        return true;</span>
+                    }
+<span class="nc" id="L51">                } catch (final OverConstrainedVersionException e) {</span>
+<span class="nc" id="L52">                    LOG.warn(format(&quot;Caught '%s' while comparing '%s' to '%s'&quot;, e.getMessage(), mavenCoordinate, artifact));</span>
+<span class="fc" id="L53">                }</span>
+<span class="fc" id="L54">            }</span>
+        }
+<span class="fc" id="L56">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

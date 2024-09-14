@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResultCollector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">duplicate-finder-maven-plugin Maven Mojo</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.duplicatefinder</a> &gt; <span class="el_source">ResultCollector.java</span></div><h1>ResultCollector.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.duplicatefinder;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder.SetMultimapBuilder;
+import com.google.common.collect.Multimaps;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(&quot;NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE&quot;)
+public class ResultCollector {
+
+    private final EnumSet&lt;ConflictState&gt; printState;
+    private final EnumSet&lt;ConflictState&gt; failState;
+
+<span class="fc" id="L40">    private final EnumMap&lt;ConflictType, EnumSet&lt;ConflictState&gt;&gt; seenResults = new EnumMap&lt;&gt;(ConflictType.class);</span>
+
+<span class="fc" id="L42">    private final ListMultimap&lt;String, ConflictResult&gt; results = SetMultimapBuilder.linkedHashKeys()</span>
+<span class="fc" id="L43">            .arrayListValues()</span>
+<span class="fc" id="L44">            .build();</span>
+
+<span class="fc" id="L46">    private ConflictState conflictState = ConflictState.NO_CONFLICT;</span>
+
+<span class="fc" id="L48">    ResultCollector(final EnumSet&lt;ConflictState&gt; printState, final EnumSet&lt;ConflictState&gt; failState) {</span>
+<span class="fc" id="L49">        this.printState = printState;</span>
+<span class="fc" id="L50">        this.failState = failState;</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (ConflictType conflictType : ConflictType.values()) {</span>
+<span class="fc" id="L53">            seenResults.put(conflictType, EnumSet.noneOf(ConflictState.class));</span>
+        }
+<span class="fc" id="L55">    }</span>
+
+    public ConflictState getConflictState() {
+<span class="fc" id="L58">        return conflictState;</span>
+    }
+
+    public boolean isFailed() {
+<span class="fc" id="L62">        return failState.contains(conflictState);</span>
+    }
+
+    public boolean hasConflictsFor(ConflictType type, ConflictState state) {
+<span class="fc" id="L66">        return seenResults.get(type).contains(state);</span>
+    }
+
+    public void addConflict(ConflictType type, String name, SortedSet&lt;ClasspathElement&gt; conflictingClasspathElements, boolean excepted,
+            final ConflictState state) {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (!excepted) {</span>
+<span class="fc" id="L72">            this.conflictState = ConflictState.max(this.conflictState, state);</span>
+
+            // Record the type of conflicts seen.
+<span class="fc" id="L75">            seenResults.get(type).add(state);</span>
+        }
+
+<span class="fc" id="L78">        ConflictResult conflictResult = new ConflictResult(type, name, conflictingClasspathElements, excepted, state);</span>
+
+<span class="fc" id="L80">        results.put(conflictResult.getConflictName(), conflictResult);</span>
+<span class="fc" id="L81">    }</span>
+
+    public Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getResults(final ConflictType type, final ConflictState state) {
+<span class="fc" id="L84">        Multimap&lt;String, ConflictResult&gt; result = Multimaps.filterValues(results, conflictResult -&gt; {</span>
+<span class="fc" id="L85">            checkNotNull(conflictResult, &quot;conflictResult is null&quot;);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            return conflictResult.getConflictState() == state</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                    &amp;&amp; conflictResult.getType() == type</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">                    &amp;&amp; !conflictResult.isExcepted();</span>
+        });
+
+<span class="fc" id="L91">        return ImmutableMap.copyOf(result.asMap());</span>
+    }
+
+    Map&lt;String, Collection&lt;ConflictResult&gt;&gt; getAllResults() {
+<span class="fc" id="L95">        return ImmutableMap.copyOf(results.asMap());</span>
+    }
+
+    private static String buildConflictName(final SortedSet&lt;ClasspathElement&gt; conflictArtifactNames) {
+<span class="fc" id="L99">        return Joiner.on(&quot;, &quot;).join(conflictArtifactNames.stream()</span>
+<span class="fc" id="L100">                .map(ClasspathElement.getNameFunction())</span>
+<span class="fc" id="L101">                .collect(Collectors.toList()));</span>
+    }
+
+    public class ConflictResult {
+
+        private final ConflictType type;
+        private final String name;
+        private final SortedSet&lt;ClasspathElement&gt; classpathElements;
+        private final boolean excepted;
+        private final ConflictState conflictState;
+        private final String conflictName;
+
+        ConflictResult(final ConflictType type,
+                final String name,
+                final SortedSet&lt;ClasspathElement&gt; classpathElements,
+                final boolean excepted,
+<span class="fc" id="L117">                final ConflictState conflictState) {</span>
+<span class="fc" id="L118">            this.type = type;</span>
+<span class="fc" id="L119">            this.name = name;</span>
+<span class="fc" id="L120">            this.classpathElements = classpathElements;</span>
+<span class="fc" id="L121">            this.excepted = excepted;</span>
+<span class="fc" id="L122">            this.conflictState = conflictState;</span>
+<span class="fc" id="L123">            this.conflictName = ResultCollector.buildConflictName(classpathElements);</span>
+<span class="fc" id="L124">        }</span>
+
+        public String getName() {
+<span class="fc" id="L127">            return name;</span>
+        }
+
+        public ConflictType getType() {
+<span class="fc" id="L131">            return type;</span>
+        }
+
+        public SortedSet&lt;ClasspathElement&gt; getClasspathElements() {
+<span class="fc" id="L135">            return classpathElements;</span>
+        }
+
+        public boolean isExcepted() {
+<span class="fc" id="L139">            return excepted;</span>
+        }
+
+        public boolean isPrinted() {
+<span class="fc bfc" id="L143" title="All 4 branches covered.">            return !excepted &amp;&amp; printState.contains(conflictState);</span>
+        }
+
+        public boolean isFailed() {
+<span class="fc bfc" id="L147" title="All 4 branches covered.">            return !excepted &amp;&amp; failState.contains(conflictState);</span>
+        }
+
+        public ConflictState getConflictState() {
+<span class="fc" id="L151">            return conflictState;</span>
+        }
+
+        private String getConflictName() {
+<span class="fc" id="L155">            return conflictName;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

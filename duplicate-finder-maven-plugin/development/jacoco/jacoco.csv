@@ -13,8 +13,8 @@ duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,Classp
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,HelpMojo,773,0,112,0,156,0,72,0,16,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,ConflictType,31,0,0,0,7,0,4,0,4,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,DuplicateFinderMojo,1231,0,110,0,243,0,69,0,14,0
-duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,XMLWriterUtils,568,0,44,0,108,0,32,0,10,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,ClasspathElement.ClasspathLocalFolder,49,0,6,0,14,0,9,0,6,0
+duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,XMLWriterUtils,568,0,44,0,108,0,32,0,10,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,ResultCollector.ConflictResult,71,0,8,0,16,0,13,0,9,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,ConflictState,77,0,6,0,16,0,8,0,5,0
 duplicate-finder-maven-plugin Maven Mojo,org.basepom.mojo.duplicatefinder,ClasspathElement,24,0,0,0,7,0,7,0,7,0
