@@ -549,7 +549,7 @@ import org.jdom2.JDOMException;
 
     private File inlinedArtifactFileWithClassifier() {
 <span class="nc" id="L551">        final var artifact = project.getArtifact();</span>
-<span class="nc" id="L552">        String inlineName = String.format(&quot;%s-%s-%s.%s&quot;,</span>
+<span class="nc" id="L552">        String inlineName = format(&quot;%s-%s-%s.%s&quot;,</span>
 <span class="nc" id="L553">                project.getArtifactId(),</span>
 <span class="nc" id="L554">                artifact.getVersion(),</span>
                 this.inlinedClassifierName,
