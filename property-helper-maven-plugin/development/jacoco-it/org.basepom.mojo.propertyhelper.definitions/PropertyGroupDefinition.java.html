@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertyGroupDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.definitions</a> &gt; <span class="el_source">PropertyGroupDefinition.java</span></div><h1>PropertyGroupDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.definitions;
+
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
+import org.basepom.mojo.propertyhelper.FieldContext;
+import org.basepom.mojo.propertyhelper.IgnoreWarnFail;
+import org.basepom.mojo.propertyhelper.groups.PropertyGroup;
+
+import java.util.Arrays;
+import java.util.Set;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+
+public class PropertyGroupDefinition {
+
+    /**
+     * Property group id.
+     */
+    String id;
+
+    /**
+     * Activate the group if the current project version does not contain SNAPSHOT. Field injected by Maven.
+     */
+<span class="pc" id="L39">    boolean activeOnRelease = true;</span>
+
+    /**
+     * Activate the group if the current project version contains SNAPSHOT. Field injected by Maven.
+     */
+<span class="pc" id="L44">    boolean activeOnSnapshot = true;</span>
+
+    /**
+     * Action if this property group defines a duplicate property. Field injected by Maven.
+     */
+<span class="pc" id="L49">    private IgnoreWarnFail onDuplicateProperty = IgnoreWarnFail.FAIL;</span>
+
+    public void setOnDuplicateProperty(String onDuplicateProperty) {
+<span class="nc" id="L52">        this.onDuplicateProperty = IgnoreWarnFail.forString(onDuplicateProperty);</span>
+<span class="nc" id="L53">    }</span>
+
+    /**
+     * Action if any property from that group could not be defined. Field injected by Maven.
+     */
+<span class="pc" id="L58">    private IgnoreWarnFail onMissingField = IgnoreWarnFail.FAIL;</span>
+
+    public void setOnMissingField(String onMissingField) {
+<span class="nc" id="L61">        this.onMissingField = IgnoreWarnFail.forString(onMissingField);</span>
+<span class="nc" id="L62">    }</span>
+
+    /**
+     * Property definitions in this group.
+     */
+<span class="pc" id="L67">    Set&lt;PropertyDefinition&gt; propertyDefinitions = Set.of();</span>
+
+    // called by maven
+    public void setProperties(PropertyDefinition... propertyDefinitions) {
+<span class="fc" id="L71">        this.propertyDefinitions = ImmutableSet.copyOf(Arrays.asList(propertyDefinitions));</span>
+
+<span class="fc" id="L73">        this.propertyDefinitions.forEach(PropertyDefinition::check);</span>
+<span class="fc" id="L74">    }</span>
+
+<span class="fc" id="L76">    public PropertyGroupDefinition() {</span>
+<span class="fc" id="L77">    }</span>
+
+    @VisibleForTesting
+<span class="nc" id="L80">    PropertyGroupDefinition(String id) {</span>
+<span class="nc" id="L81">        this.id = id;</span>
+<span class="nc" id="L82">    }</span>
+
+    public String getId() {
+<span class="fc" id="L85">        return id;</span>
+    }
+
+    public boolean isActiveOnRelease() {
+<span class="fc" id="L89">        return activeOnRelease;</span>
+    }
+
+    public boolean isActiveOnSnapshot() {
+<span class="nc" id="L93">        return activeOnSnapshot;</span>
+    }
+
+    public IgnoreWarnFail getOnDuplicateProperty() {
+<span class="fc" id="L97">        return onDuplicateProperty;</span>
+    }
+
+    public IgnoreWarnFail getOnMissingField() {
+<span class="fc" id="L101">        return onMissingField;</span>
+    }
+
+    public Set&lt;PropertyDefinition&gt; getPropertyDefinitions() {
+<span class="fc" id="L105">        return propertyDefinitions;</span>
+    }
+
+    public PropertyGroup createGroup(FieldContext context) {
+<span class="fc" id="L109">        return new PropertyGroup(this, context);</span>
+    }
+
+    public Set&lt;String&gt; getPropertyNames() {
+<span class="nc" id="L113">        return propertyDefinitions.stream()</span>
+<span class="nc" id="L114">            .map(PropertyDefinition::getName)</span>
+<span class="nc" id="L115">            .collect(toImmutableSet());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

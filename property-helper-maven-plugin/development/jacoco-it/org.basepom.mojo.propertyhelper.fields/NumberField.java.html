@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NumberField.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper.fields</a> &gt; <span class="el_source">NumberField.java</span></div><h1>NumberField.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper.fields;
+
+import static com.google.common.base.Preconditions.checkState;
+
+import org.basepom.mojo.propertyhelper.Field;
+import org.basepom.mojo.propertyhelper.FieldContext;
+import org.basepom.mojo.propertyhelper.ValueProvider;
+import org.basepom.mojo.propertyhelper.definitions.NumberDefinition;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+
+public final class NumberField extends Field&lt;String, NumberDefinition&gt; {
+
+    private final ValueProvider valueProvider;
+
+    // internal state
+    private List&lt;NumberElement&gt; numberElements;
+    private List&lt;NumberElement&gt; numberIndex;
+
+    @VisibleForTesting
+    public static NumberField forTesting(NumberDefinition numberDefinition, ValueProvider valueProvider) {
+<span class="nc" id="L42">        return new NumberField(numberDefinition, valueProvider, FieldContext.forTesting());</span>
+    }
+
+    public NumberField(final NumberDefinition fieldDefinition, final ValueProvider valueProvider,
+        FieldContext fieldContext) {
+<span class="fc" id="L47">        super(fieldDefinition, fieldContext);</span>
+
+<span class="fc" id="L49">        this.valueProvider = valueProvider;</span>
+<span class="fc" id="L50">    }</span>
+
+    @Override
+    public String getFieldName() {
+        // This is not the property name (because many definitions can map onto one prop)
+        // but the actual id.
+<span class="fc" id="L56">        return fieldDefinition.getId();</span>
+    }
+
+    @Override
+    @SuppressWarnings(&quot;PMD.LambdaCanBeMethodReference&quot;) // https://github.com/pmd/pmd/issues/5043
+    public String getValue() {
+<span class="fc" id="L62">        parse();</span>
+
+<span class="fc" id="L64">        return formatResult(value().map(v -&gt; Long.toString(v))</span>
+<span class="fc" id="L65">            .orElse(valueProvider.getValue().orElse(&quot;&quot;)));</span>
+    }
+
+    private void parse() {
+<span class="fc" id="L69">        final Optional&lt;String&gt; value = valueProvider.getValue();</span>
+
+<span class="fc" id="L71">        ImmutableList.Builder&lt;NumberElement&gt; numberELementBuilder = ImmutableList.builder();</span>
+<span class="fc" id="L72">        ImmutableList.Builder&lt;NumberElement&gt; numberIndexBuilder = ImmutableList.builder();</span>
+
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (value.isPresent()) {</span>
+<span class="fc" id="L75">            String numberValue = value.get();</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (!numberValue.isBlank()) {</span>
+<span class="fc" id="L77">                StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L78">                int charIndex = 0;</span>
+<span class="fc" id="L79">                boolean number = Character.isDigit(numberValue.charAt(charIndex));</span>
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                while (charIndex &lt; numberValue.length()) {</span>
+<span class="fc" id="L82">                    char currentChar = numberValue.charAt(charIndex);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                    if (number != Character.isDigit(currentChar)) {</span>
+<span class="fc" id="L84">                        var numberElement = new NumberElement(number, sb.toString());</span>
+
+<span class="fc" id="L86">                        numberELementBuilder.add(numberElement);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                        if (number) {</span>
+<span class="fc" id="L88">                            numberIndexBuilder.add(numberElement);</span>
+                        }
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">                        number = !number;</span>
+<span class="fc" id="L92">                        sb.setLength(0);</span>
+                    }
+<span class="fc" id="L94">                    sb.append(currentChar);</span>
+<span class="fc" id="L95">                    charIndex++;</span>
+<span class="fc" id="L96">                }</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">                if (sb.length() &gt; 0) {</span>
+<span class="fc" id="L98">                    var numberElement = new NumberElement(number, sb.toString());</span>
+
+<span class="fc" id="L100">                    numberELementBuilder.add(numberElement);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">                    if (number) {</span>
+<span class="fc" id="L102">                        numberIndexBuilder.add(numberElement);</span>
+                    }
+                }
+            }
+        }
+
+<span class="fc" id="L108">        this.numberElements = numberELementBuilder.build();</span>
+<span class="fc" id="L109">        this.numberIndex = numberIndexBuilder.build();</span>
+<span class="fc" id="L110">    }</span>
+
+    private String print() {
+<span class="fc" id="L113">        return Joiner.on(&quot;&quot;).join(numberElements.stream().map(NumberElement::getFieldValue).iterator());</span>
+    }
+
+    private Optional&lt;Long&gt; value() {
+<span class="fc" id="L117">        return fieldDefinition.getFieldNumber()</span>
+<span class="fc" id="L118">            .map(numberIndex::get)</span>
+<span class="fc" id="L119">            .flatMap(NumberElement::getLongValue);</span>
+    }
+
+    private void set(long value) {
+<span class="fc" id="L123">        Optional&lt;NumberElement&gt; numberElement = fieldDefinition.getFieldNumber()</span>
+<span class="fc" id="L124">            .map(numberIndex::get);</span>
+
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (numberElement.isPresent()) {</span>
+<span class="fc" id="L127">            numberElement.get().setLongValue(value);</span>
+<span class="fc" id="L128">            valueProvider.setValue(print());</span>
+        } else {
+<span class="nc" id="L130">            valueProvider.setValue(Long.toString(value));</span>
+        }
+<span class="fc" id="L132">    }</span>
+
+    public void increment() {
+<span class="fc" id="L135">        parse();</span>
+
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        fieldDefinition.getFieldNumber().ifPresent(fieldNumber -&gt; checkState(numberIndex.size() &gt; fieldNumber,</span>
+<span class="fc" id="L138">            &quot;Only %s fields in %s, field %s requested.&quot;, numberElements.size(), print(), fieldNumber));</span>
+
+<span class="fc" id="L140">        value().ifPresent(value -&gt; {</span>
+<span class="fc" id="L141">            set(value + fieldDefinition.getIncrement());</span>
+<span class="fc" id="L142">        });</span>
+<span class="fc" id="L143">    }</span>
+
+    public Optional&lt;Long&gt; getNumberValue() {
+<span class="nc" id="L146">        parse();</span>
+
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        fieldDefinition.getFieldNumber().ifPresent(fieldNumber -&gt; checkState(numberIndex.size() &gt; fieldNumber,</span>
+<span class="nc" id="L149">            &quot;Only %s fields in %s, field %s requested.&quot;, numberElements.size(), print(), fieldNumber));</span>
+
+<span class="nc" id="L151">        return value();</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L156">        return new StringJoiner(&quot;, &quot;, NumberField.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L157">            .add(&quot;valueProvider=&quot; + valueProvider)</span>
+<span class="nc" id="L158">            .add(&quot;numberElements=&quot; + numberElements)</span>
+<span class="nc" id="L159">            .add(&quot;numberIndex=&quot; + numberIndex)</span>
+<span class="nc" id="L160">            .add(&quot;fieldDefinition=&quot; + fieldDefinition)</span>
+<span class="nc" id="L161">            .toString();</span>
+    }
+
+    private static final class NumberElement {
+
+        private final boolean number;
+        private String value;
+
+<span class="fc" id="L169">        private NumberElement(boolean number, String value) {</span>
+<span class="fc" id="L170">            this.number = number;</span>
+<span class="fc" id="L171">            this.value = value;</span>
+<span class="fc" id="L172">        }</span>
+
+        String getFieldValue() {
+<span class="fc" id="L175">            return value;</span>
+        }
+
+        void setLongValue(long value) {
+<span class="fc" id="L179">            this.value = Long.toString(value);</span>
+<span class="fc" id="L180">        }</span>
+
+        Optional&lt;Long&gt; getLongValue() {
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">            return number ? Optional.of(Long.parseLong(value)) : Optional.empty();</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L188">            return new StringJoiner(&quot;, &quot;, NumberElement.class.getSimpleName() + &quot;[&quot;, &quot;]&quot;)</span>
+<span class="nc" id="L189">                .add(&quot;number=&quot; + number)</span>
+<span class="nc" id="L190">                .add(&quot;value='&quot; + value + &quot;'&quot;)</span>
+<span class="nc" id="L191">                .toString();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

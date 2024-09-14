@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractPropertyHelperMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Property Helper Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.mojo.propertyhelper</a> &gt; <span class="el_source">AbstractPropertyHelperMojo.java</span></div><h1>AbstractPropertyHelperMojo.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.basepom.mojo.propertyhelper;
+
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static org.basepom.mojo.propertyhelper.IgnoreWarnFail.checkIgnoreWarnFailState;
+
+import org.basepom.mojo.propertyhelper.definitions.DateDefinition;
+import org.basepom.mojo.propertyhelper.definitions.FieldDefinition;
+import org.basepom.mojo.propertyhelper.definitions.MacroDefinition;
+import org.basepom.mojo.propertyhelper.definitions.NumberDefinition;
+import org.basepom.mojo.propertyhelper.definitions.PropertyGroupDefinition;
+import org.basepom.mojo.propertyhelper.definitions.StringDefinition;
+import org.basepom.mojo.propertyhelper.definitions.UuidDefinition;
+import org.basepom.mojo.propertyhelper.fields.NumberField;
+import org.basepom.mojo.propertyhelper.groups.PropertyGroup;
+import org.basepom.mojo.propertyhelper.groups.PropertyResult;
+import org.basepom.mojo.propertyhelper.macros.MacroType;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import javax.inject.Inject;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.flogger.FluentLogger;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+
+<span class="fc" id="L55">public abstract class AbstractPropertyHelperMojo extends AbstractMojo implements FieldContext {</span>
+
+<span class="fc" id="L57">    private static final FluentLogger LOG = FluentLogger.forEnclosingClass();</span>
+
+<span class="fc" id="L59">    protected final ValueCache valueCache = new ValueCache();</span>
+<span class="fc" id="L60">    private IgnoreWarnFail onDuplicateField = IgnoreWarnFail.FAIL;</span>
+
+    /**
+     * Defines the action to take if a field is defined multiple times (e.g. as a number and a string).
+     * &lt;br&gt;
+     * Options are
+     * &lt;ul&gt;
+     *     &lt;li&gt;&lt;code&gt;ignore&lt;/code&gt; - ignore multiple definitions silently, retain just the first one found&lt;/li&gt;
+     *     &lt;li&gt;&lt;code&gt;warn&lt;/code&gt; - like ignore, but also log a warning message&lt;/li&gt;
+     *     &lt;li&gt;&lt;code&gt;fail&lt;/code&gt; - fail the build with an exception&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    @Parameter(defaultValue = &quot;fail&quot;, alias = &quot;onDuplicateProperty&quot;)
+    public void setOnDuplicateField(String onDuplicateField) {
+<span class="fc" id="L74">        this.onDuplicateField = IgnoreWarnFail.forString(onDuplicateField);</span>
+<span class="fc" id="L75">    }</span>
+
+<span class="fc" id="L77">    private List&lt;String&gt; activeGroups = List.of();</span>
+
+    /**
+     * The property groups to activate. If none are given, all property groups are activated.
+     * &lt;pre&gt;{@code
+     * &lt;activeGroups&gt;
+     *     &lt;activeGroup&gt;group1&lt;/activeGroup&gt;
+     *     &lt;activeGroup&gt;group2&lt;/activeGroup&gt;
+     *     ...
+     * &lt;/activeGroups&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setActiveGroups(String... activeGroups) {
+<span class="fc" id="L91">        this.activeGroups = Arrays.asList(activeGroups);</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Define property groups. A property group contains one or more property definitions. Property groups are active by default unless they are explicitly
+     * listed with {@code &lt;activeGroups&gt;...&lt;/activeGroups}.
+     * &lt;pre&gt;{@code
+     * &lt;propertyGroups&gt;
+     *     &lt;propertyGroup&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *
+     *         &lt;activeOnRelease&gt;true|false&lt;/activeOnRelease&gt;
+     *         &lt;activeOnSnapshot&gt;true|false&lt;/activeOnSnapshot&gt;
+     *         &lt;onDuplicateProperty&gt;ignore|warn|fail&lt;/onDuplicateProperty&gt;
+     *         &lt;onMissingField&gt;ignore|warn|fail&lt;/onMissingField&gt;
+     *
+     *         &lt;properties&gt;
+     *             &lt;property&gt;
+     *                 &lt;name&gt;...&lt;/name&gt;
+     *                 &lt;value&gt;...&lt;/value&gt;
+     *                 &lt;transformers&gt;...&lt;/transformers&gt;
+     *             &lt;/property&gt;
+     *             ...
+     *         &lt;/properties&gt;
+     *     &lt;/propertyGroup&gt;
+     *     ...
+     * &lt;/propertyGroups&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setPropertyGroups(PropertyGroupDefinition... propertyGroups) {
+<span class="fc" id="L122">        this.propertyGroupDefinitions = Arrays.asList(propertyGroups);</span>
+<span class="fc" id="L123">    }</span>
+
+<span class="fc" id="L125">    private List&lt;PropertyGroupDefinition&gt; propertyGroupDefinitions = List.of();</span>
+
+    /**
+     * Number property definitions.
+     *
+     * &lt;pre&gt;{@code
+     * &lt;numbers&gt;
+     *     &lt;number&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *         &lt;skip&gt;true|false&lt;/skip&gt;
+     *         &lt;export&gt;true|false&lt;/export&gt;
+     *
+     *         &lt;fieldNumber&gt;...&lt;/fieldNumber&gt;
+     *         &lt;increment&gt;...&lt;/increment&gt;
+     *         &lt;format&gt;...&lt;/format&gt;
+     *         &lt;regexp&gt;...&lt;/regexp&gt;
+     *         &lt;transformers&gt;...&lt;/transformers&gt;
+     *
+     *         &lt;propertyFile&gt;...&lt;/propertyFile&gt;
+     *         &lt;propertyNameInFile&gt;...&lt;/propertyNameInFile&gt;
+     *         &lt;initialValue&gt;...&lt;/initialValue&gt;
+     *         &lt;onMissingFile&gt;ignore|warn|fail|create&lt;/onMissingFile&gt;
+     *         &lt;onMissingFileProperty&gt;ignore|warn|fail|create&lt;/onMissingFileProperty&gt;
+     *         &lt;onMissingProperty&gt;ignore|warn|fail&lt;/onMissingProperty&gt;
+     *     &lt;/number&gt;
+     *     ...
+     * &lt;/numbers&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setNumbers(NumberDefinition... numberDefinitions) {
+<span class="fc" id="L156">        this.numberDefinitions = Arrays.asList(numberDefinitions);</span>
+<span class="fc" id="L157">    }</span>
+
+<span class="fc" id="L159">    private List&lt;NumberDefinition&gt; numberDefinitions = List.of();</span>
+
+    /**
+     * String property definitions.
+     *
+     * &lt;pre&gt;{@code
+     * &lt;strings&gt;
+     *     &lt;string&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *         &lt;skip&gt;true|false&lt;/skip&gt;
+     *         &lt;export&gt;true|false&lt;/export&gt;
+     *
+     *         &lt;values&gt;
+     *             &lt;value&gt;...&lt;/value&gt;
+     *             ...
+     *         &lt;/values&gt;
+     *         &lt;blankIsValid&gt;true|false&lt;/blankIsValid&gt;
+     *         &lt;onMissingValue&gt;ignore|warn|fail&lt;/onMissingValue
+     *         &lt;format&gt;...&lt;/format&gt;
+     *         &lt;regexp&gt;...&lt;/regexp&gt;
+     *         &lt;transformers&gt;...&lt;/transformers&gt;
+     *
+     *         &lt;propertyFile&gt;...&lt;/propertyFile&gt;
+     *         &lt;propertyNameInFile&gt;...&lt;/propertyNameInFile&gt;
+     *         &lt;initialValue&gt;...&lt;/initialValue&gt;
+     *         &lt;onMissingFile&gt;ignore|warn|fail|create&lt;/onMissingFile&gt;
+     *         &lt;onMissingFileProperty&gt;ignore|warn|fail|create&lt;/onMissingFileProperty&gt;
+     *         &lt;onMissingProperty&gt;ignore|warn|fail&lt;/onMissingProperty&gt;
+     *     &lt;/string&gt;
+     *     ...
+     * &lt;/strings&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setStrings(StringDefinition... stringDefinitions) {
+<span class="fc" id="L194">        this.stringDefinitions = Arrays.asList(stringDefinitions);</span>
+<span class="fc" id="L195">    }</span>
+
+<span class="fc" id="L197">    private List&lt;StringDefinition&gt; stringDefinitions = List.of();</span>
+
+    /**
+     * Date property definitions.
+     *
+     * &lt;pre&gt;{@code
+     * &lt;dates&gt;
+     *     &lt;date&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *         &lt;skip&gt;true|false&lt;/skip&gt;
+     *         &lt;export&gt;true|false&lt;/export&gt;
+     *
+     *         &lt;value&gt;...&lt;/value&gt;
+     *         &lt;timezone&gt;...&lt;/timezone&gt;
+     *         &lt;format&gt;...&lt;/format&gt;
+     *         &lt;regexp&gt;...&lt;/regexp&gt;
+     *         &lt;transformers&gt;...&lt;/transformers&gt;
+     *
+     *         &lt;propertyFile&gt;...&lt;/propertyFile&gt;
+     *         &lt;propertyNameInFile&gt;...&lt;/propertyNameInFile&gt;
+     *         &lt;initialValue&gt;...&lt;/initialValue&gt;
+     *         &lt;onMissingFile&gt;ignore|warn|fail|create&lt;/onMissingFile&gt;
+     *         &lt;onMissingFileProperty&gt;ignore|warn|fail|create&lt;/onMissingFileProperty&gt;
+     *         &lt;onMissingProperty&gt;ignore|warn|fail&lt;/onMissingProperty&gt;
+     *     &lt;/date&gt;
+     *     ...
+     * &lt;/dates&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setDates(DateDefinition... dateDefinitions) {
+<span class="fc" id="L228">        this.dateDefinitions = Arrays.asList(dateDefinitions);</span>
+<span class="fc" id="L229">    }</span>
+
+<span class="fc" id="L231">    private List&lt;DateDefinition&gt; dateDefinitions = List.of();</span>
+
+    /**
+     * Macro definitions.
+     *
+     * &lt;pre&gt;{@code
+     * &lt;macros&gt;
+     *     &lt;macro&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *         &lt;skip&gt;true|false&lt;/skip&gt;
+     *         &lt;export&gt;true|false&lt;/export&gt;
+     *
+     *         &lt;macroType&gt;...&lt;/macroType&gt;
+     *         &lt;macroClass&gt;...&lt;/macroClass&gt;
+     *         &lt;properties&gt;
+     *             &lt;some-name&gt;some-value&lt;/some-name&gt;
+     *             ...
+     *         &lt;/properties&gt;
+     *
+     *         &lt;format&gt;...&lt;/format&gt;
+     *         &lt;regexp&gt;...&lt;/regexp&gt;
+     *         &lt;transformers&gt;...&lt;/transformers&gt;
+     *
+     *         &lt;propertyFile&gt;...&lt;/propertyFile&gt;
+     *         &lt;propertyNameInFile&gt;...&lt;/propertyNameInFile&gt;
+     *         &lt;initialValue&gt;...&lt;/initialValue&gt;
+     *         &lt;onMissingFile&gt;ignore|warn|fail|create&lt;/onMissingFile&gt;
+     *         &lt;onMissingFileProperty&gt;ignore|warn|fail|create&lt;/onMissingFileProperty&gt;
+     *         &lt;onMissingProperty&gt;ignore|warn|fail&lt;/onMissingProperty&gt;
+     *     &lt;/macro&gt;
+     *     ...
+     * &lt;/macros&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setMacros(MacroDefinition... macroDefinitions) {
+<span class="fc" id="L267">        this.macroDefinitions = Arrays.asList(macroDefinitions);</span>
+<span class="fc" id="L268">    }</span>
+
+<span class="fc" id="L270">    private List&lt;MacroDefinition&gt; macroDefinitions = List.of();</span>
+
+    /**
+     * Uuid definitions.
+     *
+     * &lt;pre&gt;{@code
+     * &lt;uuids&gt;
+     *     &lt;uuid&gt;
+     *         &lt;id&gt;...&lt;/id&gt;
+     *         &lt;skip&gt;true|false&lt;/skip&gt;
+     *         &lt;export&gt;true|false&lt;/export&gt;
+     *
+     *         &lt;value&gt;...&lt;/value&gt;
+     *         &lt;format&gt;...&lt;/format&gt;
+     *         &lt;regexp&gt;...&lt;/regexp&gt;
+     *         &lt;transformers&gt;...&lt;/transformers&gt;
+     *
+     *         &lt;propertyFile&gt;...&lt;/propertyFile&gt;
+     *         &lt;propertyNameInFile&gt;...&lt;/propertyNameInFile&gt;
+     *         &lt;initialValue&gt;...&lt;/initialValue&gt;
+     *         &lt;onMissingFile&gt;ignore|warn|fail|create&lt;/onMissingFile&gt;
+     *         &lt;onMissingFileProperty&gt;ignore|warn|fail|create&lt;/onMissingFileProperty&gt;
+     *         &lt;onMissingProperty&gt;ignore|warn|fail&lt;/onMissingProperty&gt;
+     *     &lt;/uuid&gt;
+     *     ...
+     * &lt;/uuids&gt;
+     * }&lt;/pre&gt;
+     */
+    @Parameter
+    public void setUuids(UuidDefinition... uuidDefinitions) {
+<span class="fc" id="L300">        this.uuidDefinitions = Arrays.asList(uuidDefinitions);</span>
+<span class="fc" id="L301">    }</span>
+
+<span class="fc" id="L303">    private List&lt;UuidDefinition&gt; uuidDefinitions = List.of();</span>
+
+    /**
+     * If set to true, goal execution is skipped.
+     */
+    @Parameter(defaultValue = &quot;false&quot;)
+    boolean skip;
+
+    /**
+     * The maven project (effective pom).
+     */
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true)
+    MavenProject project;
+
+    @Parameter(defaultValue = &quot;${settings}&quot;, readonly = true)
+    Settings settings;
+
+    @Parameter(required = true, readonly = true, defaultValue = &quot;${project.basedir}&quot;)
+    File basedir;
+
+    /**
+     * Timestamp for reproducible output archive entries, either formatted as ISO 8601
+     * &lt;code&gt;yyyy-MM-dd'T'HH:mm:ssXXX&lt;/code&gt; or as an int representing seconds since the epoch (like
+     * &lt;a href=&quot;https://reproducible-builds.org/docs/source-date-epoch/&quot;&gt;SOURCE_DATE_EPOCH&lt;/a&gt;).
+     */
+    @Parameter(defaultValue = &quot;${project.build.outputTimestamp}&quot;)
+    String outputTimestamp;
+
+
+    @Inject
+    public void setMacroMap(Map&lt;String, MacroType&gt; macroMap) {
+<span class="fc" id="L334">        this.macroMap = ImmutableMap.copyOf(macroMap);</span>
+<span class="fc" id="L335">    }</span>
+
+<span class="fc" id="L337">    private Map&lt;String, MacroType&gt; macroMap = Map.of();</span>
+
+    // internal mojo state.
+    private boolean isSnapshot;
+    private InterpolatorFactory interpolatorFactory;
+    private TransformerRegistry transformerRegistry;
+
+<span class="fc" id="L344">    private Map&lt;String, FieldDefinition&lt;?&gt;&gt; fieldDefinitions = Map.of();</span>
+<span class="fc" id="L345">    private List&lt;NumberField&gt; numberFields = List.of();</span>
+<span class="fc" id="L346">    private Map&lt;String, String&gt; values = Map.of();</span>
+
+    private Random random;
+
+    @Override
+    public void execute() throws MojoExecutionException {
+<span class="fc" id="L352">        this.isSnapshot = project.getArtifact().isSnapshot();</span>
+<span class="fc" id="L353">        this.interpolatorFactory = new InterpolatorFactory(project.getModel());</span>
+<span class="fc" id="L354">        this.transformerRegistry = TransformerRegistry.INSTANCE;</span>
+
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">        LOG.atFine().log(&quot;Current build is a %s project.&quot;, isSnapshot ? &quot;snapshot&quot; : &quot;release&quot;);</span>
+<span class="fc" id="L357">        LOG.atFiner().log(&quot;On duplicate field definitions: %s&quot;, onDuplicateField);</span>
+
+        try {
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">            if (skip) {</span>
+<span class="nc" id="L361">                LOG.atFine().log(&quot;skipping plugin execution!&quot;);</span>
+            } else {
+<span class="fc" id="L363">                this.random = RandomUtil.createRandomFromSeed(outputTimestamp);</span>
+
+<span class="fc" id="L365">                doExecute();</span>
+            }
+<span class="nc" id="L367">        } catch (IOException e) {</span>
+<span class="nc" id="L368">            throw new MojoExecutionException(&quot;While running mojo: &quot;, e);</span>
+<span class="fc" id="L369">        }</span>
+<span class="fc" id="L370">    }</span>
+
+    @Override
+    public MavenProject getProject() {
+<span class="nc" id="L374">        return project;</span>
+    }
+
+    @Override
+    public File getBasedir() {
+<span class="nc" id="L379">        return basedir;</span>
+    }
+
+    @Override
+    public Settings getSettings() {
+<span class="nc" id="L384">        return settings;</span>
+    }
+
+    @Override
+    public Map&lt;String, MacroType&gt; getMacros() {
+<span class="fc" id="L389">        return macroMap;</span>
+    }
+
+    @Override
+    public Properties getProjectProperties() {
+<span class="nc" id="L394">        return project.getProperties();</span>
+    }
+
+    @Override
+    public InterpolatorFactory getInterpolatorFactory() {
+<span class="fc" id="L399">        return interpolatorFactory;</span>
+    }
+
+    @Override
+    public TransformerRegistry getTransformerRegistry() {
+<span class="fc" id="L404">        return transformerRegistry;</span>
+    }
+
+    @Override
+    public Random getRandom() {
+<span class="fc" id="L409">        return random;</span>
+    }
+
+    protected List&lt;NumberField&gt; getNumbers() {
+<span class="fc" id="L413">        return numberFields;</span>
+    }
+
+    /**
+     * Subclasses need to implement this method.
+     */
+    protected abstract void doExecute() throws IOException, MojoExecutionException;
+
+    private void addDefinitions(ImmutableMap.Builder&lt;String, FieldDefinition&lt;?&gt;&gt; builder, List&lt;? extends FieldDefinition&lt;?&gt;&gt; newDefinitions) {
+<span class="fc" id="L422">        Map&lt;String, FieldDefinition&lt;?&gt;&gt; existingDefinitions = builder.build();</span>
+
+<span class="fc bfc" id="L424" title="All 2 branches covered.">        for (FieldDefinition&lt;?&gt; definition : newDefinitions) {</span>
+<span class="fc bfc" id="L425" title="All 2 branches covered.">            if (definition.isSkip()) {</span>
+<span class="fc" id="L426">                continue;</span>
+            }
+
+<span class="fc" id="L429">            String propertyName = definition.getId();</span>
+
+<span class="fc bfc" id="L431" title="All 4 branches covered.">            if (checkIgnoreWarnFailState(!existingDefinitions.containsKey(propertyName), onDuplicateField,</span>
+<span class="fc" id="L432">                () -&gt; format(&quot;field definition '%s' does not exist&quot;, propertyName),</span>
+<span class="fc" id="L433">                () -&gt; format(&quot;field definition '%s' already exists!&quot;, propertyName))) {</span>
+<span class="fc" id="L434">                builder.put(propertyName, definition);</span>
+            }
+<span class="fc" id="L436">        }</span>
+<span class="fc" id="L437">    }</span>
+
+    protected void createFieldDefinitions() {
+
+<span class="fc" id="L441">        ImmutableMap.Builder&lt;String, FieldDefinition&lt;?&gt;&gt; builder = ImmutableMap.builder();</span>
+<span class="fc" id="L442">        addDefinitions(builder, numberDefinitions);</span>
+<span class="fc" id="L443">        addDefinitions(builder, stringDefinitions);</span>
+<span class="fc" id="L444">        addDefinitions(builder, macroDefinitions);</span>
+<span class="fc" id="L445">        addDefinitions(builder, dateDefinitions);</span>
+<span class="fc" id="L446">        addDefinitions(builder, uuidDefinitions);</span>
+
+<span class="fc" id="L448">        this.fieldDefinitions = builder.build();</span>
+<span class="fc" id="L449">    }</span>
+
+    protected void createFields() throws MojoExecutionException, IOException {
+<span class="fc" id="L452">        ImmutableList.Builder&lt;NumberField&gt; numberFields = ImmutableList.builder();</span>
+
+<span class="fc" id="L454">        var builder = ImmutableMap.&lt;String, String&gt;builder();</span>
+
+<span class="fc bfc" id="L456" title="All 2 branches covered.">        for (FieldDefinition&lt;?&gt; definition : fieldDefinitions.values()) {</span>
+<span class="fc" id="L457">            Field&lt;?, ?&gt; field = definition.createField(this, valueCache);</span>
+
+<span class="fc bfc" id="L459" title="All 2 branches covered.">            if (field instanceof NumberField) {</span>
+<span class="fc" id="L460">                numberFields.add((NumberField) field);</span>
+            }
+
+<span class="fc" id="L463">            var fieldValue = field.getValue();</span>
+<span class="fc" id="L464">            builder.put(field.getFieldName(), fieldValue);</span>
+
+<span class="fc bfc" id="L466" title="All 2 branches covered.">            if (field.isExposeAsProperty()) {</span>
+<span class="fc" id="L467">                project.getProperties().setProperty(field.getFieldName(), fieldValue);</span>
+<span class="fc" id="L468">                LOG.atFine().log(&quot;Exporting Property name: %s, value: %s&quot;, field.getFieldName(), fieldValue);</span>
+            } else {
+<span class="fc" id="L470">                LOG.atFine().log(&quot;Property name: %s, value: %s&quot;, field.getFieldName(), fieldValue);</span>
+            }
+<span class="fc" id="L472">        }</span>
+
+<span class="fc" id="L474">        this.numberFields = numberFields.build();</span>
+<span class="fc" id="L475">        this.values = builder.build();</span>
+<span class="fc" id="L476">    }</span>
+
+    // generates the property groups.
+    @SuppressFBWarnings(value = &quot;WMI_WRONG_MAP_ITERATOR&quot;)
+    public void createGroups() {
+<span class="fc" id="L481">        var groupMapBuilder = ImmutableMap.&lt;String, PropertyGroup&gt;builder();</span>
+<span class="fc" id="L482">        var resultMapBuilder = ImmutableMap.&lt;String, Set&lt;PropertyResult&gt;&gt;builder();</span>
+
+<span class="fc" id="L484">        Set&lt;String&gt; exportedFields = fieldDefinitions.values().stream()</span>
+<span class="fc" id="L485">            .filter(FieldDefinition::isExport)</span>
+<span class="fc" id="L486">            .map(FieldDefinition::getId).collect(ImmutableSet.toImmutableSet());</span>
+
+<span class="fc" id="L488">        Set&lt;String&gt; propertyNames = new LinkedHashSet&lt;&gt;(exportedFields);</span>
+
+<span class="fc" id="L490">        propertyGroupDefinitions.forEach(propertyGroupDefinition -&gt; {</span>
+<span class="fc" id="L491">            PropertyGroup propertyGroup = propertyGroupDefinition.createGroup(this);</span>
+<span class="fc" id="L492">            Set&lt;PropertyResult&gt; propertyResults = propertyGroup.createProperties(values);</span>
+<span class="fc" id="L493">            groupMapBuilder.put(propertyGroup.getId(), propertyGroup);</span>
+<span class="fc" id="L494">            resultMapBuilder.put(propertyGroup.getId(), propertyResults);</span>
+<span class="fc" id="L495">        });</span>
+
+<span class="fc" id="L497">        var groupMap = groupMapBuilder.build();</span>
+<span class="fc" id="L498">        var resultMap = resultMapBuilder.build();</span>
+
+<span class="pc bpc" id="L500" title="1 of 2 branches missed.">        var groupsToAdd = this.activeGroups == null</span>
+<span class="nc" id="L501">            ? groupMap.keySet()</span>
+<span class="fc" id="L502">            : this.activeGroups;</span>
+
+<span class="fc bfc" id="L504" title="All 2 branches covered.">        for (String groupToAdd : groupsToAdd) {</span>
+
+<span class="fc" id="L506">            var activeGroup = groupMap.get(groupToAdd);</span>
+<span class="pc bpc" id="L507" title="1 of 2 branches missed.">            checkState(activeGroup != null, &quot;activated group '%s' does not exist&quot;, groupToAdd);</span>
+<span class="fc" id="L508">            var activeResult = resultMap.get(groupToAdd);</span>
+<span class="pc bpc" id="L509" title="1 of 2 branches missed.">            checkState(activeResult != null, &quot;activated group '%s' has no result&quot;, groupToAdd);</span>
+
+<span class="pc bpc" id="L511" title="1 of 2 branches missed.">            if (activeGroup.checkActive(isSnapshot)) {</span>
+<span class="fc bfc" id="L512" title="All 2 branches covered.">                for (PropertyResult propertyResult : activeResult) {</span>
+<span class="fc" id="L513">                    String propertyName = propertyResult.getPropertyName();</span>
+
+<span class="pc bpc" id="L515" title="2 of 4 branches missed.">                    if (checkIgnoreWarnFailState(!propertyNames.contains(propertyName), activeGroup.getOnDuplicateProperty(),</span>
+<span class="fc" id="L516">                        () -&gt; format(&quot;property '%s' is not exposed&quot;, propertyName),</span>
+<span class="nc" id="L517">                        () -&gt; format(&quot;property '%s' is already exposed!&quot;, propertyName))) {</span>
+
+<span class="fc" id="L519">                        project.getProperties().setProperty(propertyName, propertyResult.getPropertyValue());</span>
+                    }
+<span class="fc" id="L521">                }</span>
+            } else {
+<span class="nc" id="L523">                LOG.atFine().log(&quot;Skipping property group %s, not active&quot;, activeGroup);</span>
+            }
+<span class="fc" id="L525">        }</span>
+<span class="fc" id="L526">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
