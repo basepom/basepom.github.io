@@ -1,4 +1,3 @@
-module:org.basepom.mojo.duplicatefinder
 org.basepom.mojo.duplicatefinder
 org.basepom.mojo.duplicatefinder.artifact
 org.basepom.mojo.duplicatefinder.classpath

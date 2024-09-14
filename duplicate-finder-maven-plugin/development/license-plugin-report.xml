@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1726288228925">
+<licensePluginReport goal="CHECK" timestamp="1726354202134">
     <module artifactId="duplicate-finder-maven-plugin" groupId="org.basepom.maven" version="2.0.2-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>

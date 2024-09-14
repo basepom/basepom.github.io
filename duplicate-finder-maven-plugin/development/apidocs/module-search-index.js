@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"org.basepom.mojo.duplicatefinder"}];updateSearchResults();
+moduleSearchIndex = [];updateSearchResults();
