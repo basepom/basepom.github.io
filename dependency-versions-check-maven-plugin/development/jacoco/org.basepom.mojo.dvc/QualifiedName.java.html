@@ -110,8 +110,8 @@ public final class QualifiedName
 <span class="fc" id="L110">        ImmutableList.Builder&lt;String&gt; builder = ImmutableList.builder();</span>
 <span class="fc" id="L111">        builder.add(getGroupId()).add(getArtifactId());</span>
 
-<span class="fc" id="L113">        getType().ifPresent(t -&gt; builder.add(t));</span>
-<span class="fc" id="L114">        getClassifier().ifPresent(t -&gt; builder.add(t));</span>
+<span class="fc" id="L113">        getType().ifPresent(builder::add);</span>
+<span class="fc" id="L114">        getClassifier().ifPresent(builder::add);</span>
 <span class="fc" id="L115">        return Joiner.on(':').join(builder.build());</span>
     }
 
@@ -195,4 +195,4 @@ public final class QualifiedName
         }
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
