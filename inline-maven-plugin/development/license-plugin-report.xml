@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1726354367743">
+<licensePluginReport goal="CHECK" timestamp="1727666516661">
     <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="1.4.1-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
@@ -24,6 +24,7 @@
         <file path="src/main/java/org/basepom/inline/mojo/PluginLog.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/inline/mojo/PomUtil.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/inline/mojo/ScopeLimitingFilter.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/TreeNode.java" result="PRESENT"/>
         <file path="src/site/site.xml" result="PRESENT"/>
         <file path="src/test/java/org/basepom/inline/mojo/TestPomUtil.java" result="PRESENT"/>
         <file path="src/test/resources/testPom.xml" result="PRESENT"/>
