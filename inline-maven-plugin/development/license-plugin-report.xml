@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1746987273784">
-    <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="1.5.1-SNAPSHOT"/>
+<licensePluginReport goal="CHECK" timestamp="1747013118472">
+    <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="1.5.2-SNAPSHOT"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="src/it/settings.xml" result="PRESENT"/>
